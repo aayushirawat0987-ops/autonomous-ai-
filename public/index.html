@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous AI Creator — LinkedIn Feed Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --card-hover-border: rgba(99, 102, 241, 0.4);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --linkedin-blue: #0a66c2;
+      --accent: #10b981;
+      --accent-warn: #f59e0b;
+      --accent-danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--linkedin-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.3rem;
+      color: white;
+      box-shadow: 0 4px 14px rgba(10, 102, 194, 0.4);
+    }
+
+    .brand-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--linkedin-blue);
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
+    }
+
+    .btn:hover {
+      background: #084e96;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      box-shadow: none;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .agent-selector {
+      margin-top: 1rem;
+    }
+
+    .agent-item {
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .agent-item:hover, .agent-item.active {
+      border-color: var(--linkedin-blue);
+      background: rgba(10, 102, 194, 0.15);
+    }
+
+    .agent-item-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .agent-item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.25rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.25rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: #38bdf8;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #38bdf8;
+      border-radius: 2px;
+    }
+
+    /* LinkedIn Card Styling */
+    .linkedin-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.2s;
+    }
+
+    .linkedin-card:hover {
+      border-color: rgba(10, 102, 194, 0.4);
+    }
+
+    .linkedin-author-row {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .linkedin-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0a66c2, #0077b5);
+      color: white;
+      font-weight: 800;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .linkedin-author-info {
+      flex: 1;
+    }
+
+    .linkedin-author-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .linkedin-badge {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .linkedin-author-title {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    .linkedin-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .linkedin-post-body {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      line-height: 1.7;
+      white-space: pre-line;
+      margin-bottom: 1.25rem;
+    }
+
+    .linkedin-post-body p {
+      margin-bottom: 0.85rem;
+    }
+
+    .meta-drawer {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .meta-drawer-title {
+      font-weight: 700;
+      color: #38bdf8;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+
+    .social-actions {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid var(--card-border);
+      padding-top: 0.85rem;
+      margin-top: 1.25rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .social-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .social-action-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    .log-item {
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 3px solid var(--text-muted);
+      margin-bottom: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    .log-item.EDITORIAL {
+      border-left-color: var(--linkedin-blue);
+    }
+
+    .log-item.WARN {
+      border-left-color: var(--accent-warn);
+    }
+
+    .log-item.ERROR {
+      border-left-color: var(--accent-danger);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+      font-size: 1.2rem;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">in</div>
+        <div>
+          <div class="brand-title">Autonomous AI Creator</div>
+          <div class="brand-subtitle">AI Security Publishing Agent</div>
+        </div>
+      </div>
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        Autonomous Scheduler Active (Threshold > 80)
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <aside class="sidebar">
+      <!-- Agent Init Form -->
+      <div class="glass-card">
+        <div class="card-title">✨ Persona Config</div>
+        <form id="initForm">
+          <div class="form-group">
+            <label for="agentName">Persona Name</label>
+            <input type="text" id="agentName" class="form-control" value="Ada" placeholder="e.g. Ada" required>
+          </div>
+          <div class="form-group">
+            <label for="agentDomain">Domain Focus</label>
+            <input type="text" id="agentDomain" class="form-control" value="AI Security" placeholder="e.g. AI Security" required>
+          </div>
+          <button type="submit" class="btn" id="initBtn">
+            <span>Initialize Persona & Scheduler</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Active Agents List -->
+      <div class="glass-card">
+        <div class="card-title">🤖 Active Agents</div>
+        <div id="agentList" class="agent-selector">
+          <div class="empty-state" style="padding: 1rem;">Loading agents...</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="glass-card">
+        <div class="card-title">⚡ Autonomous Cycle</div>
+        <button id="triggerBtn" class="btn btn-secondary">
+          <span>Run Discovery & Publish Cycle</span>
+        </button>
+      </div>
+    </aside>
+
+    <section class="content-area">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('feedTab')">📱 LinkedIn Feed (100–250 Words)</button>
+        <button class="tab-btn" onclick="switchTab('logsTab')">🔍 Rejected Topics & Logs</button>
+      </div>
+
+      <!-- Feed Tab -->
+      <div id="feedTab" class="tab-content">
+        <div id="feedContainer">
+          <div class="empty-state">
+            <h3>No Agent Selected</h3>
+            <p>Initialize an agent or select one from the sidebar to view its LinkedIn-style feed.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs Tab -->
+      <div id="logsTab" class="tab-content" style="display: none;">
+        <div id="logsContainer" class="glass-card">
+          <div class="card-title">Editorial Telemetry & Rejection Log (Score > 80 Filter)</div>
+          <div id="logsList">
+            <div class="empty-state">Select an agent to view real-time log telemetry.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let activeAgentId = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadAgents();
+
+      document.getElementById('initForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('initBtn');
+        btn.innerHTML = '<div class="spinner"></div> Initializing...';
+        btn.disabled = true;
+
+        const name = document.getElementById('agentName').value;
+        const domain = document.getElementById('agentDomain').value;
+
+        try {
+          const res = await fetch('/api/agent/init', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ persona: { name, domain } })
+          });
+
+          const data = await res.json();
+          if (data.agentId) {
+            activeAgentId = data.agentId;
+            await loadAgents();
+            await loadFeed();
+            await loadLogs();
+          }
+        } catch (err) {
+          alert('Error initializing agent: ' + err.message);
+        } finally {
+          btn.innerHTML = 'Initialize Persona & Scheduler';
+          btn.disabled = false;
+        }
+      });
+
+      document.getElementById('triggerBtn').addEventListener('click', async () => {
+        if (!activeAgentId) return alert('Please select or initialize an agent first.');
+        const btn = document.getElementById('triggerBtn');
+        btn.innerHTML = '<div class="spinner"></div> Running AI Security Cycle...';
+        btn.disabled = true;
+
+        try {
+          const res = await fetch('/api/agent/trigger', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ agentId: activeAgentId })
+          });
+          const data = await res.json();
+          await loadFeed();
+          await loadLogs();
+        } catch (err) {
+          alert('Trigger failed: ' + err.message);
+        } finally {
+          btn.innerHTML = 'Run Discovery & Publish Cycle';
+          btn.disabled = false;
+        }
+      });
+    });
+
+    async function loadAgents() {
+      try {
+        const res = await fetch('/api/agent/list');
+        const data = await res.json();
+        const container = document.getElementById('agentList');
+
+        if (!data.agents || data.agents.length === 0) {
+          container.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted);">No active agents found.</div>';
+          return;
+        }
+
+        if (!activeAgentId && data.agents.length > 0) {
+          activeAgentId = data.agents[0].id;
+        }
+
+        container.innerHTML = data.agents.map(a => `
+          <div class="agent-item ${a.id === activeAgentId ? 'active' : ''}" onclick="selectAgent('${a.id}')">
+            <div class="agent-item-name">${a.name}</div>
+            <div class="agent-item-meta">
+              <span>${a.domain}</span>
+              <span>${a._count.posts} posts</span>
+            </div>
+          </div>
+        `).join('');
+
+        if (activeAgentId) {
+          loadFeed();
+          loadLogs();
+        }
+      } catch (err) {
+        console.error('Failed to load agents', err);
+      }
+    }
+
+    function selectAgent(id) {
+      activeAgentId = id;
+      loadAgents();
+    }
+
+    async function loadFeed() {
+      if (!activeAgentId) return;
+      const container = document.getElementById('feedContainer');
+
+      try {
+        const res = await fetch(`/api/agent/feed?agentId=${activeAgentId}`);
+        const data = await res.json();
+
+        if (!data.posts || data.posts.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state glass-card">
+              <h3>No AI Security Posts Published Yet</h3>
+              <p>The agent is scanning live sources for AI Security, Prompt Injection, and LLM Vulnerabilities. Click "Run Discovery & Publish Cycle" to execute a cycle.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = data.posts.map(post => `
+          <article class="linkedin-card">
+            <div class="linkedin-author-row">
+              <div class="linkedin-avatar">A</div>
+              <div class="linkedin-author-info">
+                <div class="linkedin-author-name">Ada <span class="linkedin-badge">• 1st</span></div>
+                <div class="linkedin-author-title">AI Security Researcher | Threat Modeling & LLM Vulnerabilities</div>
+                <div class="linkedin-time">Published ${new Date(post.publishedAt).toLocaleString()} • 🌐 Public</div>
+              </div>
+            </div>
+
+            <div class="linkedin-post-body">${escapeHtml(post.content)}</div>
+
+            <div class="meta-drawer">
+              <div style="margin-bottom: 0.5rem;">
+                <div class="meta-drawer-title">🎯 Editorial Rationale</div>
+                <div>${escapeHtml(post.rationale)}</div>
+              </div>
+              <div style="margin-bottom: 0.5rem;">
+                <div class="meta-drawer-title">⚡ Why Relevant Now</div>
+                <div>${escapeHtml(post.whyRelevantNow)}</div>
+              </div>
+              <div>
+                <div class="meta-drawer-title">🔗 Sources</div>
+                <div>${post.sources.map(s => `<a href="${escapeHtml(s)}" target="_blank" style="color:#38bdf8; text-decoration:none;">${escapeHtml(s)}</a>`).join(', ')}</div>
+              </div>
+            </div>
+
+            <div class="social-actions">
+              <div class="social-action-btn">👍 Like</div>
+              <div class="social-action-btn">💬 Comment</div>
+              <div class="social-action-btn">🔁 Repost</div>
+              <div class="social-action-btn">📤 Send</div>
+            </div>
+          </article>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="empty-state glass-card">Failed to load feed.</div>`;
+      }
+    }
+
+    async function loadLogs() {
+      if (!activeAgentId) return;
+      const container = document.getElementById('logsList');
+
+      try {
+        const res = await fetch(`/api/agent/logs?agentId=${activeAgentId}`);
+        const data = await res.json();
+
+        if (!data.logs || data.logs.length === 0) {
+          container.innerHTML = `<div class="empty-state">No execution logs recorded.</div>`;
+          return;
+        }
+
+        container.innerHTML = data.logs.map(log => `
+          <div class="log-item ${log.level}">
+            <div><strong>[${new Date(log.createdAt).toLocaleTimeString()}] [${log.level}]</strong> ${escapeHtml(log.message)}</div>
+            ${log.details ? `<div style="margin-top:0.25rem; opacity:0.8; font-size:0.75rem;">${escapeHtml(log.details)}</div>` : ''}
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = 'Failed to load logs.';
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+      document.getElementById(tabId).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
