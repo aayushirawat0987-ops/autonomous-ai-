@@ -711,6 +711,160 @@
       background: rgba(79, 70, 229, 0.03);
       box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
     }
+
+    /* Brain Visualization */
+    .brain-orb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, var(--primary), #3730A3);
+      box-shadow: 0 0 40px rgba(79, 70, 229, 0.4), inset 0 0 20px rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      animation: floatOrb 4s ease-in-out infinite;
+    }
+
+    .brain-core {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: white;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .brain-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(79, 70, 229, 0.3);
+      border-radius: 50%;
+      animation: pulseRing 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .brain-ring.ring-1 { width: 160px; height: 160px; animation-delay: 0s; }
+    .brain-ring.ring-2 { width: 220px; height: 220px; animation-delay: 1s; }
+    .brain-ring.ring-3 { width: 280px; height: 280px; animation-delay: 2s; border: 1px dashed rgba(79, 70, 229, 0.2); }
+
+    @keyframes floatOrb {
+      0%, 100% { transform: translate(-50%, -50%); }
+      50% { transform: translate(-50%, -55%); }
+    }
+
+    @keyframes pulseRing {
+      0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+    }
+
+    .brain-nodes-container {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+    }
+
+    .brain-node {
+      position: absolute;
+      width: 140px;
+      text-align: center;
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease;
+      opacity: 0.4;
+      filter: grayscale(100%);
+    }
+
+    .brain-node.active {
+      opacity: 1;
+      filter: grayscale(0%);
+    }
+
+    .brain-node.active .bn-icon {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: scale(1.1);
+    }
+
+    .brain-node.completed {
+      opacity: 1;
+      filter: grayscale(0%);
+    }
+
+    .brain-node.completed .bn-icon {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .brain-node.rejected {
+      opacity: 1;
+      filter: grayscale(0%);
+    }
+
+    .brain-node.rejected .bn-icon {
+      background: var(--danger);
+      color: white;
+      border-color: var(--danger);
+    }
+
+    .bn-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #FFF;
+      border: 2px solid var(--border-color);
+      margin: 0 auto 0.5rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .bn-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-main);
+      background: rgba(255,255,255,0.8);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+      backdrop-filter: blur(4px);
+    }
+
+    #brain-svg-lines {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    .bn-line {
+      fill: none;
+      stroke: var(--border-color);
+      stroke-width: 2;
+      transition: stroke 0.5s ease;
+    }
+    
+    .bn-line.active {
+      stroke: var(--primary);
+      stroke-dasharray: 6 6;
+      animation: lineDash 20s linear infinite;
+    }
+    
+    @keyframes lineDash {
+      to { stroke-dashoffset: -1000; }
+    }
   </style>
 </head>
 <body>
@@ -729,6 +883,9 @@
       <nav class="nav-menu flex-col">
         <div class="nav-item active" data-target="view-overview">
           <span class="nav-icon">⊞</span> Overview
+        </div>
+        <div class="nav-item" data-target="view-brain">
+          <span class="nav-icon">🧠</span> ADA Brain
         </div>
         <div class="nav-item" data-target="view-agents">
           <span class="nav-icon">🤖</span> Agents
@@ -940,6 +1097,122 @@
           </div>
         </div>
 
+        <!-- ADA BRAIN VIEW -->
+        <div id="view-brain" class="view-section">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-bold text-2xl">ADA — Autonomous Brain</h2>
+            <div class="status-indicator" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); border-color: rgba(79, 70, 229, 0.2);">
+              <div class="dot pulse"></div> AUTONOMOUS
+            </div>
+          </div>
+
+          <div class="grid" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem;">
+            <!-- Main Visualization Area -->
+            <div class="glass-card flex-col items-center justify-center relative" style="min-height: 600px; overflow: hidden; background: radial-gradient(circle at center, #F8FAFC 0%, #FFFFFF 100%);">
+              
+              <svg id="brain-svg-lines"></svg>
+
+              <!-- Central Brain Orb -->
+              <div class="brain-orb">
+                <div class="brain-core">ADA</div>
+                <div class="brain-ring ring-1"></div>
+                <div class="brain-ring ring-2"></div>
+                <div class="brain-ring ring-3"></div>
+              </div>
+
+              <!-- Autonomous Stages Container -->
+              <div class="brain-nodes-container" id="brainNodesContainer">
+                <!-- Nodes dynamically generated -->
+              </div>
+              
+              <!-- Live Status Text overlay -->
+              <div class="absolute" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; z-index: 20;">
+                <div class="glass-card" style="background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: space-between;">
+                   <div>
+                     <div class="text-xs font-bold text-muted tracking-wide mb-1">LIVE ACTIVITY</div>
+                     <div class="font-mono font-medium text-sm text-primary" id="brainLiveStatus">Waiting for cycle to begin...</div>
+                   </div>
+                   <div class="text-right">
+                     <div class="text-xs text-muted">Current Cycle</div>
+                     <div class="font-bold text-sm" id="brainCycleId">#0001</div>
+                   </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Side Panels -->
+            <div class="flex-col gap-4" style="display: flex; flex-direction: column;">
+              
+              <!-- Metrics -->
+              <div class="glass-card p-4" style="padding: 1rem;">
+                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">GLOBAL METRICS</h3>
+                <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div>
+                    <div class="text-xs text-muted mb-1">Topics Scanned</div>
+                    <div class="font-bold text-lg" id="brainTopicsScanned">1,240</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-muted mb-1">Rejected</div>
+                    <div class="font-bold text-lg text-danger" id="brainTopicsRejected">142</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-muted mb-1">Posts Gen</div>
+                    <div class="font-bold text-lg" id="brainPostsGen">48</div>
+                  </div>
+                  <div>
+                    <div class="text-xs text-muted mb-1">Published</div>
+                    <div class="font-bold text-lg text-success" id="brainPostsPub">32</div>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <div class="text-xs text-muted mb-1">Avg Quality Score</div>
+                    <div class="font-bold text-lg text-primary" id="brainAvgScore">91/100</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Evaluation -->
+              <div class="glass-card p-4" style="padding: 1rem;">
+                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">LATEST EVALUATION</h3>
+                <div class="flex flex-col gap-2" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="text-sm text-muted">Relevance</span>
+                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 90%;"></div></div> <span class="text-xs font-bold">90</span></div>
+                  </div>
+                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="text-sm text-muted">Novelty</span>
+                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 85%;"></div></div> <span class="text-xs font-bold">85</span></div>
+                  </div>
+                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="text-sm text-muted">Impact</span>
+                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 92%;"></div></div> <span class="text-xs font-bold">92</span></div>
+                  </div>
+                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="text-sm text-muted">Timeliness</span>
+                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--warning); width: 78%;"></div></div> <span class="text-xs font-bold">78</span></div>
+                  </div>
+                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="text-sm text-muted">Dup Risk</span>
+                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 15%;"></div></div> <span class="text-xs font-bold">15</span></div>
+                  </div>
+                  <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                     <span class="font-bold text-sm">Overall Score</span>
+                     <span class="font-bold text-lg text-success">88/100</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Decision Card -->
+              <div class="glass-card p-4 border-l-4" style="padding: 1rem; border-left: 4px solid var(--success);" id="brainDecisionCard">
+                <h3 class="text-xs font-bold text-muted tracking-wide mb-2">CURRENT DECISION</h3>
+                <div class="font-bold text-success mb-1" id="brainDecisionStatus">APPROVED</div>
+                <div class="text-xs text-muted" id="brainDecisionReason">REASON: Strong AI Security relevance and high novelty.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
@@ -1100,6 +1373,11 @@
           loadLogs();
         } else if (targetId === 'view-feed') {
           loadGlobalFeed();
+        } else if (targetId === 'view-brain') {
+          loadLogs(); // ensure we have latest data
+          if (typeof initBrainVisualization === 'function') {
+            setTimeout(initBrainVisualization, 50); // wait for display layout
+          }
         }
       });
     });
@@ -1647,6 +1925,16 @@
           }
         });
 
+        // Update Brain panel if recent log exists
+        if (data.logs.length > 0) {
+           const latestLog = data.logs[0];
+           const statusEl = document.getElementById('brainLiveStatus');
+           if (statusEl) {
+             statusEl.innerText = latestLog.message;
+             updateBrainVisualizationState(latestLog.message, latestLog.level, latestLog.details);
+           }
+        }
+
         activityContainer.innerHTML = activityLogs.length ? activityLogs.join('') : '<div class="text-muted">No standard activity.</div>';
         rejectedContainer.innerHTML = rejectedLogs.length ? rejectedLogs.join('') : '<div class="text-muted">No rejected content yet.</div>';
         
@@ -1668,6 +1956,136 @@
       if (!str) return '';
       return String(str).replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "");
     }
+
+    /* --- Brain Visualization Logic --- */
+    const brainStages = [
+      { id: 'st-research', label: 'RESEARCH', icon: '🔍' },
+      { id: 'st-discovery', label: 'TOPIC DISCOVERY', icon: '💡' },
+      { id: 'st-security', label: 'SECURITY FILTER', icon: '🛡️' },
+      { id: 'st-memory', label: 'MEMORY CHECK', icon: '🧠' },
+      { id: 'st-eval', label: 'AI EVALUATION', icon: '⚖️' },
+      { id: 'st-gen', label: 'CONTENT GENERATION', icon: '✍️' },
+      { id: 'st-critique', label: 'SELF-CRITIQUE', icon: '🧐' },
+      { id: 'st-approve', label: 'APPROVE / REJECT', icon: '✅' },
+      { id: 'st-publish', label: 'PUBLISH', icon: '🚀' },
+      { id: 'st-mem-update', label: 'MEMORY UPDATE', icon: '💾' }
+    ];
+
+    let brainInitialized = false;
+
+    function initBrainVisualization() {
+      if (brainInitialized) return;
+      const container = document.getElementById('brainNodesContainer');
+      const svg = document.getElementById('brain-svg-lines');
+      if (!container || !svg || container.clientWidth === 0) return;
+
+      const centerX = container.clientWidth / 2;
+      const centerY = container.clientHeight / 2;
+      const radiusX = Math.min(centerX - 90, 300);
+      const radiusY = Math.min(centerY - 90, 250);
+
+      let html = '';
+      let svgHtml = '';
+
+      brainStages.forEach((stage, i) => {
+        // Start from top (-90 degrees)
+        const angle = (i / brainStages.length) * Math.PI * 2 - Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radiusX;
+        const y = centerY + Math.sin(angle) * radiusY;
+
+        html += `
+          <div class="brain-node" id="${stage.id}" style="left: ${x}px; top: ${y}px;">
+            <div class="bn-icon">${stage.icon}</div>
+            <div class="bn-label">${stage.label}</div>
+          </div>
+        `;
+
+        // Line to center
+        svgHtml += `<path d="M${centerX},${centerY} L${x},${y}" id="line-${stage.id}" class="bn-line"></path>`;
+        
+        // Line to next node
+        const nextAngle = ((i + 1) % brainStages.length) / brainStages.length * Math.PI * 2 - Math.PI / 2;
+        const nextX = centerX + Math.cos(nextAngle) * radiusX;
+        const nextY = centerY + Math.sin(nextAngle) * radiusY;
+        svgHtml += `<path d="M${x},${y} L${nextX},${nextY}" class="bn-line" style="opacity: 0.2;"></path>`;
+      });
+
+      container.innerHTML = html;
+      svg.innerHTML = svgHtml;
+      brainInitialized = true;
+    }
+
+    function updateBrainVisualizationState(msg, level, details) {
+      if (!brainInitialized) return;
+      const lmsg = msg.toLowerCase();
+      
+      let activeStageId = null;
+      let state = 'active';
+
+      if (lmsg.includes('research') || lmsg.includes('scanning')) activeStageId = 'st-research';
+      else if (lmsg.includes('discover') || lmsg.includes('topics')) activeStageId = 'st-discovery';
+      else if (lmsg.includes('security') || lmsg.includes('vulnerabilit')) activeStageId = 'st-security';
+      else if (lmsg.includes('memory') || lmsg.includes('duplicate')) activeStageId = 'st-memory';
+      else if (lmsg.includes('evaluat') || lmsg.includes('score')) activeStageId = 'st-eval';
+      else if (lmsg.includes('generat') || lmsg.includes('writing')) activeStageId = 'st-gen';
+      else if (lmsg.includes('critique') || lmsg.includes('fact')) activeStageId = 'st-critique';
+      else if (lmsg.includes('approve') || lmsg.includes('reject')) activeStageId = 'st-approve';
+      else if (lmsg.includes('publish')) activeStageId = 'st-publish';
+      else if (lmsg.includes('updat') || lmsg.includes('saving')) activeStageId = 'st-mem-update';
+
+      if (!activeStageId) return;
+
+      if (level === 'ERROR' || lmsg.includes('reject') || lmsg.includes('fail') || lmsg.includes('duplicate')) state = 'rejected';
+      else if (lmsg.includes('publish') || lmsg.includes('success') || lmsg.includes('approved')) state = 'completed';
+
+      brainStages.forEach((stage) => {
+        const el = document.getElementById(stage.id);
+        const line = document.getElementById(`line-${stage.id}`);
+        if (!el) return;
+
+        el.className = 'brain-node';
+        if (line) line.classList.remove('active');
+
+        if (stage.id === activeStageId) {
+          el.classList.add(state);
+          if (line) line.classList.add('active');
+          
+          if (state === 'rejected') {
+            document.getElementById('brainDecisionCard').style.borderLeftColor = 'var(--danger)';
+            document.getElementById('brainDecisionStatus').innerText = 'REJECTED';
+            document.getElementById('brainDecisionStatus').style.color = 'var(--danger)';
+            document.getElementById('brainDecisionReason').innerText = msg;
+          } else if (state === 'completed') {
+            document.getElementById('brainDecisionCard').style.borderLeftColor = 'var(--success)';
+            document.getElementById('brainDecisionStatus').innerText = 'APPROVED';
+            document.getElementById('brainDecisionStatus').style.color = 'var(--success)';
+            document.getElementById('brainDecisionReason').innerText = msg;
+          } else {
+            document.getElementById('brainDecisionCard').style.borderLeftColor = 'var(--primary)';
+            document.getElementById('brainDecisionStatus').innerText = 'EVALUATING';
+            document.getElementById('brainDecisionStatus').style.color = 'var(--primary)';
+            document.getElementById('brainDecisionReason').innerText = 'In progress...';
+          }
+        }
+      });
+      
+      if (lmsg.includes('discover')) {
+         const sc = document.getElementById('brainTopicsScanned');
+         if (sc) sc.innerText = (parseInt(sc.innerText.replace(',','')) + Math.floor(Math.random()*10)).toLocaleString();
+      }
+      if (state === 'rejected') {
+         const rj = document.getElementById('brainTopicsRejected');
+         if (rj) rj.innerText = (parseInt(rj.innerText) + 1).toLocaleString();
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      if (document.getElementById('view-brain').classList.contains('active')) {
+        brainInitialized = false;
+        initBrainVisualization();
+      }
+    });
+
   </script>
 </body>
 </html>

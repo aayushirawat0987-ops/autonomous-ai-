@@ -1005,3 +1005,603 @@ rather than:
 
 Keep the interface elegant, minimal, futuristic, and highly presentable for a hackathon jury.
 
+#prompt 7 
+Improve ONLY the frontend UI of the existing Autonomous AI Creator.
+
+Do not change backend logic, APIs, database, agent functionality, or data flow.
+
+Replace the current black/dark-heavy design with a modern, clean, premium AI/SaaS dashboard.
+
+Color theme:
+- Main background: very light cool gray/white
+- Cards: white
+- Primary: deep indigo/blue
+- Secondary accent: cyan/teal
+- Active/success: green
+- Rejected/error: red
+- Main text: dark navy
+- Secondary text: muted gray
+- Borders: subtle light gray
+
+UI requirements:
+- Clean modern sidebar
+- Professional top navigation/header
+- White rounded cards with subtle shadows
+- Better spacing and typography
+- Clear visual hierarchy
+- Modern buttons with hover states
+- Modern inputs, dropdowns and status badges
+- Replace harsh black backgrounds with the new light theme
+- Keep the UI consistent across every page/component
+- Make the LinkedIn-style feed visually polished
+- Make Agent Active/Inactive states visually clear
+- Use subtle animations and transitions where appropriate
+- Make the entire interface responsive
+
+Important:
+Inspect the existing frontend first and modify the current components/styles instead of rebuilding the application.
+
+Do not change any functionality.
+Only improve the visual design, colors, spacing, typography, components and responsiveness.
+
+The final UI should look like a polished modern AI startup product suitable for an AI hackathon demo, not a generic dark developer dashboard.
+
+#prompt 8 
+Modify my EXISTING Autonomous AI Creator website.
+
+DO NOT create a new website from scratch.
+DO NOT redesign the entire application.
+DO NOT remove existing functionality.
+
+First inspect the existing project, understand its current frontend, backend, database/storage, routing, agent structure, and AI generation flow. Then implement the following changes using the existing architecture.
+
+==================================================
+MAIN REQUIREMENT
+==================================================
+
+On the "Active Agents" page, each agent card currently has:
+
+"Select →"
+
+The Select button is currently not working.
+
+MAKE IT FULLY FUNCTIONAL.
+
+When I click Select on an agent, it must open that SPECIFIC AGENT'S feed/details.
+
+For example:
+
+ADA
+CYBER SECURITY
+2 Posts
+[Select →]
+
+When clicked, open ADA's Cyber Security Agent Feed.
+
+Do NOT show another agent's posts.
+
+==================================================
+AGENT-SPECIFIC FEED
+==================================================
+
+Create an Agent Details / Agent Feed view using the existing UI design.
+
+The selected agent page should show:
+
+- Agent name
+- Agent avatar
+- Agent topic
+- Active/Inactive status
+- Roles
+- Total posts generated
+- Last generated post
+- Agent feed
+
+Example:
+
+ADA
+CYBER SECURITY
+
+● ACTIVE
+
+Researcher • Writer • Fact Checker • Critic
+
+2 Posts Generated
+
+--------------------------------
+
+AGENT FEED
+
+Post 1
+Post 2
+Post 3
+...
+
+Each agent MUST have its own separate feed.
+
+For example:
+
+ADA - Cyber Security
+→ only Cyber Security posts
+
+ANYA - About Python
+→ only About Python posts
+
+ADA - AI Security
+→ only AI Security posts
+
+Do NOT mix posts between agents.
+
+==================================================
+REAL POST COUNT
+==================================================
+
+The post count shown on the Agent Card must come from actual saved posts.
+
+DO NOT hardcode:
+
+"2 Posts"
+"5 Posts"
+"6 Posts"
+
+Instead calculate the count from the database/storage.
+
+If ADA currently has 2 posts:
+
+ADA → 2 Posts
+
+If I generate another post:
+
+ADA → 3 Posts
+
+The count must automatically update on:
+
+1. Agent card
+2. Agent details page
+3. Agent feed
+
+If a post is deleted:
+
+3 Posts → 2 Posts
+
+The count must update automatically.
+
+==================================================
+GENERATE NEW POST
+==================================================
+
+Inside every Agent Feed, add a prominent button:
+
++ Generate New Post
+
+When clicked, open a generation form/modal.
+
+The selected agent must automatically be used.
+
+Example:
+
+Agent:
+ADA
+
+Topic:
+Cyber Security
+
+Post Type:
+Educational
+
+Platform:
+LinkedIn / X
+
+Tone:
+Professional
+
+Additional Instructions:
+[ input ]
+
+[ Generate Post ]
+
+The generated post MUST belong to the selected agent.
+
+Save the generated post.
+
+Immediately display the new post in that agent's feed.
+
+Update the post count automatically.
+
+Do NOT refresh the entire application manually just to show the new post.
+
+==================================================
+POST DATA
+==================================================
+
+Every post should have at least:
+
+id
+agentId
+title
+content
+topic
+platform
+status
+createdAt
+updatedAt
+
+The critical relationship is:
+
+AGENT
+   ↓
+agentId
+   ↓
+POSTS
+
+Every post MUST know which agent generated it.
+
+==================================================
+POST CARD
+==================================================
+
+Each post in the Agent Feed should display:
+
+- Post title
+- Post content
+- Agent name
+- Topic
+- Platform
+- Created date/time
+- Status
+
+Actions:
+
+[ Edit ]
+[ Regenerate ]
+[ Delete ]
+[ Publish ]
+
+Use the existing application's styling.
+
+Do not create an unrelated design.
+
+==================================================
+EDIT POST
+==================================================
+
+When Edit is clicked:
+
+Allow the user to modify the post.
+
+After saving:
+
+- Update the post
+- Update the feed immediately
+- Persist the change
+
+==================================================
+DELETE POST
+==================================================
+
+When Delete is clicked:
+
+Ask for confirmation.
+
+After deletion:
+
+- Remove the post from feed
+- Decrease post count
+- Update Agent Card
+- Persist deletion
+
+The deleted post must NOT come back after page refresh.
+
+==================================================
+REGENERATE POST
+==================================================
+
+Add a Regenerate action.
+
+When clicked, regenerate content for that specific post/agent using the existing AI generation system.
+
+Make sure the regenerated content belongs to the same agent.
+
+==================================================
+PUBLISH
+==================================================
+
+If the project already contains publishing functionality, connect the Publish button to the existing implementation.
+
+If publishing is not implemented yet, use a clear status system such as:
+
+Draft
+Generated
+Published
+Failed
+
+Do not create fake external publishing.
+
+==================================================
+BACK NAVIGATION
+==================================================
+
+Inside the Agent Feed add:
+
+← Back to Agents
+
+Clicking it must return to the Active Agents page.
+
+Use the existing routing/navigation system if one exists.
+
+Do NOT create duplicate navigation systems.
+
+==================================================
+EMPTY STATE
+==================================================
+
+If an agent has zero posts, display:
+
+No posts generated yet.
+
+Start creating content for this agent.
+
+[ + Generate New Post ]
+
+Do not display fake/demo posts for an agent that has no posts.
+
+==================================================
+LOADING STATE
+==================================================
+
+When loading an agent feed, display a professional loading/skeleton state.
+
+When generating a post, display:
+
+Generating...
+Researching topic...
+Writing content...
+Fact checking...
+Finalizing...
+
+Use the existing AI workflow if available.
+
+==================================================
+IMPORTANT AUTONOMOUS AI CREATOR LOGIC
+==================================================
+
+The application should follow:
+
+Agent
+ ↓
+Discover Topic
+ ↓
+Research
+ ↓
+Evaluate
+ ↓
+Generate Content
+ ↓
+Fact Check
+ ↓
+Critic Review
+ ↓
+Final Post
+ ↓
+Save Post
+ ↓
+Agent Feed
+ ↓
+Update Post Count
+
+The Agent Feed represents the REAL content history generated by that agent.
+
+Do NOT generate random posts every time the page is opened.
+
+Do NOT store posts only in temporary frontend state.
+
+Use the existing database/backend/storage system.
+
+==================================================
+EXISTING AGENTS
+==================================================
+
+Keep the existing agents.
+
+For example:
+
+ADA
+Topic: Cyber Security
+
+ANYA
+Topic: About Python
+
+ADA
+Topic: AI Security
+
+These are separate agent records even if two agents have the same name.
+
+Use a UNIQUE agent ID to distinguish them.
+
+Example:
+
+agentId: agent_001
+name: ADA
+topic: Cyber Security
+
+agentId: agent_002
+name: ANYA
+topic: About Python
+
+agentId: agent_003
+name: ADA
+topic: AI Security
+
+Posts must reference agentId, NOT just agent name.
+
+==================================================
+AGENT CARD
+==================================================
+
+Keep the current card design.
+
+Each card should show:
+
+Agent avatar
+Agent name
+Topic
+ACTIVE status
+Roles
+Actual post count
+Select →
+
+Improve the Select button with:
+
+- pointer cursor
+- hover effect
+- click feedback
+- proper navigation
+- disabled/loading state if necessary
+
+Most importantly:
+
+CLICKING SELECT MUST ACTUALLY OPEN THE CORRECT AGENT.
+
+==================================================
+DATA PERSISTENCE
+==================================================
+
+Inspect the existing project and use its current database/storage.
+
+If a database already exists:
+
+DO NOT create another unnecessary database.
+
+Extend the existing data model.
+
+If posts already exist:
+
+Migrate/connect them to the correct agentId without destroying existing data.
+
+If the project currently uses local storage/mock data:
+
+Refactor it carefully so the agent/post relationship is persistent and consistent.
+
+==================================================
+DO NOT BREAK EXISTING FEATURES
+==================================================
+
+Before changing anything:
+
+1. Inspect the existing project.
+2. Understand the current architecture.
+3. Identify how agents are stored.
+4. Identify how posts are stored.
+5. Identify how AI generation works.
+6. Identify current routing.
+7. Reuse existing components and functions.
+
+Do not rewrite unrelated parts of the application.
+
+Do not remove existing features.
+
+Do not change the overall visual identity.
+
+==================================================
+FINAL TESTING
+==================================================
+
+After implementation, test all of these:
+
+TEST 1:
+Open Active Agents.
+
+TEST 2:
+Click ADA Cyber Security → Select.
+
+Expected:
+ADA Cyber Security feed opens.
+
+TEST 3:
+Verify only ADA Cyber Security posts are shown.
+
+TEST 4:
+Go back.
+
+TEST 5:
+Click ANYA About Python → Select.
+
+Expected:
+Only ANYA's posts appear.
+
+TEST 6:
+Click ADA AI Security → Select.
+
+Expected:
+Only ADA AI Security posts appear.
+
+TEST 7:
+Generate a new post for ADA Cyber Security.
+
+Expected:
+
+2 Posts
+↓
+3 Posts
+
+The new post appears immediately in ADA Cyber Security feed.
+
+TEST 8:
+Refresh the browser.
+
+Expected:
+The new post is still there.
+
+TEST 9:
+Return to Active Agents.
+
+Expected:
+ADA Cyber Security shows the updated post count.
+
+TEST 10:
+Delete a post.
+
+Expected:
+Post disappears and count decreases.
+
+TEST 11:
+Edit a post.
+
+Expected:
+Changes persist after refresh.
+
+TEST 12:
+Generate posts for two different agents.
+
+Expected:
+Posts remain separated by agentId.
+
+==================================================
+CRITICAL REQUIREMENT
+==================================================
+
+DO NOT JUST MAKE THE "Select →" BUTTON LOOK CLICKABLE.
+
+IMPLEMENT THE COMPLETE FUNCTIONAL FLOW:
+
+Active Agents
+      ↓
+Select →
+      ↓
+Specific Agent Details
+      ↓
+Specific Agent Feed
+      ↓
+Generate New Post
+      ↓
+Save Post with agentId
+      ↓
+Feed Updates
+      ↓
+Post Count Updates
+      ↓
+Data Persists After Refresh
+
+The final result should feel like a production-ready Autonomous AI Creator dashboard where every AI agent has its own persistent content history and can continuously generate and manage its own posts.
+
+After implementation, run the application and verify that the complete flow works without console errors, routing errors, database errors, or broken buttons.
