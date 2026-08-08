@@ -22,6 +22,8 @@ export class WriterEngine {
     Logger.info(`Writing technical post for approved topic: "${topic.title}"`, agentId);
 
     const postData: GeneratedPost = await this.openaiService.generatePost(persona, topic, evaluation);
+    
+    Logger.info(`Content generated successfully for topic: "${topic.title}"`, agentId);
 
     // Save Post to Database
     const createdPost = await prisma.post.create({
