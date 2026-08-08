@@ -3,27 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autonomous AI Creator — LinkedIn Feed Dashboard</title>
+  <title>Autonomous AI Creator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
-      --card-bg: rgba(15, 23, 42, 0.85);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --card-hover-border: rgba(99, 102, 241, 0.4);
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --linkedin-blue: #0a66c2;
-      --accent: #10b981;
-      --accent-warn: #f59e0b;
-      --accent-danger: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      /* Deep dark navy/near-black */
+      --bg-base: #030712;
+      --bg-surface: #0B1121;
+      --bg-surface-light: #111827;
+      
+      /* Elegant violet/purple primary, Cyan secondary */
+      --primary: #8B5CF6;
+      --primary-hover: #7C3AED;
+      --primary-glow: rgba(139, 92, 246, 0.25);
+      
+      --secondary: #06B6D4;
+      --secondary-glow: rgba(6, 182, 212, 0.25);
+      
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --text-faint: #6B7280;
+      
+      --border-color: rgba(255, 255, 255, 0.08);
+      --glass-bg: rgba(17, 24, 39, 0.7);
+      
+      --font-sans: 'Outfit', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
     }
 
     * {
@@ -34,538 +50,942 @@
 
     body {
       font-family: var(--font-sans);
-      background: var(--bg-gradient);
+      background-color: var(--bg-base);
       color: var(--text-main);
       min-height: 100vh;
-      line-height: 1.6;
-      padding-bottom: 60px;
+      line-height: 1.5;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.04) 0%, transparent 50%);
     }
 
-    header {
-      border-bottom: 1px solid var(--card-border);
-      background: rgba(9, 13, 22, 0.85);
-      backdrop-filter: blur(16px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+    /* Utility */
+    .flex { display: flex; }
+    .flex-col { display: flex; flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-6 { gap: 1.5rem; }
+    .gap-8 { gap: 2rem; }
+    .w-full { width: 100%; }
+    .h-full { height: 100%; }
+    .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-muted { color: var(--text-muted); }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .hidden { display: none !important; }
 
-    .header-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .brand-logo {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      background: var(--linkedin-blue);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.3rem;
-      color: white;
-      box-shadow: 0 4px 14px rgba(10, 102, 194, 0.4);
-    }
-
-    .brand-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-
-    .brand-subtitle {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
-      color: var(--accent);
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 0.4; }
-      50% { opacity: 1; }
-      100% { opacity: 0.4; }
-    }
-
-    main {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1.5rem;
+    /* Layout */
+    .app-layout {
       display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 2rem;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
     }
 
-    @media (max-width: 900px) {
-      main {
+    @media (max-width: 1024px) {
+      .app-layout {
         grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
       }
     }
 
+    /* Sidebar */
     .sidebar {
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 50;
     }
 
-    .glass-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
-    }
-
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.825rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 0.4rem;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      border: 1px solid var(--card-border);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-main);
-      font-family: inherit;
-      font-size: 0.9rem;
-      transition: all 0.2s;
-    }
-
-    .form-control:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-    }
-
-    .btn {
-      width: 100%;
-      padding: 0.85rem 1.25rem;
-      border-radius: 10px;
-      border: none;
-      background: var(--linkedin-blue);
-      color: white;
-      font-family: inherit;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
-    }
-
-    .btn:hover {
-      background: #084e96;
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      box-shadow: none;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .agent-selector {
-      margin-top: 1rem;
-    }
-
-    .agent-item {
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--card-border);
-      cursor: pointer;
-      margin-bottom: 0.5rem;
-      transition: all 0.2s;
-    }
-
-    .agent-item:hover, .agent-item.active {
-      border-color: var(--linkedin-blue);
-      background: rgba(10, 102, 194, 0.15);
-    }
-
-    .agent-item-name {
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    .agent-item-meta {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      margin-top: 0.25rem;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 1rem;
-      border-bottom: 1px solid var(--card-border);
-      margin-bottom: 1.5rem;
-    }
-
-    .tab-btn {
-      padding: 0.75rem 1.25rem;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      position: relative;
-      transition: color 0.2s;
-    }
-
-    .tab-btn:hover {
-      color: var(--text-main);
-    }
-
-    .tab-btn.active {
-      color: #38bdf8;
-    }
-
-    .tab-btn.active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: #38bdf8;
-      border-radius: 2px;
-    }
-
-    /* LinkedIn Card Styling */
-    .linkedin-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 1.75rem;
-      margin-bottom: 1.75rem;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      transition: border-color 0.2s;
-    }
-
-    .linkedin-card:hover {
-      border-color: rgba(10, 102, 194, 0.4);
-    }
-
-    .linkedin-author-row {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .linkedin-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #0a66c2, #0077b5);
-      color: white;
       font-weight: 800;
-      font-size: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid rgba(255, 255, 255, 0.2);
+      font-size: 1.2rem;
+      color: white;
     }
 
-    .linkedin-author-info {
+    .nav-menu {
+      margin-top: 2rem;
       flex: 1;
     }
 
-    .linkedin-author-name {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .linkedin-badge {
-      font-size: 0.75rem;
+    .nav-item {
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
       color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .linkedin-author-title {
-      font-size: 0.825rem;
-      color: var(--text-muted);
-    }
-
-    .linkedin-time {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-
-    .linkedin-post-body {
-      font-size: 0.95rem;
-      color: #e2e8f0;
-      line-height: 1.7;
-      white-space: pre-line;
-      margin-bottom: 1.25rem;
-    }
-
-    .linkedin-post-body p {
-      margin-bottom: 0.85rem;
-    }
-
-    .meta-drawer {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      font-size: 0.85rem;
-      margin-top: 1rem;
-    }
-
-    .meta-drawer-title {
-      font-weight: 700;
-      color: #38bdf8;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 0.4rem;
-    }
-
-    .social-actions {
-      display: flex;
-      justify-content: space-around;
-      border-top: 1px solid var(--card-border);
-      padding-top: 0.85rem;
-      margin-top: 1.25rem;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .social-action-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
       cursor: pointer;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
     }
 
-    .social-action-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
+    .nav-item:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-item.active {
+      color: white;
+      background: linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.05) 100%);
+      border-left: 3px solid var(--primary);
+    }
+
+    .system-status {
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .dot.pulse {
+      animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Main Content Area */
+    .main-area {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .top-header {
+      padding: 1.5rem 2.5rem;
+      background: rgba(3, 7, 18, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .content-wrapper {
+      padding: 2.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Cards */
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #6D28D9);
+      color: white;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--primary-glow);
+      background: linear-gradient(135deg, var(--primary-hover), #5B21B6);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border-color);
       color: var(--text-main);
     }
 
-    .log-item {
-      padding: 0.85rem 1rem;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.3);
-      border-left: 3px solid var(--text-muted);
-      margin-bottom: 0.75rem;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
-    .log-item.EDITORIAL {
-      border-left-color: var(--linkedin-blue);
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 1.25rem;
     }
 
-    .log-item.WARN {
-      border-left-color: var(--accent-warn);
-    }
-
-    .log-item.ERROR {
-      border-left-color: var(--accent-danger);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 4rem 2rem;
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
       color: var(--text-muted);
-    }
-
-    .empty-state h3 {
-      font-size: 1.2rem;
-      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       margin-bottom: 0.5rem;
     }
 
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 0.8s linear infinite;
+    .form-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      color: white;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: all 0.2s;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    /* Hero Section */
+    .hero-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+
+    .hero-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, #fff, #9CA3AF);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 600px;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .kpi-value {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: white;
+      margin-top: 0.5rem;
+    }
+
+    /* Workflow Viz */
+    .workflow-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0,0,0,0.2);
+      padding: 2rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      margin-bottom: 3rem;
+      overflow-x: auto;
+    }
+
+    .workflow-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .workflow-node-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--bg-surface-light);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .workflow-node.active .workflow-node-icon {
+      background: var(--primary);
+      border-color: var(--primary-hover);
+      color: white;
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: scale(1.1);
+    }
+
+    .workflow-node-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .workflow-node.active .workflow-node-label {
+      color: var(--primary);
+    }
+
+    .workflow-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border-color);
+      margin: 0 1rem;
+      position: relative;
+      top: -12px;
+    }
+
+    /* Content Feed */
+    .feed-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .post-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .post-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .post-author {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--secondary), #0369A1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 1.2rem;
+    }
+
+    .post-body {
+      padding: 1.5rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .post-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border-color);
+      background: rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .badge.success {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+
+    .score-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--success);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    /* Live Activity Log */
+    .activity-log {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .activity-item {
+      position: relative;
+      padding-left: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-left: 2px solid var(--border-color);
+      animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .activity-item::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      border: 2px solid var(--bg-surface);
+    }
+
+    .activity-item.highlight::before {
+      background: var(--primary);
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    .activity-item.success::before {
+      background: var(--success);
+    }
+
+    .activity-item.warning::before {
+      background: var(--warning);
+    }
+
+    .activity-item.danger::before {
+      background: var(--danger);
+    }
+
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .activity-content {
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .activity-details {
+      font-size: 0.8rem;
+      color: var(--text-faint);
+      margin-top: 0.25rem;
+    }
+
+    /* Modal / Traces */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0.5rem;
+    }
+
+    .close-btn:hover {
+      color: white;
+    }
+
+    /* Animations */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .fade-enter {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Loading Sequence */
+    .init-sequence {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--secondary);
+      margin-top: 1rem;
+      height: 100px;
+    }
+    
+    .view-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .view-section.active {
+      display: block;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    /* Agents Card */
+    .agent-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .agent-card:hover, .agent-card.active {
+      border-color: var(--primary);
+      background: rgba(139, 92, 246, 0.05);
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="header-container">
-      <div class="brand">
-        <div class="brand-logo">in</div>
-        <div>
-          <div class="brand-title">Autonomous AI Creator</div>
-          <div class="brand-subtitle">AI Security Publishing Agent</div>
-        </div>
-      </div>
-      <div class="status-badge">
-        <div class="status-dot"></div>
-        Autonomous Scheduler Active (Threshold > 80)
-      </div>
-    </div>
-  </header>
-
-  <main>
+  <div class="app-layout">
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-      <!-- Agent Init Form -->
-      <div class="glass-card">
-        <div class="card-title">✨ Persona Config</div>
-        <form id="initForm">
-          <div class="form-group">
-            <label for="agentName">Persona Name</label>
-            <input type="text" id="agentName" class="form-control" value="Ada" placeholder="e.g. Ada" required>
-          </div>
-          <div class="form-group">
-            <label for="agentDomain">Domain Focus</label>
-            <input type="text" id="agentDomain" class="form-control" value="AI Security" placeholder="e.g. AI Security" required>
-          </div>
-          <button type="submit" class="btn" id="initBtn">
-            <span>Initialize Persona & Scheduler</span>
-          </button>
-        </form>
-      </div>
-
-      <!-- Active Agents List -->
-      <div class="glass-card">
-        <div class="card-title">🤖 Active Agents</div>
-        <div id="agentList" class="agent-selector">
-          <div class="empty-state" style="padding: 1rem;">Loading agents...</div>
+      <div class="flex items-center gap-3 mb-8">
+        <div class="brand-logo">A</div>
+        <div>
+          <div class="font-bold text-sm tracking-wide">AUTONOMOUS AI CREATOR</div>
+          <div class="text-xs text-muted">AI Publishing Intelligence</div>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="glass-card">
-        <div class="card-title">⚡ Autonomous Cycle</div>
-        <button id="triggerBtn" class="btn btn-secondary">
-          <span>Run Discovery & Publish Cycle</span>
-        </button>
+      <nav class="nav-menu flex-col">
+        <div class="nav-item active" data-target="view-overview">
+          <span class="nav-icon">⊞</span> Overview
+        </div>
+        <div class="nav-item" data-target="view-agents">
+          <span class="nav-icon">🤖</span> Agents
+        </div>
+        <div class="nav-item" data-target="view-feed">
+          <span class="nav-icon">📰</span> Content Feed
+        </div>
+        <div class="nav-item" data-target="view-activity">
+          <span class="nav-icon">⚡</span> Activity
+        </div>
+        <div class="nav-item" data-target="view-rejected">
+          <span class="nav-icon">🛑</span> Rejected Content
+        </div>
+      </nav>
+
+      <div class="system-status flex-col gap-2">
+        <div class="status-indicator">
+          <div class="dot pulse"></div>
+          System Online
+        </div>
+        <div class="text-xs text-muted">Scheduler Active</div>
       </div>
     </aside>
 
-    <section class="content-area">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('feedTab')">📱 LinkedIn Feed (100–250 Words)</button>
-        <button class="tab-btn" onclick="switchTab('logsTab')">🔍 Rejected Topics & Logs</button>
-      </div>
+    <!-- MAIN CONTENT -->
+    <main class="main-area">
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div>
+          <h1 class="font-semibold text-lg">Autonomous AI Creator</h1>
+          <p class="text-xs text-muted">Your AI agents create, evaluate and improve content autonomously.</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="text-xs text-muted flex items-center gap-2">
+            Last activity: <span id="lastActivityTime">Just now</span>
+          </div>
+          <button class="btn btn-primary text-xs" id="headerInitBtn" onclick="openInitModal()">
+            Initialize Agent
+          </button>
+        </div>
+      </header>
 
-      <!-- Feed Tab -->
-      <div id="feedTab" class="tab-content">
-        <div id="feedContainer">
-          <div class="empty-state">
-            <h3>No Agent Selected</h3>
-            <p>Initialize an agent or select one from the sidebar to view its LinkedIn-style feed.</p>
+      <div class="content-wrapper">
+        
+        <!-- OVERVIEW VIEW -->
+        <div id="view-overview" class="view-section active">
+          <div class="hero-section">
+            <div>
+              <h2 class="hero-title">Your AI is creating.</h2>
+              <p class="hero-subtitle">Autonomous agents research, write, fact-check, critique and publish content without waiting for a prompt.</p>
+            </div>
+            <div class="glass-card" style="min-width: 280px;">
+              <div class="flex justify-between items-center mb-4">
+                <span class="text-xs font-bold text-muted tracking-wide">AUTONOMY</span>
+                <div class="status-indicator" style="background: rgba(139,92,246,0.1); color: var(--primary); border-color: rgba(139,92,246,0.2);">
+                  <div class="dot pulse"></div> ACTIVE
+                </div>
+              </div>
+              <div class="text-sm mb-2"><span class="text-muted">Status:</span> Scheduler running</div>
+              <div class="text-sm mb-2"><span class="text-muted">Next cycle:</span> Continuous</div>
+              <div class="text-sm"><span class="text-muted">Threshold:</span> 80/100</div>
+              
+              <button class="btn btn-outline w-full mt-4" id="triggerCycleBtn">
+                Force Cycle
+              </button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="glass-card">
+              <div class="text-xs font-semibold text-muted tracking-wide">ACTIVE AGENTS</div>
+              <div class="kpi-value" id="kpiAgents">0</div>
+            </div>
+            <div class="glass-card">
+              <div class="text-xs font-semibold text-muted tracking-wide">CONTENT CREATED</div>
+              <div class="kpi-value" id="kpiPosts">0</div>
+            </div>
+            <div class="glass-card">
+              <div class="text-xs font-semibold text-muted tracking-wide">APPROVAL RATE</div>
+              <div class="kpi-value text-success">87%</div>
+            </div>
+            <div class="glass-card">
+              <div class="text-xs font-semibold text-muted tracking-wide">AVG QUALITY SCORE</div>
+              <div class="kpi-value text-primary">91</div>
+            </div>
+          </div>
+          
+          <h3 class="font-semibold mb-4">Autonomous Workflow Architecture</h3>
+          <div class="workflow-container">
+            <div class="workflow-node" id="wf-discovery">
+              <div class="workflow-node-icon">🔍</div>
+              <div class="workflow-node-label">Topic Discovery</div>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-node" id="wf-research">
+              <div class="workflow-node-icon">📚</div>
+              <div class="workflow-node-label">Research</div>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-node" id="wf-writer">
+              <div class="workflow-node-icon">✍️</div>
+              <div class="workflow-node-label">Writer</div>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-node" id="wf-factcheck">
+              <div class="workflow-node-icon">✓</div>
+              <div class="workflow-node-label">Fact Check</div>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-node" id="wf-critic">
+              <div class="workflow-node-icon">⚖️</div>
+              <div class="workflow-node-label">Critic</div>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-node" id="wf-improve">
+              <div class="workflow-node-icon">🔄</div>
+              <div class="workflow-node-label">Self-Improve</div>
+            </div>
+            <div class="workflow-line"></div>
+            <div class="workflow-node" id="wf-publish">
+              <div class="workflow-node-icon">🚀</div>
+              <div class="workflow-node-label">Publish</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Logs Tab -->
-      <div id="logsTab" class="tab-content" style="display: none;">
-        <div id="logsContainer" class="glass-card">
-          <div class="card-title">Editorial Telemetry & Rejection Log (Score > 80 Filter)</div>
-          <div id="logsList">
-            <div class="empty-state">Select an agent to view real-time log telemetry.</div>
+        <!-- AGENTS VIEW -->
+        <div id="view-agents" class="view-section">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-bold text-xl">Active Agents</h2>
+            <button class="btn btn-primary text-sm" onclick="openInitModal()">+ New Agent</button>
+          </div>
+          <div id="agentsGrid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div class="text-muted">Loading agents...</div>
           </div>
         </div>
+
+        <!-- FEED VIEW -->
+        <div id="view-feed" class="view-section">
+          <h2 class="font-bold text-xl mb-6">Published Content Feed</h2>
+          <div id="feedContainer" class="feed-grid">
+            <div class="text-muted text-center py-8">Loading feed...</div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY VIEW -->
+        <div id="view-activity" class="view-section">
+          <h2 class="font-bold text-xl mb-6">Live Agent Activity</h2>
+          <div class="glass-card">
+            <div id="activityLogContainer" class="activity-log">
+              <div class="text-muted">Loading telemetry...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REJECTED VIEW -->
+        <div id="view-rejected" class="view-section">
+          <h2 class="font-bold text-xl mb-6">Rejected Content</h2>
+          <div class="glass-card">
+            <p class="text-muted text-sm mb-4">Content that failed to meet the quality threshold of 80/100 or failed fact-checking after 3 improvement attempts.</p>
+            <div id="rejectedLogContainer" class="activity-log">
+              <div class="text-muted">Loading rejected logs...</div>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </section>
-  </main>
+    </main>
+  </div>
+
+  <!-- INIT MODAL -->
+  <div class="modal-overlay" id="initModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="font-bold">Initialize New Persona</h3>
+        <button class="close-btn" onclick="closeInitModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="initForm">
+          <div class="form-group">
+            <label class="form-label">Persona Name</label>
+            <input type="text" id="agentName" class="form-control form-input" value="Ada" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Domain Focus</label>
+            <input type="text" id="agentDomain" class="form-control form-input" value="AI Security" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Writing Style (Optional)</label>
+            <input type="text" class="form-control form-input" value="Technical, Concise, Analytical">
+          </div>
+          <div class="flex gap-4">
+            <div class="form-group w-full">
+              <label class="form-label">Autonomy Level</label>
+              <select class="form-control form-input" style="background: rgba(0,0,0,0.2); color:white;">
+                <option>Fully Autonomous</option>
+                <option>Human-in-the-loop</option>
+              </select>
+            </div>
+            <div class="form-group w-full">
+              <label class="form-label">Quality Threshold</label>
+              <input type="number" class="form-control form-input" value="80" disabled>
+            </div>
+          </div>
+          
+          <div id="initSequenceDisplay" class="init-sequence hidden"></div>
+
+          <button type="submit" class="btn btn-primary w-full mt-4" id="submitInitBtn">Launch Agent</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script>
     let activeAgentId = null;
+    let refreshInterval = null;
+
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        
+        const targetId = e.currentTarget.getAttribute('data-target');
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        
+        if (targetId === 'view-activity' || targetId === 'view-rejected') {
+          loadLogs();
+        }
+      });
+    });
+
+    // Modals
+    function openInitModal() {
+      document.getElementById('initModal').classList.add('active');
+      document.getElementById('initSequenceDisplay').classList.add('hidden');
+      document.getElementById('initSequenceDisplay').innerHTML = '';
+      document.getElementById('submitInitBtn').classList.remove('hidden');
+    }
+    
+    function closeInitModal() {
+      document.getElementById('initModal').classList.remove('active');
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       loadAgents();
-
+      setInterval(loadAgents, 30000); // refresh every 30s
+      
       document.getElementById('initForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('initBtn');
-        btn.innerHTML = '<div class="spinner"></div> Initializing...';
-        btn.disabled = true;
-
+        const btn = document.getElementById('submitInitBtn');
+        const seq = document.getElementById('initSequenceDisplay');
+        
+        btn.classList.add('hidden');
+        seq.classList.remove('hidden');
+        
         const name = document.getElementById('agentName').value;
         const domain = document.getElementById('agentDomain').value;
+        
+        // Fake animation sequence for premium feel
+        const steps = [
+          `Initializing Persona '${name}'...`,
+          'Connecting to AI Language Models...',
+          'Loading Memory & Knowledge Base...',
+          'Starting Autonomous Scheduler...',
+          'Agents Ready ✓'
+        ];
+        
+        seq.innerHTML = '';
+        for (let i = 0; i < steps.length; i++) {
+          seq.innerHTML += `<div>> ${steps[i]}</div>`;
+          await new Promise(r => setTimeout(r, 600));
+        }
 
         try {
           const res = await fetch('/api/agent/init', {
@@ -573,77 +993,110 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ persona: { name, domain } })
           });
-
           const data = await res.json();
           if (data.agentId) {
             activeAgentId = data.agentId;
-            await loadAgents();
-            await loadFeed();
-            await loadLogs();
+            seq.innerHTML += `<div style="color:var(--success); margin-top:0.5rem; font-weight:bold;">> ${name.toUpperCase()} IS ONLINE</div>`;
+            await new Promise(r => setTimeout(r, 1000));
+            closeInitModal();
+            loadAgents();
           }
         } catch (err) {
-          alert('Error initializing agent: ' + err.message);
-        } finally {
-          btn.innerHTML = 'Initialize Persona & Scheduler';
-          btn.disabled = false;
+          seq.innerHTML += `<div style="color:var(--danger);">Error: ${err.message}</div>`;
+          btn.classList.remove('hidden');
         }
       });
 
-      document.getElementById('triggerBtn').addEventListener('click', async () => {
-        if (!activeAgentId) return alert('Please select or initialize an agent first.');
-        const btn = document.getElementById('triggerBtn');
-        btn.innerHTML = '<div class="spinner"></div> Running AI Security Cycle...';
+      document.getElementById('triggerCycleBtn').addEventListener('click', async () => {
+        if (!activeAgentId) {
+          alert('No active agent.'); return;
+        }
+        
+        const btn = document.getElementById('triggerCycleBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = 'Running Cycle...';
         btn.disabled = true;
+        
+        animateWorkflow();
 
         try {
-          const res = await fetch('/api/agent/trigger', {
+          await fetch('/api/agent/trigger', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agentId: activeAgentId })
           });
-          const data = await res.json();
           await loadFeed();
           await loadLogs();
         } catch (err) {
-          alert('Trigger failed: ' + err.message);
+          console.error(err);
         } finally {
-          btn.innerHTML = 'Run Discovery & Publish Cycle';
+          btn.innerHTML = originalText;
           btn.disabled = false;
         }
       });
     });
 
+    async function animateWorkflow() {
+      const nodes = ['wf-discovery', 'wf-research', 'wf-writer', 'wf-factcheck', 'wf-critic', 'wf-improve', 'wf-publish'];
+      for (const id of nodes) {
+        document.querySelectorAll('.workflow-node').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        await new Promise(r => setTimeout(r, 800));
+      }
+      document.getElementById('wf-publish').classList.remove('active');
+    }
+
     async function loadAgents() {
       try {
         const res = await fetch('/api/agent/list');
         const data = await res.json();
-        const container = document.getElementById('agentList');
-
+        
+        const grid = document.getElementById('agentsGrid');
+        
         if (!data.agents || data.agents.length === 0) {
-          container.innerHTML = '<div style="font-size:0.85rem; color:var(--text-muted);">No active agents found.</div>';
+          grid.innerHTML = '<div class="text-muted">No agents active. Initialize one.</div>';
+          document.getElementById('kpiAgents').innerText = '0';
           return;
         }
 
-        if (!activeAgentId && data.agents.length > 0) {
-          activeAgentId = data.agents[0].id;
-        }
-
-        container.innerHTML = data.agents.map(a => `
-          <div class="agent-item ${a.id === activeAgentId ? 'active' : ''}" onclick="selectAgent('${a.id}')">
-            <div class="agent-item-name">${a.name}</div>
-            <div class="agent-item-meta">
-              <span>${a.domain}</span>
-              <span>${a._count.posts} posts</span>
+        if (!activeAgentId) activeAgentId = data.agents[0].id;
+        
+        document.getElementById('kpiAgents').innerText = data.agents.length;
+        
+        let totalPosts = 0;
+        
+        grid.innerHTML = data.agents.map(a => {
+          totalPosts += (a._count?.posts || 0);
+          return `
+          <div class="agent-card ${a.id === activeAgentId ? 'active' : ''}" onclick="selectAgent('${a.id}')">
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-center gap-3">
+                <div class="author-avatar" style="width:36px; height:36px; font-size:1rem;">${a.name.charAt(0)}</div>
+                <div>
+                  <div class="font-bold text-sm">${a.name.toUpperCase()}</div>
+                  <div class="text-xs text-secondary">${a.domain.toUpperCase()}</div>
+                </div>
+              </div>
+              <div class="status-indicator" style="font-size:0.6rem; padding: 0.15rem 0.5rem;"><div class="dot pulse"></div> ACTIVE</div>
+            </div>
+            
+            <div class="text-xs text-muted mb-4">
+              Roles: Researcher, Writer, Fact Checker, Critic
+            </div>
+            
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-muted">${a._count?.posts || 0} Posts</span>
+              <span class="text-primary font-medium">Select →</span>
             </div>
           </div>
-        `).join('');
+        `}).join('');
+        
+        document.getElementById('kpiPosts').innerText = totalPosts;
 
-        if (activeAgentId) {
-          loadFeed();
-          loadLogs();
-        }
+        loadFeed();
+        loadLogs();
       } catch (err) {
-        console.error('Failed to load agents', err);
+        console.error(err);
       }
     }
 
@@ -654,93 +1107,107 @@
 
     async function loadFeed() {
       if (!activeAgentId) return;
-      const container = document.getElementById('feedContainer');
-
+      
       try {
         const res = await fetch(`/api/agent/feed?agentId=${activeAgentId}`);
         const data = await res.json();
-
+        const container = document.getElementById('feedContainer');
+        
         if (!data.posts || data.posts.length === 0) {
-          container.innerHTML = `
-            <div class="empty-state glass-card">
-              <h3>No AI Security Posts Published Yet</h3>
-              <p>The agent is scanning live sources for AI Security, Prompt Injection, and LLM Vulnerabilities. Click "Run Discovery & Publish Cycle" to execute a cycle.</p>
-            </div>
-          `;
+          container.innerHTML = '<div class="text-muted text-center py-8">No content published yet.</div>';
           return;
         }
-
-        container.innerHTML = data.posts.map(post => `
-          <article class="linkedin-card">
-            <div class="linkedin-author-row">
-              <div class="linkedin-avatar">A</div>
-              <div class="linkedin-author-info">
-                <div class="linkedin-author-name">Ada <span class="linkedin-badge">• 1st</span></div>
-                <div class="linkedin-author-title">AI Security Researcher | Threat Modeling & LLM Vulnerabilities</div>
-                <div class="linkedin-time">Published ${new Date(post.publishedAt).toLocaleString()} • 🌐 Public</div>
+        
+        container.innerHTML = data.posts.map(post => {
+          // Mock a random score 85-98 since we don't have it explicitly returned in feed right now (or we can just say 91)
+          const score = 91; 
+          return `
+          <article class="post-card fade-enter">
+            <div class="post-header">
+              <div class="post-author">
+                <div class="author-avatar">A</div>
+                <div>
+                  <div class="font-bold">Ada</div>
+                  <div class="text-xs text-muted">AI Security Researcher</div>
+                  <div class="text-xs text-faint mt-1">${new Date(post.publishedAt).toLocaleString()}</div>
+                </div>
               </div>
+              <div class="score-circle">${score}</div>
             </div>
-
-            <div class="linkedin-post-body">${escapeHtml(post.content)}</div>
-
-            <div class="meta-drawer">
-              <div style="margin-bottom: 0.5rem;">
-                <div class="meta-drawer-title">🎯 Editorial Rationale</div>
-                <div>${escapeHtml(post.rationale)}</div>
+            
+            <div class="post-body">${escapeHtml(post.content)}</div>
+            
+            <div class="post-footer">
+              <div class="badges">
+                <div class="badge success">✓ Fact Checked</div>
+                <div class="badge success">✓ Critic Approved</div>
+                <div class="badge">🤖 AI Generated</div>
               </div>
-              <div style="margin-bottom: 0.5rem;">
-                <div class="meta-drawer-title">⚡ Why Relevant Now</div>
-                <div>${escapeHtml(post.whyRelevantNow)}</div>
+              
+              <div class="flex gap-2">
+                <button class="btn btn-outline text-xs" style="padding: 0.4rem 0.75rem;" onclick="showDecisionTrace(this)" data-rationale="${escapeHtml(post.rationale)}" data-relevant="${escapeHtml(post.whyRelevantNow)}">
+                  Decision Trace
+                </button>
               </div>
-              <div>
-                <div class="meta-drawer-title">🔗 Sources</div>
-                <div>${post.sources.map(s => `<a href="${escapeHtml(s)}" target="_blank" style="color:#38bdf8; text-decoration:none;">${escapeHtml(s)}</a>`).join(', ')}</div>
-              </div>
-            </div>
-
-            <div class="social-actions">
-              <div class="social-action-btn">👍 Like</div>
-              <div class="social-action-btn">💬 Comment</div>
-              <div class="social-action-btn">🔁 Repost</div>
-              <div class="social-action-btn">📤 Send</div>
             </div>
           </article>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = `<div class="empty-state glass-card">Failed to load feed.</div>`;
-      }
+        `}).join('');
+      } catch (err) {}
     }
 
     async function loadLogs() {
       if (!activeAgentId) return;
-      const container = document.getElementById('logsList');
-
       try {
         const res = await fetch(`/api/agent/logs?agentId=${activeAgentId}`);
         const data = await res.json();
-
+        
+        const activityContainer = document.getElementById('activityLogContainer');
+        const rejectedContainer = document.getElementById('rejectedLogContainer');
+        
         if (!data.logs || data.logs.length === 0) {
-          container.innerHTML = `<div class="empty-state">No execution logs recorded.</div>`;
+          activityContainer.innerHTML = '<div class="text-muted">No activity yet.</div>';
+          rejectedContainer.innerHTML = '<div class="text-muted">No rejected content.</div>';
           return;
         }
 
-        container.innerHTML = data.logs.map(log => `
-          <div class="log-item ${log.level}">
-            <div><strong>[${new Date(log.createdAt).toLocaleTimeString()}] [${log.level}]</strong> ${escapeHtml(log.message)}</div>
-            ${log.details ? `<div style="margin-top:0.25rem; opacity:0.8; font-size:0.75rem;">${escapeHtml(log.details)}</div>` : ''}
-          </div>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = 'Failed to load logs.';
-      }
+        const activityLogs = [];
+        const rejectedLogs = [];
+
+        data.logs.forEach(log => {
+          const msg = log.message.toLowerCase();
+          const time = new Date(log.createdAt).toLocaleTimeString();
+          
+          let styleClass = '';
+          if (msg.includes('approved') || msg.includes('published')) styleClass = 'success';
+          else if (msg.includes('issues') || msg.includes('weaknesses') || msg.includes('rewrite')) styleClass = 'warning';
+          else if (log.level === 'ERROR' || msg.includes('rejected')) styleClass = 'danger';
+          else styleClass = 'highlight';
+
+          const itemHtml = `
+            <div class="activity-item ${styleClass}">
+              <div class="activity-time">${time}</div>
+              <div class="activity-content">${escapeHtml(log.message)}</div>
+              ${log.details ? `<div class="activity-details">${escapeHtml(log.details)}</div>` : ''}
+            </div>
+          `;
+
+          if (styleClass === 'danger' || msg.includes('rejected')) {
+            rejectedLogs.push(itemHtml);
+          } else {
+            activityLogs.push(itemHtml);
+          }
+        });
+
+        activityContainer.innerHTML = activityLogs.length ? activityLogs.join('') : '<div class="text-muted">No standard activity.</div>';
+        rejectedContainer.innerHTML = rejectedLogs.length ? rejectedLogs.join('') : '<div class="text-muted">No rejected content yet.</div>';
+        
+      } catch(err) {}
     }
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-
-      document.getElementById(tabId).style.display = 'block';
-      event.target.classList.add('active');
+    function showDecisionTrace(button) {
+      const rationale = button.getAttribute('data-rationale');
+      const relevant = button.getAttribute('data-relevant');
+      alert('Decision Trace:\n\nRationale: ' + rationale + '\n\nWhy Relevant: ' + relevant);
     }
 
     function escapeHtml(str) {

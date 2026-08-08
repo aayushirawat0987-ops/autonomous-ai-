@@ -37,3 +37,27 @@ export interface GeneratedPost {
   whyRelevantNow: string;
   sources: string[];
 }
+
+export interface FactCheckResult {
+  passed: boolean;
+  confidence: number;
+  issues: string[];
+  corrections: string[];
+}
+
+export interface CriticScores {
+  relevance: number;
+  originality: number;
+  clarity: number;
+  engagement: number;
+  factualQuality: number;
+  safety: number;
+  overallScore: number;
+}
+
+export interface CriticResult {
+  passed: boolean;
+  scores: CriticScores;
+  weaknesses: string[];
+  improvementSuggestions: string[];
+}

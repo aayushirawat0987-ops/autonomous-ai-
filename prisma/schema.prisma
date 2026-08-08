@@ -19,6 +19,7 @@ model Agent {
   posts    Post[]
   memories Memory[]
   logs     AgentLog[]
+  attempts ImprovementAttempt[]
 }
 
 model Post {
@@ -57,6 +58,20 @@ model AgentLog {
   message   String
   details   String?
   createdAt DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model ImprovementAttempt {
+  id                    String   @id @default(uuid())
+  agentId               String
+  attemptNumber         Int
+  content               String
+  scores                String
+  weaknesses            String
+  improvementSuggestions String
+  finalDecision         String
+  createdAt             DateTime @default(now())
 
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }
