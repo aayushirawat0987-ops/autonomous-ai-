@@ -866,6 +866,51 @@
           </div>
         </div>
 
+        <!-- AGENT DETAILS & DEDICATED FEED VIEW -->
+        <div id="view-agent-details" class="view-section">
+          <div class="flex justify-between items-center mb-6">
+            <button class="btn btn-outline text-sm flex items-center gap-2" onclick="showAgentsView()">← Back to Agents</button>
+            <button class="btn btn-primary text-sm" onclick="openGenerateModal()">+ Generate New Post</button>
+          </div>
+
+          <div class="glass-card mb-6" id="agentDetailsHeader">
+            <div class="flex justify-between items-start flex-wrap gap-4 mb-4">
+              <div class="flex items-center gap-4">
+                <div class="author-avatar" id="detailAgentAvatar" style="width:48px; height:48px; font-size:1.5rem; background: var(--primary); color:white; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">A</div>
+                <div>
+                  <div class="flex items-center gap-3">
+                    <h2 class="font-bold text-xl" id="detailAgentName">ADA</h2>
+                    <span class="text-xs text-secondary font-bold tracking-wide" id="detailAgentDomain">CYBER SECURITY</span>
+                  </div>
+                  <div class="text-xs text-muted mt-1" id="detailAgentRoleStyle">Researcher • Writer • Fact Checker • Critic</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="status-indicator" style="font-size:0.75rem; padding: 0.25rem 0.75rem;">
+                  <div class="dot pulse"></div> ACTIVE
+                </div>
+                <div class="glass-card" style="padding: 0.5rem 1rem; border-radius: var(--radius-sm);">
+                  <span class="font-bold text-sm text-primary" id="detailPostCount">0</span>
+                  <span class="text-xs text-muted ml-1">Posts</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-between items-center text-xs text-muted pt-3" style="border-top: 1px solid var(--border-color);">
+              <span>Last generated post: <strong id="detailLastPostTime">Never</strong></span>
+              <span id="detailAgentIdBadge" class="font-mono text-faint">ID: -</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg">Agent Feed</h3>
+            <div class="text-xs text-muted" id="feedFilterLabel">Showing posts for selected agent only</div>
+          </div>
+
+          <div id="agentFeedContainer" class="feed-grid">
+            <div class="text-muted text-center py-8">Loading agent feed...</div>
+          </div>
+        </div>
+
         <!-- FEED VIEW -->
         <div id="view-feed" class="view-section">
           <h2 class="font-bold text-xl mb-6">Published Content Feed</h2>
@@ -942,8 +987,101 @@
     </div>
   </div>
 
+  <!-- GENERATE POST MODAL -->
+  <div class="modal-overlay" id="generateModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="font-bold">Generate New Post for <span id="genAgentNameTitle">Agent</span></h3>
+        <button class="close-btn" onclick="closeGenerateModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="generatePostForm">
+          <div class="form-group mb-3">
+            <label class="form-label">Topic / Subject</label>
+            <input type="text" id="genPostTopic" class="form-control form-input" placeholder="e.g. Prompt Injection in Multi-Agent Systems" required>
+          </div>
+          <div class="flex gap-3 mb-3">
+            <div class="form-group w-full">
+              <label class="form-label">Post Type</label>
+              <select id="genPostType" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+                <option value="Educational">Educational</option>
+                <option value="Vulnerability Alert">Vulnerability Alert</option>
+                <option value="Security Breakthrough">Security Breakthrough</option>
+                <option value="Deep-Dive Analysis">Deep-Dive Analysis</option>
+              </select>
+            </div>
+            <div class="form-group w-full">
+              <label class="form-label">Target Platform</label>
+              <select id="genPlatform" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+                <option value="LinkedIn / X">LinkedIn / X</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="X (Twitter)">X (Twitter)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Tone & Style</label>
+            <select id="genTone" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+              <option value="Professional & Analytical">Professional & Analytical</option>
+              <option value="Technical & Skeptical">Technical & Skeptical</option>
+              <option value="Punchy & Urgent">Punchy & Urgent</option>
+              <option value="Educational & Insightful">Educational & Insightful</option>
+            </select>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Additional Instructions (Optional)</label>
+            <textarea id="genInstructions" class="form-control form-input" rows="2" placeholder="Specific technical takeaways, CVE references, or bullet points to include..."></textarea>
+          </div>
+
+          <div id="genSequenceDisplay" class="init-sequence hidden mb-3"></div>
+
+          <button type="submit" class="btn btn-primary w-full mt-2" id="submitGenBtn">+ Generate Post</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT POST MODAL -->
+  <div class="modal-overlay" id="editPostModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="font-bold">Edit Post</h3>
+        <button class="close-btn" onclick="closeEditModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="editPostForm">
+          <input type="hidden" id="editPostId">
+          <div class="form-group mb-3">
+            <label class="form-label">Post Title</label>
+            <input type="text" id="editPostTitle" class="form-control form-input" required>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Post Content</label>
+            <textarea id="editPostContent" class="form-control form-input" rows="6" required></textarea>
+          </div>
+          <div class="flex gap-3 mb-3">
+            <div class="form-group w-full">
+              <label class="form-label">Platform</label>
+              <input type="text" id="editPostPlatform" class="form-control form-input" value="LinkedIn / X">
+            </div>
+            <div class="form-group w-full">
+              <label class="form-label">Status</label>
+              <select id="editPostStatus" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+                <option value="Published">Published</option>
+                <option value="Draft">Draft</option>
+                <option value="Generated">Generated</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-full mt-2">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
     let activeAgentId = null;
+    let currentSelectedAgent = null;
     let refreshInterval = null;
 
     // Navigation
@@ -956,8 +1094,12 @@
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
         document.getElementById(targetId).classList.add('active');
         
-        if (targetId === 'view-activity' || targetId === 'view-rejected') {
+        if (targetId === 'view-agents') {
+          loadAgents();
+        } else if (targetId === 'view-activity' || targetId === 'view-rejected') {
           loadLogs();
+        } else if (targetId === 'view-feed') {
+          loadGlobalFeed();
         }
       });
     });
@@ -974,10 +1116,43 @@
       document.getElementById('initModal').classList.remove('active');
     }
 
+    function openGenerateModal() {
+      if (!activeAgentId) {
+        alert('Please select an agent first.');
+        return;
+      }
+      const agentName = currentSelectedAgent ? currentSelectedAgent.name : 'Agent';
+      document.getElementById('genAgentNameTitle').innerText = agentName;
+      document.getElementById('genPostTopic').value = '';
+      document.getElementById('genInstructions').value = '';
+      document.getElementById('genSequenceDisplay').classList.add('hidden');
+      document.getElementById('genSequenceDisplay').innerHTML = '';
+      document.getElementById('submitGenBtn').classList.remove('hidden');
+      document.getElementById('generateModal').classList.add('active');
+    }
+
+    function closeGenerateModal() {
+      document.getElementById('generateModal').classList.remove('active');
+    }
+
+    function openEditModal(id, title, content, platform, status) {
+      document.getElementById('editPostId').value = id;
+      document.getElementById('editPostTitle').value = title;
+      document.getElementById('editPostContent').value = content;
+      document.getElementById('editPostPlatform').value = platform || 'LinkedIn / X';
+      document.getElementById('editPostStatus').value = status || 'Published';
+      document.getElementById('editPostModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editPostModal').classList.remove('active');
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadAgents();
       setInterval(loadAgents, 30000); // refresh every 30s
       
+      // Init Agent Form
       document.getElementById('initForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitInitBtn');
@@ -989,7 +1164,6 @@
         const name = document.getElementById('agentName').value;
         const domain = document.getElementById('agentDomain').value;
         
-        // Fake animation sequence for premium feel
         const steps = [
           `Initializing Persona '${name}'...`,
           'Connecting to AI Language Models...',
@@ -1001,7 +1175,7 @@
         seq.innerHTML = '';
         for (let i = 0; i < steps.length; i++) {
           seq.innerHTML += `<div>> ${steps[i]}</div>`;
-          await new Promise(r => setTimeout(r, 600));
+          await new Promise(r => setTimeout(r, 500));
         }
 
         try {
@@ -1014,9 +1188,10 @@
           if (data.agentId) {
             activeAgentId = data.agentId;
             seq.innerHTML += `<div style="color:var(--success); margin-top:0.5rem; font-weight:bold;">> ${name.toUpperCase()} IS ONLINE</div>`;
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 800));
             closeInitModal();
             loadAgents();
+            openAgentDetails(data.agentId);
           }
         } catch (err) {
           seq.innerHTML += `<div style="color:var(--danger);">Error: ${err.message}</div>`;
@@ -1024,9 +1199,103 @@
         }
       });
 
+      // Generate Post Form
+      document.getElementById('generatePostForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!activeAgentId) return;
+
+        const btn = document.getElementById('submitGenBtn');
+        const seq = document.getElementById('genSequenceDisplay');
+        const topic = document.getElementById('genPostTopic').value.trim();
+        const postType = document.getElementById('genPostType').value;
+        const platform = document.getElementById('genPlatform').value;
+        const tone = document.getElementById('genTone').value;
+        const instructions = document.getElementById('genInstructions').value.trim();
+
+        btn.classList.add('hidden');
+        seq.classList.remove('hidden');
+
+        const steps = [
+          'Generating...',
+          'Researching topic...',
+          'Writing content...',
+          'Fact checking...',
+          'Finalizing...'
+        ];
+
+        seq.innerHTML = '';
+        for (let i = 0; i < steps.length; i++) {
+          seq.innerHTML += `<div>> ${steps[i]}</div>`;
+          await new Promise(r => setTimeout(r, 600));
+        }
+
+        try {
+          const res = await fetch('/api/agent/post/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              agentId: activeAgentId,
+              topic,
+              postType,
+              platform,
+              tone,
+              instructions
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.post) {
+            seq.innerHTML += `<div style="color:var(--success); margin-top:0.5rem; font-weight:bold;">> POST PUBLISHED ✓</div>`;
+            await new Promise(r => setTimeout(r, 600));
+            closeGenerateModal();
+            await openAgentDetails(activeAgentId);
+            loadAgents();
+          } else {
+            seq.innerHTML += `<div style="color:var(--danger);">Error: ${data.error || 'Failed to generate'}</div>`;
+            btn.classList.remove('hidden');
+          }
+        } catch (err) {
+          seq.innerHTML += `<div style="color:var(--danger);">Error: ${err.message}</div>`;
+          btn.classList.remove('hidden');
+        }
+      });
+
+      // Edit Post Form
+      document.getElementById('editPostForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editPostId').value;
+        const title = document.getElementById('editPostTitle').value.trim();
+        const content = document.getElementById('editPostContent').value.trim();
+        const platform = document.getElementById('editPostPlatform').value.trim();
+        const status = document.getElementById('editPostStatus').value;
+
+        try {
+          const res = await fetch(`/api/agent/post/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, content, platform, status })
+          });
+
+          if (res.ok) {
+            closeEditModal();
+            if (activeAgentId) {
+              loadAgentFeed(activeAgentId);
+            } else {
+              loadGlobalFeed();
+            }
+          } else {
+            alert('Failed to save changes.');
+          }
+        } catch (err) {
+          alert(`Error saving post: ${err.message}`);
+        }
+      });
+
+      // Trigger Cycle Button
       document.getElementById('triggerCycleBtn').addEventListener('click', async () => {
         if (!activeAgentId) {
-          alert('No active agent.'); return;
+          alert('No active agent. Please select or initialize an agent.');
+          return;
         }
         
         const btn = document.getElementById('triggerCycleBtn');
@@ -1042,8 +1311,13 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agentId: activeAgentId })
           });
-          await loadFeed();
+          if (document.getElementById('view-agent-details').classList.contains('active')) {
+            await openAgentDetails(activeAgentId);
+          } else {
+            await loadGlobalFeed();
+          }
           await loadLogs();
+          await loadAgents();
         } catch (err) {
           console.error(err);
         } finally {
@@ -1057,10 +1331,12 @@
       const nodes = ['wf-discovery', 'wf-research', 'wf-writer', 'wf-factcheck', 'wf-critic', 'wf-improve', 'wf-publish'];
       for (const id of nodes) {
         document.querySelectorAll('.workflow-node').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        await new Promise(r => setTimeout(r, 800));
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+        await new Promise(r => setTimeout(r, 600));
       }
-      document.getElementById('wf-publish').classList.remove('active');
+      const pubEl = document.getElementById('wf-publish');
+      if (pubEl) pubEl.classList.remove('active');
     }
 
     async function loadAgents() {
@@ -1073,6 +1349,7 @@
         if (!data.agents || data.agents.length === 0) {
           grid.innerHTML = '<div class="text-muted">No agents active. Initialize one.</div>';
           document.getElementById('kpiAgents').innerText = '0';
+          document.getElementById('kpiPosts').innerText = '0';
           return;
         }
 
@@ -1083,15 +1360,18 @@
         let totalPosts = 0;
         
         grid.innerHTML = data.agents.map(a => {
-          totalPosts += (a._count?.posts || 0);
+          const count = a._count?.posts || 0;
+          totalPosts += count;
+          const isSelected = a.id === activeAgentId;
+
           return `
-          <div class="agent-card ${a.id === activeAgentId ? 'active' : ''}" onclick="selectAgent('${a.id}')">
+          <div class="agent-card ${isSelected ? 'active' : ''}" onclick="selectAgent('${a.id}')" style="transition: all 0.2s; cursor: pointer;">
             <div class="flex justify-between items-start mb-4">
               <div class="flex items-center gap-3">
-                <div class="author-avatar" style="width:36px; height:36px; font-size:1rem;">${a.name.charAt(0)}</div>
+                <div class="author-avatar" style="width:36px; height:36px; font-size:1rem; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">${a.name.charAt(0)}</div>
                 <div>
-                  <div class="font-bold text-sm">${a.name.toUpperCase()}</div>
-                  <div class="text-xs text-secondary">${a.domain.toUpperCase()}</div>
+                  <div class="font-bold text-sm">${escapeHtml(a.name.toUpperCase())}</div>
+                  <div class="text-xs text-secondary font-semibold">${escapeHtml(a.domain.toUpperCase())}</div>
                 </div>
               </div>
               <div class="status-indicator" style="font-size:0.6rem; padding: 0.15rem 0.5rem;"><div class="dot pulse"></div> ACTIVE</div>
@@ -1101,17 +1381,14 @@
               Roles: Researcher, Writer, Fact Checker, Critic
             </div>
             
-            <div class="flex justify-between items-center text-xs">
-              <span class="text-muted">${a._count?.posts || 0} Posts</span>
-              <span class="text-primary font-medium">Select →</span>
+            <div class="flex justify-between items-center text-xs pt-2" style="border-top: 1px solid var(--border-color);">
+              <span class="font-semibold text-main">${count} ${count === 1 ? 'Post' : 'Posts'}</span>
+              <button class="btn btn-primary text-xs" style="padding: 0.35rem 0.75rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">Select →</button>
             </div>
           </div>
         `}).join('');
         
         document.getElementById('kpiPosts').innerText = totalPosts;
-
-        loadFeed();
-        loadLogs();
       } catch (err) {
         console.error(err);
       }
@@ -1119,57 +1396,212 @@
 
     function selectAgent(id) {
       activeAgentId = id;
+      openAgentDetails(id);
+    }
+
+    function showAgentsView() {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const agentNavItem = document.querySelector('.nav-item[data-target="view-agents"]');
+      if (agentNavItem) agentNavItem.classList.add('active');
+
+      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-agents').classList.add('active');
       loadAgents();
     }
 
-    async function loadFeed() {
-      if (!activeAgentId) return;
-      
+    async function openAgentDetails(id) {
+      activeAgentId = id;
+      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-agent-details').classList.add('active');
+
       try {
-        const res = await fetch(`/api/agent/feed?agentId=${activeAgentId}`);
+        const res = await fetch(`/api/agent/status?agentId=${id}`);
         const data = await res.json();
-        const container = document.getElementById('feedContainer');
         
+        if (data.agent) {
+          currentSelectedAgent = data.agent;
+          const a = data.agent;
+          document.getElementById('detailAgentAvatar').innerText = a.name.charAt(0);
+          document.getElementById('detailAgentName').innerText = a.name.toUpperCase();
+          document.getElementById('detailAgentDomain').innerText = a.domain.toUpperCase();
+          document.getElementById('detailAgentRoleStyle').innerText = `${a.role || 'Researcher'} • Writer • Fact Checker • Critic`;
+          document.getElementById('detailPostCount').innerText = a.totalPosts || 0;
+          document.getElementById('detailLastPostTime').innerText = a.lastPublishedAt ? new Date(a.lastPublishedAt).toLocaleString() : 'Never';
+          document.getElementById('detailAgentIdBadge').innerText = `ID: ${a.id}`;
+          document.getElementById('feedFilterLabel').innerText = `Showing posts for ${a.name} (${a.domain}) strictly`;
+        }
+      } catch (err) {
+        console.error('Failed to load agent status', err);
+      }
+
+      await loadAgentFeed(id);
+      loadLogs();
+    }
+
+    async function loadAgentFeed(agentId) {
+      const container = document.getElementById('agentFeedContainer');
+      container.innerHTML = '<div class="text-muted text-center py-8">Loading agent feed...</div>';
+
+      try {
+        const res = await fetch(`/api/agent/feed?agentId=${agentId}`);
+        const data = await res.json();
+
+        if (!data.posts || data.posts.length === 0) {
+          container.innerHTML = `
+            <div class="glass-card text-center py-12 px-4" style="grid-column: 1 / -1;">
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📝</div>
+              <h4 class="font-bold text-lg mb-1">No posts generated yet.</h4>
+              <p class="text-muted text-sm mb-4">Start creating content for this agent.</p>
+              <button class="btn btn-primary text-sm" onclick="openGenerateModal()">+ Generate New Post</button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = data.posts.map(post => renderPostCard(post, currentSelectedAgent)).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="text-danger text-center py-8">Failed to load feed: ${err.message}</div>`;
+      }
+    }
+
+    async function loadGlobalFeed() {
+      const container = document.getElementById('feedContainer');
+      container.innerHTML = '<div class="text-muted text-center py-8">Loading global feed...</div>';
+
+      try {
+        const agentId = activeAgentId || '';
+        const url = agentId ? `/api/agent/feed?agentId=${agentId}` : '/api/agent/feed';
+        const res = await fetch(url);
+        const data = await res.json();
+
         if (!data.posts || data.posts.length === 0) {
           container.innerHTML = '<div class="text-muted text-center py-8">No content published yet.</div>';
           return;
         }
+
+        container.innerHTML = data.posts.map(post => renderPostCard(post, currentSelectedAgent)).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="text-danger text-center py-8">Error loading feed</div>`;
+      }
+    }
+
+    function renderPostCard(post, agentObj) {
+      const score = 91;
+      const agentName = agentObj ? agentObj.name : (post.agentName || 'Ada');
+      const agentRole = agentObj ? agentObj.role : 'AI Security Researcher';
+      const platform = post.platform || 'LinkedIn / X';
+      const status = post.status || 'Published';
+
+      let statusBadge = '<div class="badge success">✓ Published</div>';
+      if (status === 'Draft') statusBadge = '<div class="badge warning">✎ Draft</div>';
+      else if (status === 'Generated') statusBadge = '<div class="badge">🤖 Generated</div>';
+
+      return `
+      <article class="post-card fade-enter" id="post-card-${post.id}">
+        <div class="post-header">
+          <div class="post-author">
+            <div class="author-avatar">${escapeHtml(agentName.charAt(0))}</div>
+            <div>
+              <div class="font-bold">${escapeHtml(agentName)}</div>
+              <div class="text-xs text-muted">${escapeHtml(agentRole)}</div>
+              <div class="text-xs text-faint mt-1">${new Date(post.publishedAt).toLocaleString()}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-secondary" style="background: rgba(13,148,136,0.1); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
+            <div class="score-circle">${score}</div>
+          </div>
+        </div>
+
+        ${post.title ? `<h4 class="font-bold text-md mb-2" style="color: var(--text-main);">${escapeHtml(post.title)}</h4>` : ''}
+
+        <div class="post-body">${escapeHtml(post.content)}</div>
         
-        container.innerHTML = data.posts.map(post => {
-          // Mock a random score 85-98 since we don't have it explicitly returned in feed right now (or we can just say 91)
-          const score = 91; 
-          return `
-          <article class="post-card fade-enter">
-            <div class="post-header">
-              <div class="post-author">
-                <div class="author-avatar">A</div>
-                <div>
-                  <div class="font-bold">Ada</div>
-                  <div class="text-xs text-muted">AI Security Researcher</div>
-                  <div class="text-xs text-faint mt-1">${new Date(post.publishedAt).toLocaleString()}</div>
-                </div>
-              </div>
-              <div class="score-circle">${score}</div>
-            </div>
-            
-            <div class="post-body">${escapeHtml(post.content)}</div>
-            
-            <div class="post-footer">
-              <div class="badges">
-                <div class="badge success">✓ Fact Checked</div>
-                <div class="badge success">✓ Critic Approved</div>
-                <div class="badge">🤖 AI Generated</div>
-              </div>
-              
-              <div class="flex gap-2">
-                <button class="btn btn-outline text-xs" style="padding: 0.4rem 0.75rem;" onclick="showDecisionTrace(this)" data-rationale="${escapeHtml(post.rationale)}" data-relevant="${escapeHtml(post.whyRelevantNow)}">
-                  Decision Trace
-                </button>
-              </div>
-            </div>
-          </article>
-        `}).join('');
-      } catch (err) {}
+        <div class="post-footer flex justify-between items-center flex-wrap gap-3">
+          <div class="badges">
+            <div class="badge success">✓ Fact Checked</div>
+            <div class="badge success">✓ Critic Approved</div>
+            ${statusBadge}
+          </div>
+          
+          <div class="flex gap-2 flex-wrap">
+            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.6rem;" onclick="openEditModal('${post.id}', '${escapeJs(post.title)}', '${escapeJs(post.content)}', '${escapeJs(platform)}', '${escapeJs(status)}')">
+              Edit
+            </button>
+            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.6rem;" onclick="regeneratePost('${post.id}', this)">
+              Regenerate
+            </button>
+            ${status !== 'Published' ? `<button class="btn btn-outline text-xs text-success" style="padding: 0.35rem 0.6rem;" onclick="publishPost('${post.id}')">Publish</button>` : ''}
+            <button class="btn btn-outline text-xs text-danger" style="padding: 0.35rem 0.6rem; color: var(--danger); border-color: rgba(239,68,68,0.3);" onclick="deletePost('${post.id}')">
+              Delete
+            </button>
+            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.6rem;" onclick="showDecisionTrace(this)" data-rationale="${escapeHtml(post.rationale || '')}" data-relevant="${escapeHtml(post.whyRelevantNow || '')}">
+              Decision Trace
+            </button>
+          </div>
+        </div>
+      </article>
+      `;
+    }
+
+    async function deletePost(postId) {
+      if (!confirm('Are you sure you want to delete this post?')) return;
+
+      try {
+        const res = await fetch(`/api/agent/post/${postId}`, { method: 'DELETE' });
+        if (res.ok) {
+          if (activeAgentId) {
+            await openAgentDetails(activeAgentId);
+          } else {
+            await loadGlobalFeed();
+          }
+          loadAgents();
+        } else {
+          alert('Failed to delete post.');
+        }
+      } catch (err) {
+        alert(`Error deleting post: ${err.message}`);
+      }
+    }
+
+    async function regeneratePost(postId, btnEl) {
+      const origText = btnEl.innerText;
+      btnEl.innerText = 'Regenerating...';
+      btnEl.disabled = true;
+
+      try {
+        const res = await fetch(`/api/agent/post/${postId}/regenerate`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.post) {
+          if (activeAgentId) {
+            await loadAgentFeed(activeAgentId);
+          } else {
+            await loadGlobalFeed();
+          }
+        } else {
+          alert('Failed to regenerate post.');
+        }
+      } catch (err) {
+        alert(`Error regenerating post: ${err.message}`);
+      } finally {
+        btnEl.innerText = origText;
+        btnEl.disabled = false;
+      }
+    }
+
+    async function publishPost(postId) {
+      try {
+        const res = await fetch(`/api/agent/post/${postId}/publish`, { method: 'POST' });
+        if (res.ok) {
+          if (activeAgentId) {
+            await loadAgentFeed(activeAgentId);
+          } else {
+            await loadGlobalFeed();
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     async function loadLogs() {
@@ -1224,12 +1656,17 @@
     function showDecisionTrace(button) {
       const rationale = button.getAttribute('data-rationale');
       const relevant = button.getAttribute('data-relevant');
-      alert('Decision Trace:\n\nRationale: ' + rationale + '\n\nWhy Relevant: ' + relevant);
+      alert('Decision Trace:\n\nRationale: ' + (rationale || 'N/A') + '\n\nWhy Relevant: ' + (relevant || 'N/A'));
     }
 
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return String(str).replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "");
     }
   </script>
 </body>

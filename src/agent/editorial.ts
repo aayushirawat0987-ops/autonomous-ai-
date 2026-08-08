@@ -32,6 +32,7 @@ export class EditorialEngine {
           topic,
           scores: { relevance: 50, novelty: 10, impact: 20, timeliness: 80, duplicateScore: 100 },
           totalScore: 20,
+          overallScore: 20,
           passed: false,
           rejectionReason,
         };

@@ -23,12 +23,17 @@ export class ArxivService {
       for (const item of items) {
         if (item.title && item.link) {
           const titleClean = item.title.replace(/\n/g, ' ').trim();
+          let pubDateIso = new Date().toISOString();
+          if (item.isoDate || item.pubDate) {
+            try { pubDateIso = new Date(item.isoDate || item.pubDate!).toISOString(); } catch {}
+          }
+
           topics.push({
             title: `arXiv Paper: ${titleClean}`,
             url: item.link,
             source: 'arXiv AI',
             summary: (item.summary || item.contentSnippet || titleClean).replace(/\n/g, ' ').slice(0, 300).trim(),
-            publishedAt: item.isoDate || item.pubDate ? new Date(item.isoDate || item.pubDate!).toISOString() : new Date().toISOString(),
+            publishedAt: pubDateIso,
           });
         }
       }

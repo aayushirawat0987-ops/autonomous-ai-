@@ -135,4 +135,63 @@ export class WriterEngine {
 
     return createdPost;
   }
+
+  async generateManualPost(
+    agentId: string,
+    topicTitle: string,
+    postType: string = 'Educational',
+    platform: string = 'LinkedIn / X',
+    tone: string = 'Professional',
+    instructions: string = ''
+  ) {
+    const agent = await prisma.agent.findUnique({ where: { id: agentId } });
+    if (!agent) throw new Error(`Agent with ID '${agentId}' not found.`);
+
+    const persona: Persona = {
+      name: agent.name,
+      domain: agent.domain,
+      role: agent.role,
+      style: `${tone}, ${agent.style}`,
+    };
+
+    const topic: DiscoveredTopic = {
+      title: topicTitle,
+      url: `https://autonomous.agent/manual-topic-${Date.now()}`,
+      source: 'User Manual Request',
+      summary: `Manual post generation request for ${agent.domain} (${postType}). ${instructions}`.trim(),
+      publishedAt: new Date().toISOString(),
+    };
+
+    const evaluation: EditorialEvaluation = {
+      topic,
+      scores: { relevance: 95, novelty: 90, impact: 90, timeliness: 95, duplicateScore: 5 },
+      totalScore: 92,
+      overallScore: 92,
+      passed: true,
+    };
+
+    const postData = await this.openaiService.generatePost(persona, topic, evaluation);
+
+    const createdPost = await prisma.post.create({
+      data: {
+        agentId,
+        title: postData.title || topicTitle,
+        content: postData.content,
+        rationale: postData.rationale || `Manually requested by user for ${agent.name}`,
+        whySelected: postData.whySelected || `User requested ${postType} post in ${agent.domain}`,
+        whyRelevantNow: postData.whyRelevantNow || `Key ${agent.domain} updates for ${platform}`,
+        sources: JSON.stringify(postData.sources || [topic.url]),
+        topicUrl: topic.url,
+        topicSource: 'Manual Request',
+        platform: platform || 'LinkedIn / X',
+        status: 'Published',
+        publishedAt: new Date(),
+      },
+    });
+
+    await this.memoryEngine.saveMemory(agentId, topic, postData.rationale);
+    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name}`, agentId);
+
+    return createdPost;
+  }
 }

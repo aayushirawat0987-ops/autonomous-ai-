@@ -25,6 +25,7 @@ export interface EditorialEvaluation {
   topic: DiscoveredTopic;
   scores: EditorialScores;
   totalScore: number;      // 0-100 scale, must be > 80 to pass
+  overallScore?: number;   // 0-100 scale, alias for totalScore
   passed: boolean;         // totalScore > 80 && relevance >= 70 && duplicateScore < 30
   rejectionReason?: string;
 }

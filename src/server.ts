@@ -4,7 +4,17 @@ import path from 'path';
 import { config } from './config';
 import { handleAgentInit } from './api/init';
 import { handleAgentFeed } from './api/feed';
-import { handleAgentList, handleAgentStatus, handleAgentTrigger, handleAgentLogs } from './api/agent';
+import { 
+  handleAgentList, 
+  handleAgentStatus, 
+  handleAgentTrigger, 
+  handleAgentLogs,
+  handleAgentPostGenerate,
+  handlePostUpdate,
+  handlePostDelete,
+  handlePostRegenerate,
+  handlePostPublish
+} from './api/agent';
 import { schedulerEngine } from './agent/scheduler';
 import { Logger } from './utils/logger';
 
@@ -26,6 +36,13 @@ app.get('/api/agent/list', handleAgentList);
 app.get('/api/agent/status', handleAgentStatus);
 app.post('/api/agent/trigger', handleAgentTrigger);
 app.get('/api/agent/logs', handleAgentLogs);
+
+// Post Management & Manual Generation APIs
+app.post('/api/agent/post/generate', handleAgentPostGenerate);
+app.put('/api/agent/post/:id', handlePostUpdate);
+app.delete('/api/agent/post/:id', handlePostDelete);
+app.post('/api/agent/post/:id/regenerate', handlePostRegenerate);
+app.post('/api/agent/post/:id/publish', handlePostPublish);
 
 // Fallback route serving UI single-page dashboard
 app.get('*', (req, res) => {

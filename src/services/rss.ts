@@ -29,12 +29,17 @@ export class RSSService {
 
         for (const item of items) {
           if (item.title && item.link) {
+            let pubDateIso = new Date().toISOString();
+            if (item.isoDate || item.pubDate) {
+              try { pubDateIso = new Date(item.isoDate || item.pubDate!).toISOString(); } catch {}
+            }
+
             topics.push({
               title: item.title.trim(),
               url: item.link,
               source: feedConfig.name,
               summary: (item.contentSnippet || item.content || item.title).slice(0, 300).trim(),
-              publishedAt: item.isoDate || item.pubDate ? new Date(item.isoDate || item.pubDate!).toISOString() : new Date().toISOString(),
+              publishedAt: pubDateIso,
             });
           }
         }

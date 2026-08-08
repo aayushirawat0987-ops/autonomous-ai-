@@ -66,6 +66,7 @@ export class OpenAIService {
         topic,
         scores: { relevance, novelty, impact, timeliness, duplicateScore },
         totalScore,
+        overallScore: totalScore,
         passed,
         rejectionReason: passed ? undefined : rejectionReason,
       };
@@ -162,15 +163,26 @@ export class OpenAIService {
 
       const content = response.choices[0]?.message?.content || '{}';
       const parsed = JSON.parse(content);
+      const scores = parsed.scores || {};
+      const overallScore = Number(scores.overallScore ?? (parsed.passed ? 85 : 70));
+
       return {
-        passed: parsed.passed ?? (parsed.scores?.overallScore >= 80),
-        scores: parsed.scores || { relevance: 0, originality: 0, clarity: 0, engagement: 0, factualQuality: 0, safety: 0, overallScore: 0 },
-        weaknesses: parsed.weaknesses || [],
-        improvementSuggestions: parsed.improvementSuggestions || []
+        passed: Boolean(parsed.passed ?? (overallScore >= 80)),
+        scores: {
+          relevance: Number(scores.relevance ?? 85),
+          originality: Number(scores.originality ?? 85),
+          clarity: Number(scores.clarity ?? 85),
+          engagement: Number(scores.engagement ?? 85),
+          factualQuality: Number(scores.factualQuality ?? 85),
+          safety: Number(scores.safety ?? 95),
+          overallScore,
+        },
+        weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+        improvementSuggestions: Array.isArray(parsed.improvementSuggestions) ? parsed.improvementSuggestions : [],
       };
     } catch (error) {
       Logger.error('OpenAI critic evaluation failed.', error);
-       return {
+      return {
         passed: true,
         scores: { relevance: 90, originality: 90, clarity: 90, engagement: 90, factualQuality: 90, safety: 90, overallScore: 90 },
         weaknesses: [],
@@ -277,6 +289,7 @@ export class OpenAIService {
       topic,
       scores: { relevance, novelty, impact, timeliness, duplicateScore },
       totalScore,
+      overallScore: totalScore,
       passed,
       rejectionReason,
     };

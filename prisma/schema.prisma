@@ -27,13 +27,16 @@ model Post {
   agentId        String
   title          String
   content        String
-  rationale      String
-  whySelected    String
-  whyRelevantNow String
-  sources        String
+  rationale      String   @default("")
+  whySelected    String   @default("")
+  whyRelevantNow String   @default("")
+  sources        String   @default("[]")
   topicUrl       String?
   topicSource    String?
+  platform       String   @default("LinkedIn / X")
+  status         String   @default("Published")
   publishedAt    DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
 
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }

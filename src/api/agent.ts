@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { schedulerEngine } from '../agent/scheduler';
+import { WriterEngine } from '../agent/writer';
 import { prisma } from '../database/prisma';
+import { DiscoveredTopic, EditorialEvaluation, Persona } from '../models/types';
+import { OpenAIService } from '../services/openai';
 import { Logger } from '../utils/logger';
 
 export async function handleAgentList(req: Request, res: Response) {
@@ -101,5 +104,145 @@ export async function handleAgentLogs(req: Request, res: Response) {
   } catch (error) {
     Logger.error('Failed to fetch logs', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+const writerEngine = new WriterEngine();
+const openaiService = new OpenAIService();
+
+export async function handleAgentPostGenerate(req: Request, res: Response) {
+  try {
+    const { agentId, topic, postType, platform, tone, instructions } = req.body;
+    if (!agentId || !topic) {
+      return res.status(400).json({ error: 'Missing required fields: agentId and topic' });
+    }
+
+    const post = await writerEngine.generateManualPost(
+      agentId,
+      topic,
+      postType,
+      platform,
+      tone,
+      instructions
+    );
+
+    return res.status(201).json({ post });
+  } catch (error) {
+    Logger.error('Failed to generate post for agent', error);
+    return res.status(500).json({ error: (error as Error).message || 'Failed to generate post' });
+  }
+}
+
+export async function handlePostUpdate(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const { title, content, platform, status } = req.body;
+
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const updated = await prisma.post.update({
+      where: { id },
+      data: {
+        title: title !== undefined ? title : existing.title,
+        content: content !== undefined ? content : existing.content,
+        platform: platform !== undefined ? platform : (existing as any).platform || 'LinkedIn / X',
+        status: status !== undefined ? status : (existing as any).status || 'Published',
+      },
+    });
+
+    return res.status(200).json({ post: updated });
+  } catch (error) {
+    Logger.error('Failed to update post', error);
+    return res.status(500).json({ error: 'Failed to update post' });
+  }
+}
+
+export async function handlePostDelete(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    await prisma.post.delete({ where: { id } });
+    return res.status(200).json({ success: true, deletedId: id, agentId: existing.agentId });
+  } catch (error) {
+    Logger.error('Failed to delete post', error);
+    return res.status(500).json({ error: 'Failed to delete post' });
+  }
+}
+
+export async function handlePostRegenerate(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const existing = await prisma.post.findUnique({
+      where: { id },
+      include: { agent: true },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const persona: Persona = {
+      name: existing.agent.name,
+      domain: existing.agent.domain,
+      role: existing.agent.role,
+      style: existing.agent.style,
+    };
+
+    const topic: DiscoveredTopic = {
+      title: existing.title,
+      url: existing.topicUrl || `https://autonomous.agent/post-${existing.id}`,
+      source: existing.topicSource || 'Regeneration Request',
+      summary: existing.content.slice(0, 300),
+      publishedAt: existing.publishedAt.toISOString(),
+    };
+
+    const evaluation: EditorialEvaluation = {
+      topic,
+      scores: { relevance: 95, novelty: 90, impact: 90, timeliness: 95, duplicateScore: 5 },
+      totalScore: 92,
+      overallScore: 92,
+      passed: true,
+    };
+
+    const newDraft = await openaiService.generatePost(persona, topic, evaluation);
+
+    const updated = await prisma.post.update({
+      where: { id },
+      data: {
+        title: newDraft.title || existing.title,
+        content: newDraft.content || existing.content,
+        rationale: newDraft.rationale || existing.rationale,
+        whySelected: newDraft.whySelected || existing.whySelected,
+        whyRelevantNow: newDraft.whyRelevantNow || existing.whyRelevantNow,
+      },
+    });
+
+    Logger.info(`REGENERATED POST #${id} FOR AGENT ${existing.agent.name}`, existing.agentId);
+
+    return res.status(200).json({ post: updated });
+  } catch (error) {
+    Logger.error('Failed to regenerate post', error);
+    return res.status(500).json({ error: 'Failed to regenerate post' });
+  }
+}
+
+export async function handlePostPublish(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const updated = await prisma.post.update({
+      where: { id },
+      data: { status: 'Published' },
+    });
+    return res.status(200).json({ post: updated });
+  } catch (error) {
+    Logger.error('Failed to publish post', error);
+    return res.status(500).json({ error: 'Failed to publish post' });
   }
 }
