@@ -3,43 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Autonomous AI Creator</title>
+  <title>Autonomous AI Creator — Light Premium AI Intelligence Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Main background: very light cool gray/white */
-      --bg-base: #F3F4F6;
+      /* Main Background & Surfaces */
+      --bg-base: #F8FAFC;
       --bg-surface: #FFFFFF;
-      --bg-surface-light: #F9FAFB;
+      --bg-surface-elevated: #FFFFFF;
+      --bg-surface-light: #F1F5F9;
       
-      /* Primary: deep indigo/blue */
-      --primary: #4F46E5;
-      --primary-hover: #4338CA;
-      --primary-glow: rgba(79, 70, 229, 0.25);
+      /* Primary Color System */
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+      --primary-light: #EFF6FF;
+      --primary-glow: rgba(37, 99, 235, 0.15);
       
-      /* Secondary accent: cyan/teal */
-      --secondary: #0D9488;
-      --secondary-glow: rgba(13, 148, 136, 0.25);
+      /* Secondary & Accents */
+      --secondary: #0891B2;
+      --secondary-light: #ECFEFF;
+      --secondary-glow: rgba(8, 145, 178, 0.15);
       
-      /* Active/success: green, Rejected/error: red */
-      --success: #10B981;
-      --warning: #F59E0B;
-      --danger: #EF4444;
+      --purple: #7C3AED;
+      --purple-light: #F5F3FF;
+      --purple-glow: rgba(124, 58, 237, 0.15);
       
-      /* Main text: dark navy, Secondary text: muted gray */
-      --text-main: #1E293B;
-      --text-muted: #64748B;
-      --text-faint: #94A3B8;
+      --success: #16A34A;
+      --success-light: #F0FDF4;
+      --warning: #D97706;
+      --warning-light: #FFFBEB;
+      --danger: #DC2626;
+      --danger-light: #FEF2F2;
       
-      /* Borders: subtle light gray */
+      /* Typography Colors */
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --text-faint: #64748B;
+      
+      /* Borders & Shadows */
       --border-color: #E2E8F0;
-      --glass-bg: rgba(255, 255, 255, 0.9);
+      --border-light: #F1F5F9;
+      --border-dark: #CBD5E1;
       
-      --font-sans: 'Outfit', system-ui, sans-serif;
+      --card-shadow: 0 8px 30px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+      --card-shadow-hover: 0 14px 40px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
+      --modal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      
+      /* Fonts */
+      --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
       
+      /* Radii */
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
@@ -59,16 +75,23 @@
       min-height: 100vh;
       line-height: 1.5;
       overflow-x: hidden;
+      /* Layered Premium Light Background with Subtle Faint AI Grid */
       background-image: 
-        radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 85% 30%, rgba(13, 148, 136, 0.05) 0%, transparent 50%);
+        linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+        radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 88% 12%, rgba(139, 92, 246, 0.07) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+      background-size: 32px 32px, 32px 32px, 100% 100%, 100% 100%, 100% 100%;
     }
 
-    /* Utility */
+    /* Utility Helpers */
     .flex { display: flex; }
     .flex-col { display: flex; flex-direction: column; }
     .items-center { align-items: center; }
     .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .flex-wrap { flex-wrap: wrap; }
     .gap-1 { gap: 0.25rem; }
     .gap-2 { gap: 0.5rem; }
     .gap-3 { gap: 0.75rem; }
@@ -77,18 +100,30 @@
     .gap-8 { gap: 2rem; }
     .w-full { width: 100%; }
     .h-full { height: 100%; }
+    .relative { position: relative !important; }
+    .absolute { position: absolute !important; }
     .text-sm { font-size: 0.875rem; }
     .text-xs { font-size: 0.75rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
     .text-muted { color: var(--text-muted); }
+    .text-faint { color: var(--text-faint); }
+    .text-primary { color: var(--primary); }
+    .text-secondary { color: var(--secondary); }
+    .text-success { color: var(--success); }
+    .text-warning { color: var(--warning); }
+    .text-danger { color: var(--danger); }
     .font-medium { font-weight: 500; }
     .font-semibold { font-weight: 600; }
     .font-bold { font-weight: 700; }
+    .font-mono { font-family: var(--font-mono); }
     .hidden { display: none !important; }
 
     /* Layout */
     .app-layout {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 270px 1fr;
       min-height: 100vh;
     }
 
@@ -105,30 +140,32 @@
     .sidebar {
       background: var(--bg-surface);
       border-right: 1px solid var(--border-color);
-      padding: 1.5rem;
+      padding: 1.75rem 1.5rem;
       display: flex;
       flex-direction: column;
       position: sticky;
       top: 0;
       height: 100vh;
       z-index: 50;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.01);
     }
 
     .brand-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       color: white;
+      box-shadow: 0 4px 12px var(--primary-glow);
     }
 
     .nav-menu {
-      margin-top: 2rem;
+      margin-top: 2.25rem;
       flex: 1;
     }
 
@@ -139,25 +176,38 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      transition: all 0.2s ease;
+      gap: 0.85rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       font-weight: 500;
-      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+      position: relative;
     }
 
     .nav-item:hover {
       color: var(--text-main);
-      background: rgba(0, 0, 0, 0.03);
+      background: var(--bg-surface-light);
     }
 
     .nav-item.active {
       color: var(--primary);
-      background: rgba(79, 70, 229, 0.1);
-      border-left: 3px solid var(--primary);
+      background: var(--primary-light);
+      font-weight: 600;
+    }
+
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      height: 60%;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background-color: var(--primary);
     }
 
     .system-status {
-      padding-top: 1rem;
+      padding-top: 1.25rem;
       border-top: 1px solid var(--border-color);
     }
 
@@ -168,30 +218,31 @@
       font-size: 0.75rem;
       font-weight: 600;
       color: var(--success);
-      background: rgba(16, 185, 129, 0.1);
-      padding: 0.25rem 0.75rem;
+      background: var(--success-light);
+      padding: 0.35rem 0.85rem;
       border-radius: 9999px;
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(22, 163, 74, 0.2);
     }
 
     .dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: currentColor;
-      box-shadow: 0 0 8px currentColor;
     }
 
     .dot.pulse {
-      animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      animation: pulse-green 2s infinite;
     }
 
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
     }
 
-    /* Main Content Area */
+    /* Main Area & Header */
     .main-area {
       display: flex;
       flex-direction: column;
@@ -200,8 +251,8 @@
     }
 
     .top-header {
-      padding: 1.5rem 2.5rem;
-      background: rgba(255, 255, 255, 0.8);
+      padding: 1.25rem 2.5rem;
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
       display: flex;
@@ -210,35 +261,35 @@
       position: sticky;
       top: 0;
       z-index: 40;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
     .content-wrapper {
-      padding: 2.5rem;
-      max-width: 1200px;
+      padding: 2.25rem 2.5rem;
+      max-width: 1280px;
       margin: 0 auto;
       width: 100%;
     }
 
     /* Cards */
     .glass-card {
-      background: var(--glass-bg);
+      background: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
       padding: 1.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-      backdrop-filter: blur(12px);
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      box-shadow: var(--card-shadow);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .glass-card:hover {
-      border-color: rgba(0, 0, 0, 0.1);
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--border-dark);
     }
 
     /* Buttons */
     .btn {
       padding: 0.625rem 1.25rem;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       font-weight: 600;
       font-size: 0.875rem;
       cursor: pointer;
@@ -246,21 +297,21 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       border: none;
       font-family: inherit;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #4338CA);
+      background: var(--primary);
       color: white;
-      box-shadow: 0 4px 12px var(--primary-glow);
+      box-shadow: 0 4px 14px var(--primary-glow);
     }
 
     .btn-primary:hover {
+      background: var(--primary-hover);
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px var(--primary-glow);
-      background: linear-gradient(135deg, var(--primary-hover), #3730A3);
+      box-shadow: 0 6px 18px var(--primary-glow);
     }
 
     .btn-primary:disabled {
@@ -272,12 +323,13 @@
     .btn-outline {
       background: #FFFFFF;
       border: 1px solid var(--border-color);
-      color: var(--text-main);
+      color: var(--text-muted);
     }
 
     .btn-outline:hover {
-      background: rgba(0, 0, 0, 0.02);
-      border-color: rgba(0, 0, 0, 0.15);
+      background: var(--bg-surface-light);
+      color: var(--text-main);
+      border-color: var(--border-dark);
     }
 
     /* Form Controls */
@@ -288,7 +340,7 @@
     .form-label {
       display: block;
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -299,7 +351,7 @@
       width: 100%;
       background: #FFFFFF;
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       padding: 0.75rem 1rem;
       color: var(--text-main);
       font-family: inherit;
@@ -310,7 +362,7 @@
     .form-input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-glow);
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
 
     /* Hero Section */
@@ -318,38 +370,77 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.25rem;
+      gap: 2rem;
     }
 
     .hero-title {
-      font-size: 2.5rem;
+      font-size: 2.25rem;
       font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(to right, #1E293B, #475569);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+      color: var(--text-main);
     }
 
     .hero-subtitle {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: var(--text-muted);
-      max-width: 600px;
+      max-width: 620px;
     }
 
     /* KPI Grid */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1.5rem;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s;
+    }
+
+    .kpi-card:hover {
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .kpi-icon-box {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
     }
 
     .kpi-value {
       font-size: 2.25rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-main);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .kpi-trend {
+      font-size: 0.75rem;
+      font-weight: 600;
       margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
     }
 
     /* Workflow Viz */
@@ -361,8 +452,8 @@
       padding: 2rem;
       border-radius: var(--radius-lg);
       border: 1px solid var(--border-color);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-      margin-bottom: 3rem;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 2.5rem;
       overflow-x: auto;
     }
 
@@ -373,36 +464,39 @@
       gap: 0.75rem;
       position: relative;
       z-index: 2;
+      min-width: 90px;
     }
 
     .workflow-node-icon {
-      width: 48px;
-      height: 48px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
-      background: #F8FAFC;
-      border: 1px solid var(--border-color);
+      background: var(--bg-surface-light);
+      border: 2px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--text-muted);
       font-size: 1.25rem;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
     }
 
     .workflow-node.active .workflow-node-icon {
       background: var(--primary);
-      border-color: var(--primary-hover);
+      border-color: var(--primary);
       color: white;
       box-shadow: 0 0 20px var(--primary-glow);
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
 
     .workflow-node-label {
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
+      text-align: center;
     }
 
     .workflow-node.active .workflow-node-label {
@@ -413,16 +507,16 @@
       flex: 1;
       height: 2px;
       background: var(--border-color);
-      margin: 0 1rem;
+      margin: 0 0.5rem;
       position: relative;
-      top: -12px;
+      top: -14px;
     }
 
     /* Content Feed */
     .feed-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 1.5rem;
+      gap: 1.75rem;
     }
 
     .post-card {
@@ -430,12 +524,18 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      box-shadow: var(--card-shadow);
+      transition: all 0.25s;
+    }
+
+    .post-card:hover {
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--border-dark);
     }
 
     .post-header {
       padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color-light);
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -445,33 +545,34 @@
     .post-author {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
     .author-avatar {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--secondary), #0369A1);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
       color: white;
       font-size: 1.2rem;
+      box-shadow: 0 2px 8px var(--primary-glow);
     }
 
     .post-body {
       padding: 1.5rem;
       font-size: 0.95rem;
       color: var(--text-main);
-      line-height: 1.6;
+      line-height: 1.65;
       white-space: pre-wrap;
     }
 
     .post-footer {
       padding: 1rem 1.5rem;
-      border-top: 1px solid var(--border-color);
+      border-top: 1px solid var(--border-color-light);
       background: #FAFAFA;
       display: flex;
       justify-content: space-between;
@@ -485,9 +586,9 @@
 
     .badge {
       font-size: 0.7rem;
-      padding: 0.25rem 0.5rem;
+      padding: 0.25rem 0.6rem;
       border-radius: var(--radius-sm);
-      background: rgba(0,0,0,0.03);
+      background: var(--bg-surface-light);
       border: 1px solid var(--border-color);
       color: var(--text-muted);
       font-weight: 600;
@@ -497,41 +598,47 @@
     }
 
     .badge.success {
-      background: rgba(16, 185, 129, 0.1);
-      border-color: rgba(16, 185, 129, 0.2);
+      background: var(--success-light);
+      border-color: rgba(22, 163, 74, 0.2);
       color: var(--success);
     }
     
     .badge.danger {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.2);
+      background: var(--danger-light);
+      border-color: rgba(220, 38, 38, 0.2);
       color: var(--danger);
     }
 
+    .badge.warning {
+      background: var(--warning-light);
+      border-color: rgba(217, 119, 6, 0.2);
+      color: var(--warning);
+    }
+
     .score-circle {
-      width: 40px;
-      height: 40px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       border: 2px solid var(--success);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 0.9rem;
+      font-weight: 800;
+      font-size: 0.95rem;
       color: var(--success);
-      background: rgba(16, 185, 129, 0.05);
+      background: var(--success-light);
     }
 
     /* Live Activity Log */
     .activity-log {
-      max-height: 500px;
+      max-height: 520px;
       overflow-y: auto;
       padding-right: 0.5rem;
     }
 
     .activity-item {
       position: relative;
-      padding-left: 1.5rem;
+      padding-left: 1.75rem;
       padding-bottom: 1.5rem;
       border-left: 2px solid var(--border-color);
       animation: slideIn 0.3s ease-out forwards;
@@ -545,7 +652,7 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: var(--text-muted);
+      background: var(--text-faint);
       border: 2px solid var(--bg-surface);
     }
 
@@ -569,34 +676,37 @@
     .activity-time {
       font-family: var(--font-mono);
       font-size: 0.75rem;
-      color: var(--text-muted);
+      color: var(--text-faint);
       margin-bottom: 0.25rem;
+      font-weight: 500;
     }
 
     .activity-content {
       font-size: 0.9rem;
       color: var(--text-main);
+      font-weight: 500;
     }
 
     .activity-details {
       font-size: 0.8rem;
-      color: var(--text-faint);
+      color: var(--text-muted);
       margin-top: 0.25rem;
+      font-family: var(--font-mono);
     }
 
-    /* Modal / Traces */
+    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(6px);
       z-index: 100;
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s;
+      transition: opacity 0.25s ease;
     }
 
     .modal-overlay.active {
@@ -607,14 +717,14 @@
     .modal-content {
       background: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      width: 90%;
-      max-width: 500px;
+      border-radius: var(--radius-xl);
+      width: 92%;
+      max-width: 520px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      transform: translateY(20px) scale(0.95);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--modal-shadow);
+      transform: translateY(16px) scale(0.97);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .modal-overlay.active .modal-content {
@@ -639,23 +749,24 @@
       color: var(--text-muted);
       cursor: pointer;
       font-size: 1.25rem;
-      padding: 0.5rem;
+      padding: 0.35rem 0.6rem;
       border-radius: var(--radius-sm);
+      transition: all 0.2s;
     }
 
     .close-btn:hover {
       color: var(--text-main);
-      background: rgba(0,0,0,0.05);
+      background: var(--bg-surface-light);
     }
 
     /* Animations */
     @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-10px); }
+      from { opacity: 0; transform: translateX(-8px); }
       to { opacity: 1; transform: translateX(0); }
     }
 
     .fade-enter {
-      animation: fadeIn 0.4s ease forwards;
+      animation: fadeIn 0.35s ease forwards;
     }
 
     @keyframes fadeIn {
@@ -666,15 +777,18 @@
     /* Loading Sequence */
     .init-sequence {
       font-family: var(--font-mono);
-      font-size: 0.85rem;
+      font-size: 0.825rem;
       color: var(--secondary);
       margin-top: 1rem;
-      height: 100px;
+      padding: 1rem;
+      background: var(--bg-surface-light);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
     }
     
     .view-section {
       display: none;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.25s ease;
     }
     
     .view-section.active {
@@ -683,33 +797,32 @@
 
     /* Custom Scrollbar */
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 7px;
     }
     ::-webkit-scrollbar-track {
-      background: rgba(0,0,0,0.02);
+      background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(0,0,0,0.15);
+      background: #CBD5E1;
       border-radius: 4px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(0,0,0,0.25);
+      background: #94A3B8;
     }
     
-    /* Agents Card */
+    /* Agent Cards Grid */
     .agent-card {
       background: #FFFFFF;
       border: 1px solid var(--border-color);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       padding: 1.5rem;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      transition: all 0.2s;
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s ease;
     }
     .agent-card:hover, .agent-card.active {
       border-color: var(--primary);
-      background: rgba(79, 70, 229, 0.03);
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.1);
+      box-shadow: 0 10px 30px var(--primary-glow);
     }
 
     /* Brain Visualization */
@@ -718,24 +831,32 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 120px;
-      height: 120px;
+      width: 130px;
+      height: 130px;
       border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, var(--primary), #3730A3);
-      box-shadow: 0 0 40px rgba(79, 70, 229, 0.4), inset 0 0 20px rgba(255,255,255,0.4);
+      background: radial-gradient(circle at 30% 30%, #FFFFFF, var(--primary-light));
+      border: 3px solid var(--primary);
+      box-shadow: 0 0 35px var(--primary-glow), inset 0 0 15px rgba(37, 99, 235, 0.1);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 10;
-      animation: floatOrb 4s ease-in-out infinite;
+      animation: floatOrb 5s ease-in-out infinite;
     }
 
     .brain-core {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 800;
-      color: white;
-      letter-spacing: 2px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+
+    .brain-subtext {
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
     }
 
     .brain-ring {
@@ -743,17 +864,17 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      border: 1px solid rgba(79, 70, 229, 0.3);
+      border: 1px solid rgba(37, 99, 235, 0.25);
       border-radius: 50%;
-      animation: pulseRing 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      animation: pulseRing 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-    .brain-ring.ring-1 { width: 160px; height: 160px; animation-delay: 0s; }
-    .brain-ring.ring-2 { width: 220px; height: 220px; animation-delay: 1s; }
-    .brain-ring.ring-3 { width: 280px; height: 280px; animation-delay: 2s; border: 1px dashed rgba(79, 70, 229, 0.2); }
+    .brain-ring.ring-1 { width: 170px; height: 170px; animation-delay: 0s; }
+    .brain-ring.ring-2 { width: 230px; height: 230px; animation-delay: 1.2s; }
+    .brain-ring.ring-3 { width: 290px; height: 290px; animation-delay: 2.4s; border: 1px dashed rgba(37, 99, 235, 0.15); }
 
     @keyframes floatOrb {
       0%, 100% { transform: translate(-50%, -50%); }
-      50% { transform: translate(-50%, -55%); }
+      50% { transform: translate(-50%, -54%); }
     }
 
     @keyframes pulseRing {
@@ -773,8 +894,8 @@
       text-align: center;
       transform: translate(-50%, -50%);
       transition: all 0.5s ease;
-      opacity: 0.4;
-      filter: grayscale(100%);
+      opacity: 0.6;
+      filter: grayscale(80%);
     }
 
     .brain-node.active {
@@ -787,7 +908,7 @@
       color: white;
       border-color: var(--primary);
       box-shadow: 0 0 20px var(--primary-glow);
-      transform: scale(1.1);
+      transform: scale(1.15);
     }
 
     .brain-node.completed {
@@ -799,7 +920,7 @@
       background: var(--success);
       color: white;
       border-color: var(--success);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 0 15px rgba(22, 163, 74, 0.25);
     }
 
     .brain-node.rejected {
@@ -819,26 +940,27 @@
       border-radius: 50%;
       background: #FFF;
       border: 2px solid var(--border-color);
-      margin: 0 auto 0.5rem auto;
+      margin: 0 auto 0.4rem auto;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
       transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
     }
 
     .bn-label {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: var(--text-main);
-      background: rgba(255,255,255,0.8);
+      background: rgba(255, 255, 255, 0.95);
       padding: 0.2rem 0.5rem;
-      border-radius: 4px;
+      border-radius: 6px;
       display: inline-block;
-      backdrop-filter: blur(4px);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
 
     #brain-svg-lines {
@@ -875,8 +997,8 @@
       <div class="flex items-center gap-3 mb-8">
         <div class="brand-logo">A</div>
         <div>
-          <div class="font-bold text-sm tracking-wide">AUTONOMOUS AI CREATOR</div>
-          <div class="text-xs text-muted">AI Publishing Intelligence</div>
+          <div class="font-bold text-sm tracking-wide text-main">AUTONOMOUS AI CREATOR</div>
+          <div class="text-xs text-muted">AI Intelligence Platform</div>
         </div>
       </div>
 
@@ -888,13 +1010,13 @@
           <span class="nav-icon">🧠</span> ADA Brain
         </div>
         <div class="nav-item" data-target="view-agents">
-          <span class="nav-icon">🤖</span> Agents
+          <span class="nav-icon">🤖</span> Active Agents
         </div>
         <div class="nav-item" data-target="view-feed">
-          <span class="nav-icon">📰</span> Content Feed
+          <span class="nav-icon">📰</span> Published Feed
         </div>
         <div class="nav-item" data-target="view-activity">
-          <span class="nav-icon">⚡</span> Activity
+          <span class="nav-icon">⚡</span> Activity Logs
         </div>
         <div class="nav-item" data-target="view-rejected">
           <span class="nav-icon">🛑</span> Rejected Content
@@ -904,26 +1026,29 @@
       <div class="system-status flex-col gap-2">
         <div class="status-indicator">
           <div class="dot pulse"></div>
-          System Online
+          SYSTEM ONLINE
         </div>
-        <div class="text-xs text-muted">Scheduler Active</div>
+        <div class="text-xs text-muted flex items-center justify-between mt-1">
+          <span>Scheduler: Active</span>
+          <span class="font-mono text-faint">CRON</span>
+        </div>
       </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN CONTENT AREA -->
     <main class="main-area">
       <!-- TOP HEADER -->
       <header class="top-header">
         <div>
-          <h1 class="font-semibold text-lg">Autonomous AI Creator</h1>
-          <p class="text-xs text-muted">Your AI agents create, evaluate and improve content autonomously.</p>
+          <h1 class="font-semibold text-lg text-main">Autonomous Intelligence Center</h1>
+          <p class="text-xs text-muted">Autonomous agents research, evaluate, and publish AI security content continuously.</p>
         </div>
         <div class="flex items-center gap-4">
           <div class="text-xs text-muted flex items-center gap-2">
-            Last activity: <span id="lastActivityTime">Just now</span>
+            Last activity: <span id="lastActivityTime" class="font-medium text-main">Just now</span>
           </div>
           <button class="btn btn-primary text-xs" id="headerInitBtn" onclick="openInitModal()">
-            Initialize Agent
+            + Initialize Agent
           </button>
         </div>
       </header>
@@ -934,92 +1059,115 @@
         <div id="view-overview" class="view-section active">
           <div class="hero-section">
             <div>
-              <h2 class="hero-title">Your AI is creating.</h2>
-              <p class="hero-subtitle">Autonomous agents research, write, fact-check, critique and publish content without waiting for a prompt.</p>
+              <h2 class="hero-title">Autonomous AI Creator</h2>
+              <p class="hero-subtitle">Multi-agent intelligence system researching, writing, fact-checking, critiquing, and publishing content without human intervention.</p>
             </div>
-            <div class="glass-card" style="min-width: 280px;">
+            <div class="glass-card" style="min-width: 290px;">
               <div class="flex justify-between items-center mb-4">
-                <span class="text-xs font-bold text-muted tracking-wide">AUTONOMY</span>
-                <div class="status-indicator" style="background: rgba(139,92,246,0.1); color: var(--primary); border-color: rgba(139,92,246,0.2);">
-                  <div class="dot pulse"></div> ACTIVE
+                <span class="text-xs font-bold text-muted tracking-wide">AUTONOMY STATUS</span>
+                <div class="status-indicator" style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
+                  <div class="dot pulse" style="background: var(--primary); box-shadow: 0 0 0 0 var(--primary-glow);"></div> ACTIVE
                 </div>
               </div>
-              <div class="text-sm mb-2"><span class="text-muted">Status:</span> Scheduler running</div>
-              <div class="text-sm mb-2"><span class="text-muted">Next cycle:</span> Continuous</div>
-              <div class="text-sm"><span class="text-muted">Threshold:</span> 80/100</div>
+              <div class="text-sm mb-2"><span class="text-muted">Scheduler:</span> <strong class="text-main">Running</strong></div>
+              <div class="text-sm mb-2"><span class="text-muted">Cycle Interval:</span> <strong class="text-main">Continuous (30m)</strong></div>
+              <div class="text-sm"><span class="text-muted">Score Threshold:</span> <strong class="text-primary">80 / 100</strong></div>
               
               <button class="btn btn-outline w-full mt-4" id="triggerCycleBtn">
-                Force Cycle
+                ⚡ Force Cycle
               </button>
             </div>
           </div>
 
+          <!-- KPI CARDS -->
           <div class="kpi-grid">
-            <div class="glass-card">
-              <div class="text-xs font-semibold text-muted tracking-wide">ACTIVE AGENTS</div>
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="text-xs font-bold text-muted tracking-wide">ACTIVE AGENTS</span>
+                <div class="kpi-icon-box" style="background: var(--primary-light); color: var(--primary);">🤖</div>
+              </div>
               <div class="kpi-value" id="kpiAgents">0</div>
+              <div class="kpi-trend text-muted"><span class="text-primary font-bold">+1</span> initialized</div>
             </div>
-            <div class="glass-card">
-              <div class="text-xs font-semibold text-muted tracking-wide">CONTENT CREATED</div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="text-xs font-bold text-muted tracking-wide">TOTAL CONTENT CREATED</span>
+                <div class="kpi-icon-box" style="background: var(--secondary-light); color: var(--secondary);">📰</div>
+              </div>
               <div class="kpi-value" id="kpiPosts">0</div>
+              <div class="kpi-trend text-muted"><span class="text-secondary font-bold">+12%</span> this week</div>
             </div>
-            <div class="glass-card">
-              <div class="text-xs font-semibold text-muted tracking-wide">APPROVAL RATE</div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="text-xs font-bold text-muted tracking-wide">APPROVAL RATE</span>
+                <div class="kpi-icon-box" style="background: var(--success-light); color: var(--success);">✓</div>
+              </div>
               <div class="kpi-value text-success">87%</div>
+              <div class="kpi-trend text-muted"><span class="text-success font-bold">Threshold > 80/100</span></div>
             </div>
-            <div class="glass-card">
-              <div class="text-xs font-semibold text-muted tracking-wide">AVG QUALITY SCORE</div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="text-xs font-bold text-muted tracking-wide">AVG QUALITY SCORE</span>
+                <div class="kpi-icon-box" style="background: var(--purple-light); color: var(--purple);">⭐</div>
+              </div>
               <div class="kpi-value text-primary">91</div>
+              <div class="kpi-trend text-muted"><span class="text-primary font-bold">Fact-checked & approved</span></div>
             </div>
           </div>
           
-          <h3 class="font-semibold mb-4">Autonomous Workflow Architecture</h3>
+          <h3 class="font-bold text-lg mb-4">Autonomous 7-Stage Workflow Architecture</h3>
           <div class="workflow-container">
             <div class="workflow-node" id="wf-discovery">
               <div class="workflow-node-icon">🔍</div>
-              <div class="workflow-node-label">Topic Discovery</div>
+              <div class="workflow-node-label">1. Discovery</div>
             </div>
             <div class="workflow-line"></div>
             <div class="workflow-node" id="wf-research">
               <div class="workflow-node-icon">📚</div>
-              <div class="workflow-node-label">Research</div>
+              <div class="workflow-node-label">2. Research</div>
             </div>
             <div class="workflow-line"></div>
             <div class="workflow-node" id="wf-writer">
               <div class="workflow-node-icon">✍️</div>
-              <div class="workflow-node-label">Writer</div>
+              <div class="workflow-node-label">3. Drafting</div>
             </div>
             <div class="workflow-line"></div>
             <div class="workflow-node" id="wf-factcheck">
               <div class="workflow-node-icon">✓</div>
-              <div class="workflow-node-label">Fact Check</div>
+              <div class="workflow-node-label">4. Fact Check</div>
             </div>
             <div class="workflow-line"></div>
             <div class="workflow-node" id="wf-critic">
               <div class="workflow-node-icon">⚖️</div>
-              <div class="workflow-node-label">Critic</div>
+              <div class="workflow-node-label">5. Critic Review</div>
             </div>
             <div class="workflow-line"></div>
             <div class="workflow-node" id="wf-improve">
               <div class="workflow-node-icon">🔄</div>
-              <div class="workflow-node-label">Self-Improve</div>
+              <div class="workflow-node-label">6. Self Improvement</div>
             </div>
             <div class="workflow-line"></div>
             <div class="workflow-node" id="wf-publish">
               <div class="workflow-node-icon">🚀</div>
-              <div class="workflow-node-label">Publish</div>
+              <div class="workflow-node-label">7. Publishing</div>
             </div>
           </div>
         </div>
 
-        <!-- AGENTS VIEW -->
+        <!-- ACTIVE AGENTS VIEW -->
         <div id="view-agents" class="view-section">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="font-bold text-xl">Active Agents</h2>
-            <button class="btn btn-primary text-sm" onclick="openInitModal()">+ New Agent</button>
+            <div>
+              <h2 class="font-bold text-2xl">Active Autonomous Agents</h2>
+              <p class="text-xs text-muted">Manage domain focus, writing styles, and agent feed outputs.</p>
+            </div>
+            <button class="btn btn-primary text-sm" onclick="openInitModal()">+ Initialize New Agent</button>
           </div>
-          <div id="agentsGrid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-            <div class="text-muted">Loading agents...</div>
+          <div id="agentsGrid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            <div class="text-muted">Loading active agents...</div>
           </div>
         </div>
 
@@ -1033,34 +1181,34 @@
           <div class="glass-card mb-6" id="agentDetailsHeader">
             <div class="flex justify-between items-start flex-wrap gap-4 mb-4">
               <div class="flex items-center gap-4">
-                <div class="author-avatar" id="detailAgentAvatar" style="width:48px; height:48px; font-size:1.5rem; background: var(--primary); color:white; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">A</div>
+                <div class="author-avatar" id="detailAgentAvatar" style="width:52px; height:52px; font-size:1.6rem; font-weight:800;">A</div>
                 <div>
                   <div class="flex items-center gap-3">
-                    <h2 class="font-bold text-xl" id="detailAgentName">ADA</h2>
-                    <span class="text-xs text-secondary font-bold tracking-wide" id="detailAgentDomain">CYBER SECURITY</span>
+                    <h2 class="font-bold text-2xl" id="detailAgentName">ADA</h2>
+                    <span class="text-xs text-secondary font-bold tracking-wide" id="detailAgentDomain" style="background: var(--secondary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm);">AI SECURITY</span>
                   </div>
                   <div class="text-xs text-muted mt-1" id="detailAgentRoleStyle">Researcher • Writer • Fact Checker • Critic</div>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <div class="status-indicator" style="font-size:0.75rem; padding: 0.25rem 0.75rem;">
-                  <div class="dot pulse"></div> ACTIVE
+                <div class="status-indicator">
+                  <div class="dot pulse"></div> ONLINE & SCHEDULING
                 </div>
-                <div class="glass-card" style="padding: 0.5rem 1rem; border-radius: var(--radius-sm);">
-                  <span class="font-bold text-sm text-primary" id="detailPostCount">0</span>
-                  <span class="text-xs text-muted ml-1">Posts</span>
+                <div class="glass-card" style="padding: 0.5rem 1.25rem; border-radius: var(--radius-md);">
+                  <span class="font-bold text-base text-primary" id="detailPostCount">0</span>
+                  <span class="text-xs text-muted ml-1 font-semibold">Posts</span>
                 </div>
               </div>
             </div>
             <div class="flex justify-between items-center text-xs text-muted pt-3" style="border-top: 1px solid var(--border-color);">
-              <span>Last generated post: <strong id="detailLastPostTime">Never</strong></span>
+              <span>Last generated post: <strong id="detailLastPostTime" class="text-main">Never</strong></span>
               <span id="detailAgentIdBadge" class="font-mono text-faint">ID: -</span>
             </div>
           </div>
 
           <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-lg">Agent Feed</h3>
-            <div class="text-xs text-muted" id="feedFilterLabel">Showing posts for selected agent only</div>
+            <h3 class="font-bold text-lg">Agent Published Feed</h3>
+            <div class="text-xs text-muted font-medium" id="feedFilterLabel">Showing posts for selected agent only</div>
           </div>
 
           <div id="agentFeedContainer" class="feed-grid">
@@ -1068,29 +1216,44 @@
           </div>
         </div>
 
-        <!-- FEED VIEW -->
+        <!-- PUBLISHED FEED VIEW -->
         <div id="view-feed" class="view-section">
-          <h2 class="font-bold text-xl mb-6">Published Content Feed</h2>
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="font-bold text-2xl">Published Content Feed</h2>
+              <p class="text-xs text-muted">LinkedIn / X social media posts synthesized by autonomous agents.</p>
+            </div>
+          </div>
           <div id="feedContainer" class="feed-grid">
-            <div class="text-muted text-center py-8">Loading feed...</div>
+            <div class="text-muted text-center py-8">Loading content feed...</div>
           </div>
         </div>
 
-        <!-- ACTIVITY VIEW -->
+        <!-- ACTIVITY LOGS VIEW -->
         <div id="view-activity" class="view-section">
-          <h2 class="font-bold text-xl mb-6">Live Agent Activity</h2>
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="font-bold text-2xl">Live Agent Activity Telemetry</h2>
+              <p class="text-xs text-muted">Real-time audit log stream of discovery, evaluation, rewrite, and publication steps.</p>
+            </div>
+          </div>
           <div class="glass-card">
             <div id="activityLogContainer" class="activity-log">
-              <div class="text-muted">Loading telemetry...</div>
+              <div class="text-muted">Loading activity telemetry...</div>
             </div>
           </div>
         </div>
 
-        <!-- REJECTED VIEW -->
+        <!-- REJECTED CONTENT VIEW -->
         <div id="view-rejected" class="view-section">
-          <h2 class="font-bold text-xl mb-6">Rejected Content</h2>
-          <div class="glass-card">
-            <p class="text-muted text-sm mb-4">Content that failed to meet the quality threshold of 80/100 or failed fact-checking after 3 improvement attempts.</p>
+          <div class="flex justify-between items-center mb-6">
+            <div>
+              <h2 class="font-bold text-2xl">Rejected Content Audit Log</h2>
+              <p class="text-xs text-muted">Candidate topics that failed AI Security whitelist, duplicate memory check, or score threshold (> 80).</p>
+            </div>
+          </div>
+          <div class="glass-card" style="border-left: 4px solid var(--danger);">
+            <p class="text-muted text-sm mb-4">Content audit logs listing explicit rejection reasons, scores, and factual/critic feedback.</p>
             <div id="rejectedLogContainer" class="activity-log">
               <div class="text-muted">Loading rejected logs...</div>
             </div>
@@ -1100,65 +1263,67 @@
         <!-- ADA BRAIN VIEW -->
         <div id="view-brain" class="view-section">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="font-bold text-2xl">ADA — Autonomous Brain</h2>
-            <div class="status-indicator" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); border-color: rgba(79, 70, 229, 0.2);">
-              <div class="dot pulse"></div> AUTONOMOUS
+            <div>
+              <h2 class="font-bold text-2xl">ADA — Autonomous Intelligence Brain</h2>
+              <p class="text-xs text-muted">Neural visual map tracking real-time autonomous publishing cycles.</p>
+            </div>
+            <div class="status-indicator" style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
+              <div class="dot pulse" style="background: var(--primary);"></div> AUTONOMOUS BRAIN ONLINE
             </div>
           </div>
 
           <div class="grid" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem;">
-            <!-- Main Visualization Area -->
-            <div class="glass-card flex-col items-center justify-center relative" style="min-height: 600px; overflow: hidden; background: radial-gradient(circle at center, #F8FAFC 0%, #FFFFFF 100%);">
+            <!-- Main Brain Visualization Orb & Neural Map -->
+            <div class="glass-card flex-col items-center justify-center relative" style="position: relative; min-height: 640px; overflow: hidden; background: radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%);">
               
               <svg id="brain-svg-lines"></svg>
 
               <!-- Central Brain Orb -->
               <div class="brain-orb">
                 <div class="brain-core">ADA</div>
+                <div class="brain-subtext">BRAIN</div>
                 <div class="brain-ring ring-1"></div>
                 <div class="brain-ring ring-2"></div>
                 <div class="brain-ring ring-3"></div>
               </div>
 
-              <!-- Autonomous Stages Container -->
-              <div class="brain-nodes-container" id="brainNodesContainer">
-                <!-- Nodes dynamically generated -->
-              </div>
+              <!-- Autonomous Nodes Container -->
+              <div class="brain-nodes-container" id="brainNodesContainer"></div>
               
-              <!-- Live Status Text overlay -->
-              <div class="absolute" style="bottom: 1.5rem; left: 1.5rem; right: 1.5rem; z-index: 20;">
-                <div class="glass-card" style="background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: space-between;">
-                   <div>
-                     <div class="text-xs font-bold text-muted tracking-wide mb-1">LIVE ACTIVITY</div>
-                     <div class="font-mono font-medium text-sm text-primary" id="brainLiveStatus">Waiting for cycle to begin...</div>
+              <!-- Live Activity Status Banner overlay -->
+              <div style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem; z-index: 20;">
+                <div class="glass-card" style="background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); gap: 1rem;">
+                   <div style="flex: 1; min-width: 0;">
+                     <div class="text-xs font-bold text-muted tracking-wide mb-0.5">LIVE INTELLIGENCE ACTIVITY</div>
+                     <div class="font-mono font-semibold text-sm text-primary" id="brainLiveStatus" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">Waiting for discovery cycle...</div>
                    </div>
-                   <div class="text-right">
-                     <div class="text-xs text-muted">Current Cycle</div>
-                     <div class="font-bold text-sm" id="brainCycleId">#0001</div>
+                   <div class="text-right" style="flex-shrink: 0;">
+                     <div class="text-xs text-muted font-medium">Cycle Counter</div>
+                     <div class="font-bold text-sm font-mono text-main" id="brainCycleId">#0001</div>
                    </div>
                 </div>
               </div>
 
             </div>
 
-            <!-- Side Panels -->
+            <!-- Side Intelligence Panels -->
             <div class="flex-col gap-4" style="display: flex; flex-direction: column;">
               
               <!-- Metrics -->
-              <div class="glass-card p-4" style="padding: 1rem;">
+              <div class="glass-card p-4">
                 <h3 class="text-xs font-bold text-muted tracking-wide mb-3">GLOBAL METRICS</h3>
                 <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                   <div>
-                    <div class="text-xs text-muted mb-1">Topics Scanned</div>
-                    <div class="font-bold text-lg" id="brainTopicsScanned">1,240</div>
+                    <div class="text-xs text-muted mb-1">Scanned Topics</div>
+                    <div class="font-bold text-lg text-main" id="brainTopicsScanned">1,240</div>
                   </div>
                   <div>
                     <div class="text-xs text-muted mb-1">Rejected</div>
                     <div class="font-bold text-lg text-danger" id="brainTopicsRejected">142</div>
                   </div>
                   <div>
-                    <div class="text-xs text-muted mb-1">Posts Gen</div>
-                    <div class="font-bold text-lg" id="brainPostsGen">48</div>
+                    <div class="text-xs text-muted mb-1">Drafts Gen</div>
+                    <div class="font-bold text-lg text-main" id="brainPostsGen">48</div>
                   </div>
                   <div>
                     <div class="text-xs text-muted mb-1">Published</div>
@@ -1166,47 +1331,47 @@
                   </div>
                   <div style="grid-column: span 2;">
                     <div class="text-xs text-muted mb-1">Avg Quality Score</div>
-                    <div class="font-bold text-lg text-primary" id="brainAvgScore">91/100</div>
+                    <div class="font-bold text-xl text-primary" id="brainAvgScore">91 / 100</div>
                   </div>
                 </div>
               </div>
 
-              <!-- Evaluation -->
-              <div class="glass-card p-4" style="padding: 1rem;">
-                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">LATEST EVALUATION</h3>
-                <div class="flex flex-col gap-2" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="text-sm text-muted">Relevance</span>
-                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 90%;"></div></div> <span class="text-xs font-bold">90</span></div>
+              <!-- Latest Evaluation breakdown -->
+              <div class="glass-card p-4">
+                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">LATEST TOPIC EVALUATION</h3>
+                <div class="flex flex-col gap-2.5" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-muted">Relevance</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 90%;"></div></div> <span class="text-xs font-bold font-mono">90</span></div>
                   </div>
-                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="text-sm text-muted">Novelty</span>
-                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 85%;"></div></div> <span class="text-xs font-bold">85</span></div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-muted">Novelty</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 85%;"></div></div> <span class="text-xs font-bold font-mono">85</span></div>
                   </div>
-                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="text-sm text-muted">Impact</span>
-                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 92%;"></div></div> <span class="text-xs font-bold">92</span></div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-muted">Impact</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 92%;"></div></div> <span class="text-xs font-bold font-mono">92</span></div>
                   </div>
-                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="text-sm text-muted">Timeliness</span>
-                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--warning); width: 78%;"></div></div> <span class="text-xs font-bold">78</span></div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-muted">Timeliness</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--warning); width: 78%;"></div></div> <span class="text-xs font-bold font-mono">78</span></div>
                   </div>
-                  <div class="flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="text-sm text-muted">Dup Risk</span>
-                    <div class="flex items-center gap-2" style="display: flex; align-items: center; gap: 0.5rem;"><div style="width: 64px; height: 8px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 15%;"></div></div> <span class="text-xs font-bold">15</span></div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-muted">Dup Risk</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 15%;"></div></div> <span class="text-xs font-bold font-mono">15</span></div>
                   </div>
                   <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                     <span class="font-bold text-sm">Overall Score</span>
-                     <span class="font-bold text-lg text-success">88/100</span>
+                     <span class="font-bold text-xs">Total Score</span>
+                     <span class="font-bold text-base text-success font-mono">88 / 100</span>
                   </div>
                 </div>
               </div>
 
               <!-- Decision Card -->
-              <div class="glass-card p-4 border-l-4" style="padding: 1rem; border-left: 4px solid var(--success);" id="brainDecisionCard">
-                <h3 class="text-xs font-bold text-muted tracking-wide mb-2">CURRENT DECISION</h3>
-                <div class="font-bold text-success mb-1" id="brainDecisionStatus">APPROVED</div>
-                <div class="text-xs text-muted" id="brainDecisionReason">REASON: Strong AI Security relevance and high novelty.</div>
+              <div class="glass-card p-4" style="border-left: 4px solid var(--success);" id="brainDecisionCard">
+                <h3 class="text-xs font-bold text-muted tracking-wide mb-2">DECISION VERDICT</h3>
+                <div class="font-bold text-success text-base mb-1" id="brainDecisionStatus">APPROVED</div>
+                <div class="text-xs text-muted" id="brainDecisionReason">Reason: High relevance to AI Security whitelist and novel vulnerability disclosure.</div>
               </div>
 
             </div>
@@ -1217,44 +1382,47 @@
     </main>
   </div>
 
-  <!-- INIT MODAL -->
+  <!-- INIT AGENT MODAL -->
   <div class="modal-overlay" id="initModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="font-bold">Initialize New Persona</h3>
+        <div>
+          <h3 class="font-bold text-lg">Initialize Autonomous Agent</h3>
+          <p class="text-xs text-muted">Configure persona attributes and domain parameters.</p>
+        </div>
         <button class="close-btn" onclick="closeInitModal()">✕</button>
       </div>
       <div class="modal-body">
         <form id="initForm">
           <div class="form-group">
             <label class="form-label">Persona Name</label>
-            <input type="text" id="agentName" class="form-control form-input" value="Ada" required>
+            <input type="text" id="agentName" class="form-input" value="Ada" placeholder="e.g. Ada" required>
           </div>
           <div class="form-group">
             <label class="form-label">Domain Focus</label>
-            <input type="text" id="agentDomain" class="form-control form-input" value="AI Security" required>
+            <input type="text" id="agentDomain" class="form-input" value="AI Security" placeholder="e.g. AI Security" required>
           </div>
           <div class="form-group">
-            <label class="form-label">Writing Style (Optional)</label>
-            <input type="text" class="form-control form-input" value="Technical, Concise, Analytical">
+            <label class="form-label">Writing Style</label>
+            <input type="text" class="form-input" value="Technical, Concise, Analytical, Evidence-Based">
           </div>
           <div class="flex gap-4">
             <div class="form-group w-full">
               <label class="form-label">Autonomy Level</label>
-              <select class="form-control form-input" style="background: rgba(0,0,0,0.2); color:white;">
+              <select class="form-input">
                 <option>Fully Autonomous</option>
                 <option>Human-in-the-loop</option>
               </select>
             </div>
             <div class="form-group w-full">
               <label class="form-label">Quality Threshold</label>
-              <input type="number" class="form-control form-input" value="80" disabled>
+              <input type="text" class="form-input" value="80 / 100" disabled style="background: var(--bg-surface-light);">
             </div>
           </div>
           
           <div id="initSequenceDisplay" class="init-sequence hidden"></div>
 
-          <button type="submit" class="btn btn-primary w-full mt-4" id="submitInitBtn">Launch Agent</button>
+          <button type="submit" class="btn btn-primary w-full mt-4" id="submitInitBtn">Launch Autonomous Agent</button>
         </form>
       </div>
     </div>
@@ -1264,19 +1432,22 @@
   <div class="modal-overlay" id="generateModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="font-bold">Generate New Post for <span id="genAgentNameTitle">Agent</span></h3>
+        <div>
+          <h3 class="font-bold text-lg">Generate Post for <span id="genAgentNameTitle" class="text-primary">Agent</span></h3>
+          <p class="text-xs text-muted">Synthesize technical social content using OpenAI models.</p>
+        </div>
         <button class="close-btn" onclick="closeGenerateModal()">✕</button>
       </div>
       <div class="modal-body">
         <form id="generatePostForm">
           <div class="form-group mb-3">
             <label class="form-label">Topic / Subject</label>
-            <input type="text" id="genPostTopic" class="form-control form-input" placeholder="e.g. Prompt Injection in Multi-Agent Systems" required>
+            <input type="text" id="genPostTopic" class="form-input" placeholder="e.g. Indirect Prompt Injection in Multi-Agent Memory" required>
           </div>
           <div class="flex gap-3 mb-3">
             <div class="form-group w-full">
               <label class="form-label">Post Type</label>
-              <select id="genPostType" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+              <select id="genPostType" class="form-input">
                 <option value="Educational">Educational</option>
                 <option value="Vulnerability Alert">Vulnerability Alert</option>
                 <option value="Security Breakthrough">Security Breakthrough</option>
@@ -1285,7 +1456,7 @@
             </div>
             <div class="form-group w-full">
               <label class="form-label">Target Platform</label>
-              <select id="genPlatform" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+              <select id="genPlatform" class="form-input">
                 <option value="LinkedIn / X">LinkedIn / X</option>
                 <option value="LinkedIn">LinkedIn</option>
                 <option value="X (Twitter)">X (Twitter)</option>
@@ -1294,7 +1465,7 @@
           </div>
           <div class="form-group mb-3">
             <label class="form-label">Tone & Style</label>
-            <select id="genTone" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+            <select id="genTone" class="form-input">
               <option value="Professional & Analytical">Professional & Analytical</option>
               <option value="Technical & Skeptical">Technical & Skeptical</option>
               <option value="Punchy & Urgent">Punchy & Urgent</option>
@@ -1302,13 +1473,13 @@
             </select>
           </div>
           <div class="form-group mb-3">
-            <label class="form-label">Additional Instructions (Optional)</label>
-            <textarea id="genInstructions" class="form-control form-input" rows="2" placeholder="Specific technical takeaways, CVE references, or bullet points to include..."></textarea>
+            <label class="form-label">Additional Instructions</label>
+            <textarea id="genInstructions" class="form-input" rows="2" placeholder="Specific security takeaways, CVE references, or remediation advice..."></textarea>
           </div>
 
           <div id="genSequenceDisplay" class="init-sequence hidden mb-3"></div>
 
-          <button type="submit" class="btn btn-primary w-full mt-2" id="submitGenBtn">+ Generate Post</button>
+          <button type="submit" class="btn btn-primary w-full mt-2" id="submitGenBtn">+ Generate & Publish Post</button>
         </form>
       </div>
     </div>
@@ -1318,7 +1489,10 @@
   <div class="modal-overlay" id="editPostModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="font-bold">Edit Post</h3>
+        <div>
+          <h3 class="font-bold text-lg">Edit Post</h3>
+          <p class="text-xs text-muted">Update post headline, body text, platform, or status.</p>
+        </div>
         <button class="close-btn" onclick="closeEditModal()">✕</button>
       </div>
       <div class="modal-body">
@@ -1326,20 +1500,20 @@
           <input type="hidden" id="editPostId">
           <div class="form-group mb-3">
             <label class="form-label">Post Title</label>
-            <input type="text" id="editPostTitle" class="form-control form-input" required>
+            <input type="text" id="editPostTitle" class="form-input" required>
           </div>
           <div class="form-group mb-3">
-            <label class="form-label">Post Content</label>
-            <textarea id="editPostContent" class="form-control form-input" rows="6" required></textarea>
+            <label class="form-label">Post Content (100–250 Words)</label>
+            <textarea id="editPostContent" class="form-input" rows="6" required></textarea>
           </div>
           <div class="flex gap-3 mb-3">
             <div class="form-group w-full">
               <label class="form-label">Platform</label>
-              <input type="text" id="editPostPlatform" class="form-control form-input" value="LinkedIn / X">
+              <input type="text" id="editPostPlatform" class="form-input" value="LinkedIn / X">
             </div>
             <div class="form-group w-full">
               <label class="form-label">Status</label>
-              <select id="editPostStatus" class="form-control form-input" style="background: var(--bg-base); color: var(--text-main);">
+              <select id="editPostStatus" class="form-input">
                 <option value="Published">Published</option>
                 <option value="Draft">Draft</option>
                 <option value="Generated">Generated</option>
@@ -1374,15 +1548,15 @@
         } else if (targetId === 'view-feed') {
           loadGlobalFeed();
         } else if (targetId === 'view-brain') {
-          loadLogs(); // ensure we have latest data
+          loadLogs(); // fetch latest telemetry data
           if (typeof initBrainVisualization === 'function') {
-            setTimeout(initBrainVisualization, 50); // wait for display layout
+            setTimeout(initBrainVisualization, 50);
           }
         }
       });
     });
 
-    // Modals
+    // Modal Helpers
     function openInitModal() {
       document.getElementById('initModal').classList.add('active');
       document.getElementById('initSequenceDisplay').classList.add('hidden');
@@ -1396,7 +1570,7 @@
 
     function openGenerateModal() {
       if (!activeAgentId) {
-        alert('Please select an agent first.');
+        alert('Please select or initialize an agent first.');
         return;
       }
       const agentName = currentSelectedAgent ? currentSelectedAgent.name : 'Agent';
@@ -1430,7 +1604,7 @@
       loadAgents();
       setInterval(loadAgents, 30000); // refresh every 30s
       
-      // Init Agent Form
+      // Form: Init Agent
       document.getElementById('initForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitInitBtn');
@@ -1447,7 +1621,7 @@
           'Connecting to AI Language Models...',
           'Loading Memory & Knowledge Base...',
           'Starting Autonomous Scheduler...',
-          'Agents Ready ✓'
+          'Agent Ready ✓'
         ];
         
         seq.innerHTML = '';
@@ -1477,7 +1651,7 @@
         }
       });
 
-      // Generate Post Form
+      // Form: Generate Post
       document.getElementById('generatePostForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!activeAgentId) return;
@@ -1494,11 +1668,11 @@
         seq.classList.remove('hidden');
 
         const steps = [
-          'Generating...',
-          'Researching topic...',
-          'Writing content...',
-          'Fact checking...',
-          'Finalizing...'
+          'Generating Post...',
+          'Researching topic & security impact...',
+          'Drafting content...',
+          'Fact checking claims...',
+          'Finalizing publication...'
         ];
 
         seq.innerHTML = '';
@@ -1538,7 +1712,7 @@
         }
       });
 
-      // Edit Post Form
+      // Form: Edit Post
       document.getElementById('editPostForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editPostId').value;
@@ -1572,7 +1746,7 @@
       // Trigger Cycle Button
       document.getElementById('triggerCycleBtn').addEventListener('click', async () => {
         if (!activeAgentId) {
-          alert('No active agent. Please select or initialize an agent.');
+          alert('No active agent. Please select or initialize an agent first.');
           return;
         }
         
@@ -1625,7 +1799,7 @@
         const grid = document.getElementById('agentsGrid');
         
         if (!data.agents || data.agents.length === 0) {
-          grid.innerHTML = '<div class="text-muted">No agents active. Initialize one.</div>';
+          grid.innerHTML = '<div class="text-muted">No agents active. Click "+ Initialize New Agent" to launch one.</div>';
           document.getElementById('kpiAgents').innerText = '0';
           document.getElementById('kpiPosts').innerText = '0';
           return;
@@ -1643,25 +1817,25 @@
           const isSelected = a.id === activeAgentId;
 
           return `
-          <div class="agent-card ${isSelected ? 'active' : ''}" onclick="selectAgent('${a.id}')" style="transition: all 0.2s; cursor: pointer;">
+          <div class="agent-card ${isSelected ? 'active' : ''}" onclick="selectAgent('${a.id}')">
             <div class="flex justify-between items-start mb-4">
               <div class="flex items-center gap-3">
-                <div class="author-avatar" style="width:36px; height:36px; font-size:1rem; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold;">${a.name.charAt(0)}</div>
+                <div class="author-avatar" style="width:40px; height:40px; font-size:1.1rem;">${a.name.charAt(0)}</div>
                 <div>
-                  <div class="font-bold text-sm">${escapeHtml(a.name.toUpperCase())}</div>
-                  <div class="text-xs text-secondary font-semibold">${escapeHtml(a.domain.toUpperCase())}</div>
+                  <div class="font-bold text-base text-main">${escapeHtml(a.name.toUpperCase())}</div>
+                  <div class="text-xs text-secondary font-bold tracking-wide">${escapeHtml(a.domain.toUpperCase())}</div>
                 </div>
               </div>
-              <div class="status-indicator" style="font-size:0.6rem; padding: 0.15rem 0.5rem;"><div class="dot pulse"></div> ACTIVE</div>
+              <div class="status-indicator" style="font-size:0.65rem; padding: 0.2rem 0.6rem;"><div class="dot pulse"></div> ONLINE</div>
             </div>
             
             <div class="text-xs text-muted mb-4">
-              Roles: Researcher, Writer, Fact Checker, Critic
+              Writing Style: ${escapeHtml(a.style || 'Technical, Concise, Analytical')}
             </div>
             
-            <div class="flex justify-between items-center text-xs pt-2" style="border-top: 1px solid var(--border-color);">
-              <span class="font-semibold text-main">${count} ${count === 1 ? 'Post' : 'Posts'}</span>
-              <button class="btn btn-primary text-xs" style="padding: 0.35rem 0.75rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">Select →</button>
+            <div class="flex justify-between items-center text-xs pt-3" style="border-top: 1px solid var(--border-color);">
+              <span class="font-bold text-main">${count} ${count === 1 ? 'Post' : 'Posts'}</span>
+              <button class="btn btn-primary text-xs" style="padding: 0.35rem 0.85rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">View Feed →</button>
             </div>
           </div>
         `}).join('');
@@ -1702,11 +1876,11 @@
           document.getElementById('detailAgentAvatar').innerText = a.name.charAt(0);
           document.getElementById('detailAgentName').innerText = a.name.toUpperCase();
           document.getElementById('detailAgentDomain').innerText = a.domain.toUpperCase();
-          document.getElementById('detailAgentRoleStyle').innerText = `${a.role || 'Researcher'} • Writer • Fact Checker • Critic`;
+          document.getElementById('detailAgentRoleStyle').innerText = `${a.role || 'AI Security Researcher'} • ${a.style || 'Technical, Concise'}`;
           document.getElementById('detailPostCount').innerText = a.totalPosts || 0;
           document.getElementById('detailLastPostTime').innerText = a.lastPublishedAt ? new Date(a.lastPublishedAt).toLocaleString() : 'Never';
           document.getElementById('detailAgentIdBadge').innerText = `ID: ${a.id}`;
-          document.getElementById('feedFilterLabel').innerText = `Showing posts for ${a.name} (${a.domain}) strictly`;
+          document.getElementById('feedFilterLabel').innerText = `Showing posts for ${a.name} (${a.domain})`;
         }
       } catch (err) {
         console.error('Failed to load agent status', err);
@@ -1764,11 +1938,13 @@
     }
 
     function renderPostCard(post, agentObj) {
-      const score = 91;
+      const score = 92;
       const agentName = agentObj ? agentObj.name : (post.agentName || 'Ada');
       const agentRole = agentObj ? agentObj.role : 'AI Security Researcher';
       const platform = post.platform || 'LinkedIn / X';
       const status = post.status || 'Published';
+
+      const wordCount = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
       let statusBadge = '<div class="badge success">✓ Published</div>';
       if (status === 'Draft') statusBadge = '<div class="badge warning">✎ Draft</div>';
@@ -1780,40 +1956,45 @@
           <div class="post-author">
             <div class="author-avatar">${escapeHtml(agentName.charAt(0))}</div>
             <div>
-              <div class="font-bold">${escapeHtml(agentName)}</div>
+              <div class="font-bold text-main">${escapeHtml(agentName)}</div>
               <div class="text-xs text-muted">${escapeHtml(agentRole)}</div>
-              <div class="text-xs text-faint mt-1">${new Date(post.publishedAt).toLocaleString()}</div>
+              <div class="text-xs text-faint mt-0.5">${new Date(post.publishedAt).toLocaleString()}</div>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-secondary" style="background: rgba(13,148,136,0.1); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
-            <div class="score-circle">${score}</div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-semibold text-secondary" style="background: var(--secondary-light); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
+            <span class="text-xs font-bold font-mono text-primary" style="background: var(--primary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid rgba(37,99,235,0.2);" title="Post Word Count">
+              Word Count: ${wordCount} / 220 words
+            </span>
+            <div class="score-circle" title="Quality Score">${score}</div>
           </div>
         </div>
 
-        ${post.title ? `<h4 class="font-bold text-md mb-2" style="color: var(--text-main);">${escapeHtml(post.title)}</h4>` : ''}
+        ${post.title ? `<h4 class="font-bold text-lg mb-2" style="color: var(--text-main); padding: 1.25rem 1.5rem 0 1.5rem;">${escapeHtml(post.title)}</h4>` : ''}
 
-        <div class="post-body">${escapeHtml(post.content)}</div>
+        <div class="post-body" style="${post.title ? 'padding-top: 0.5rem;' : ''}">${escapeHtml(post.content)}</div>
         
         <div class="post-footer flex justify-between items-center flex-wrap gap-3">
-          <div class="badges">
+          <div class="badges" style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;">
             <div class="badge success">✓ Fact Checked</div>
             <div class="badge success">✓ Critic Approved</div>
+            <div class="badge primary">✓ 7-Stage Structure</div>
+            <div class="badge purple">✓ Source Verified</div>
             ${statusBadge}
           </div>
           
           <div class="flex gap-2 flex-wrap">
-            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.6rem;" onclick="openEditModal('${post.id}', '${escapeJs(post.title)}', '${escapeJs(post.content)}', '${escapeJs(platform)}', '${escapeJs(status)}')">
+            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.75rem;" onclick="openEditModal('${post.id}', '${escapeJs(post.title)}', '${escapeJs(post.content)}', '${escapeJs(platform)}', '${escapeJs(status)}')">
               Edit
             </button>
-            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.6rem;" onclick="regeneratePost('${post.id}', this)">
+            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.75rem;" onclick="regeneratePost('${post.id}', this)">
               Regenerate
             </button>
-            ${status !== 'Published' ? `<button class="btn btn-outline text-xs text-success" style="padding: 0.35rem 0.6rem;" onclick="publishPost('${post.id}')">Publish</button>` : ''}
-            <button class="btn btn-outline text-xs text-danger" style="padding: 0.35rem 0.6rem; color: var(--danger); border-color: rgba(239,68,68,0.3);" onclick="deletePost('${post.id}')">
+            ${status !== 'Published' ? `<button class="btn btn-outline text-xs text-success" style="padding: 0.35rem 0.75rem;" onclick="publishPost('${post.id}')">Publish</button>` : ''}
+            <button class="btn btn-outline text-xs text-danger" style="padding: 0.35rem 0.75rem; color: var(--danger); border-color: rgba(220,38,38,0.3);" onclick="deletePost('${post.id}')">
               Delete
             </button>
-            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.6rem;" onclick="showDecisionTrace(this)" data-rationale="${escapeHtml(post.rationale || '')}" data-relevant="${escapeHtml(post.whyRelevantNow || '')}">
+            <button class="btn btn-outline text-xs" style="padding: 0.35rem 0.75rem;" onclick="showDecisionTrace(this)" data-rationale="${escapeHtml(post.rationale || '')}" data-relevant="${escapeHtml(post.whyRelevantNow || '')}">
               Decision Trace
             </button>
           </div>
@@ -1892,8 +2073,8 @@
         const rejectedContainer = document.getElementById('rejectedLogContainer');
         
         if (!data.logs || data.logs.length === 0) {
-          activityContainer.innerHTML = '<div class="text-muted">No activity yet.</div>';
-          rejectedContainer.innerHTML = '<div class="text-muted">No rejected content.</div>';
+          activityContainer.innerHTML = '<div class="text-muted">No activity telemetry recorded yet.</div>';
+          rejectedContainer.innerHTML = '<div class="text-muted">No rejected content logged.</div>';
           return;
         }
 
@@ -1935,8 +2116,8 @@
            }
         }
 
-        activityContainer.innerHTML = activityLogs.length ? activityLogs.join('') : '<div class="text-muted">No standard activity.</div>';
-        rejectedContainer.innerHTML = rejectedLogs.length ? rejectedLogs.join('') : '<div class="text-muted">No rejected content yet.</div>';
+        activityContainer.innerHTML = activityLogs.length ? activityLogs.join('') : '<div class="text-muted">No standard activity telemetry.</div>';
+        rejectedContainer.innerHTML = rejectedLogs.length ? rejectedLogs.join('') : '<div class="text-muted">No rejected content recorded.</div>';
         
       } catch(err) {}
     }
@@ -1981,14 +2162,13 @@
 
       const centerX = container.clientWidth / 2;
       const centerY = container.clientHeight / 2;
-      const radiusX = Math.min(centerX - 90, 300);
-      const radiusY = Math.min(centerY - 90, 250);
+      const radiusX = Math.min(centerX - 100, 240);
+      const radiusY = Math.min(centerY - 105, 185);
 
       let html = '';
       let svgHtml = '';
 
       brainStages.forEach((stage, i) => {
-        // Start from top (-90 degrees)
         const angle = (i / brainStages.length) * Math.PI * 2 - Math.PI / 2;
         const x = centerX + Math.cos(angle) * radiusX;
         const y = centerY + Math.sin(angle) * radiusY;
@@ -2007,7 +2187,7 @@
         const nextAngle = ((i + 1) % brainStages.length) / brainStages.length * Math.PI * 2 - Math.PI / 2;
         const nextX = centerX + Math.cos(nextAngle) * radiusX;
         const nextY = centerY + Math.sin(nextAngle) * radiusY;
-        svgHtml += `<path d="M${x},${y} L${nextX},${nextY}" class="bn-line" style="opacity: 0.2;"></path>`;
+        svgHtml += `<path d="M${x},${y} L${nextX},${nextY}" class="bn-line" style="opacity: 0.15;"></path>`;
       });
 
       container.innerHTML = html;

@@ -91,10 +91,12 @@ export class SchedulerEngine {
         approvedEvaluations.sort((a, b) => b.totalScore - a.totalScore);
         const topCandidate = approvedEvaluations[0];
         
-        Logger.info(`Topic selected for content generation: "${topCandidate.topic.title}" (Score: ${topCandidate.totalScore})`, agentId);
+        if (topCandidate && topCandidate.topic) {
+          Logger.info(`Topic selected for content generation: "${topCandidate.topic.title}" (Score: ${topCandidate.totalScore})`, agentId);
 
-        await this.writerEngine.createAndPublishPost(agentId, persona, topCandidate.topic, topCandidate);
-        publishedCount++;
+          await this.writerEngine.createAndPublishPost(agentId, persona, topCandidate.topic, topCandidate);
+          publishedCount++;
+        }
       } else {
         Logger.info('No topics passed editorial quality thresholds during this cycle.', agentId);
       }

@@ -38,7 +38,7 @@ export class EditorialEngine {
         };
 
         evaluations.push(evalResult);
-        
+
         // Log rejected topic with explicit rejection reason
         Logger.editorial(
           `REJECTED Topic "${topic.title}" — Reason: ${rejectionReason}`,

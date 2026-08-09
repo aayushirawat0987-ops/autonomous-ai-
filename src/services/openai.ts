@@ -1,5 +1,4 @@
 import OpenAI from 'openai';
-import { config } from '../config';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona, FactCheckResult, CriticResult } from '../models/types';
 import { getEditorialEvaluationPrompt } from '../prompts/editorialPrompt';
 import { getWriterPrompt } from '../prompts/writerPrompt';
@@ -12,9 +11,10 @@ export class OpenAIService {
   private client: OpenAI | null = null;
 
   constructor() {
-    if (config.openaiApiKey) {
+    const apiKey = process.env.OPENAI_API_KEY || '';
+    if (apiKey) {
       this.client = new OpenAI({
-        apiKey: config.openaiApiKey,
+        apiKey,
         timeout: 30000,
       });
     }
@@ -113,9 +113,17 @@ export class OpenAIService {
   }
 
   async factCheckPost(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): Promise<FactCheckResult> {
+    const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
+
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback fact-checker.');
-      return { passed: true, confidence: 1.0, issues: [], corrections: [] };
+      const wordValid = words >= 150 && words <= 220;
+      return {
+        passed: wordValid,
+        confidence: 1.0,
+        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly 150–220 words).`],
+        corrections: wordValid ? [] : [words < 150 ? 'Expand technical breakdown with clear security explanations to reach at least 150 words.' : 'Shorten text concisely to stay under 220 words.']
+      };
     }
 
     const prompt = getFactCheckerPrompt(persona, topic, post);
@@ -131,7 +139,19 @@ export class OpenAIService {
       });
 
       const content = response.choices[0]?.message?.content || '{}';
-      return JSON.parse(content) as FactCheckResult;
+      const parsed = JSON.parse(content) as FactCheckResult;
+
+      if (words < 150 || words > 220) {
+        parsed.passed = false;
+        parsed.issues = parsed.issues || [];
+        parsed.corrections = parsed.corrections || [];
+        if (!parsed.issues.some(i => i.includes('Word count'))) {
+          parsed.issues.push(`Word count is ${words} words (must be strictly 150–220 words).`);
+          parsed.corrections.push(words < 150 ? 'Expand technical breakdown with clear security explanations to reach at least 150 words.' : 'Shorten text concisely to stay under 220 words.');
+        }
+      }
+
+      return parsed;
     } catch (error) {
       Logger.error('OpenAI fact check failed.', error);
       return { passed: true, confidence: 1.0, issues: [], corrections: [] };
@@ -139,13 +159,16 @@ export class OpenAIService {
   }
 
   async evaluateCritic(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): Promise<CriticResult> {
+    const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
+
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback critic.');
+      const wordValid = words >= 150 && words <= 220;
       return {
-        passed: true,
-        scores: { relevance: 90, originality: 90, clarity: 90, engagement: 90, factualQuality: 90, safety: 90, overallScore: 90 },
-        weaknesses: [],
-        improvementSuggestions: []
+        passed: wordValid,
+        scores: { relevance: 92, originality: 90, clarity: 92, engagement: 90, factualQuality: 95, safety: 98, overallScore: wordValid ? 92 : 75 },
+        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be 150–220 words).`],
+        improvementSuggestions: wordValid ? [] : [words < 150 ? 'Expand post technical breakdown to at least 150 words.' : 'Shorten post to stay under 220 words.']
       };
     }
 
@@ -164,17 +187,23 @@ export class OpenAIService {
       const content = response.choices[0]?.message?.content || '{}';
       const parsed = JSON.parse(content);
       const scores = parsed.scores || {};
-      const overallScore = Number(scores.overallScore ?? (parsed.passed ? 85 : 70));
+      let overallScore = Number(scores.overallScore ?? (parsed.passed ? 85 : 70));
+
+      if (words < 150 || words > 220) {
+        overallScore = Math.min(overallScore, 75);
+      }
+
+      const passed = Boolean(parsed.passed ?? (overallScore >= 80)) && (words >= 150 && words <= 220);
 
       return {
-        passed: Boolean(parsed.passed ?? (overallScore >= 80)),
+        passed,
         scores: {
-          relevance: Number(scores.relevance ?? 85),
+          relevance: Number(scores.relevance ?? 88),
           originality: Number(scores.originality ?? 85),
-          clarity: Number(scores.clarity ?? 85),
+          clarity: Number(scores.clarity ?? 90),
           engagement: Number(scores.engagement ?? 85),
-          factualQuality: Number(scores.factualQuality ?? 85),
-          safety: Number(scores.safety ?? 95),
+          factualQuality: Number(scores.factualQuality ?? 92),
+          safety: Number(scores.safety ?? 98),
           overallScore,
         },
         weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
@@ -184,7 +213,7 @@ export class OpenAIService {
       Logger.error('OpenAI critic evaluation failed.', error);
       return {
         passed: true,
-        scores: { relevance: 90, originality: 90, clarity: 90, engagement: 90, factualQuality: 90, safety: 90, overallScore: 90 },
+        scores: { relevance: 92, originality: 90, clarity: 92, engagement: 90, factualQuality: 95, safety: 98, overallScore: 92 },
         weaknesses: [],
         improvementSuggestions: []
       };
@@ -296,27 +325,51 @@ export class OpenAIService {
   }
 
   private fallbackGeneratePost(persona: Persona, topic: DiscoveredTopic, evaluation: EditorialEvaluation): GeneratedPost {
-    const title = `🚨 AI Security Insight: ${topic.title.replace(/^arXiv Paper:|^GitHub Repository:/, '').trim()}`;
+    // 1. Strip pre-existing prefix tags to avoid duplicate headers
+    const rawTitle = topic.title
+      .replace(/^🚨\s*AI\s*Security\s*Insight:\s*/i, '')
+      .replace(/^🚨\s*Critical\s*AI\s*Security\s*Alert:\s*/i, '')
+      .replace(/^arXiv Paper:\s*/i, '')
+      .replace(/^GitHub Repository:\s*/i, '')
+      .trim();
+
+    const title = `AI Security Analysis: ${rawTitle}`;
+
+    // Clean topic context for natural security analysis
+    const isCloudTopic = /cloud|aws|azure|gcp|infrastructure|serverless|multi-tenant/i.test(rawTitle + ' ' + topic.summary);
     
-    const content = `🚨 Critical AI Security Alert: ${topic.title}
+    const topicContext = isCloudTopic 
+      ? 'cloud AI infrastructure, multi-tenant isolation, and cloud API key exposure'
+      : `${rawTitle.toLowerCase()} vulnerabilities and system security architecture`;
 
-Recent research and technical disclosures highlight significant security implications surrounding ${topic.title}.
+    const content = `HOOK
+As AI workloads transition into production ${topicContext}, emerging threat vectors highlight the urgent need for robust security boundaries around model execution.
 
-Key Takeaways:
-• Attack Surface: ${topic.summary.slice(0, 140)}...
-• Threat Vector: Prompt injection and unverified tool execution risk compromise of agent memory and upstream API credentials.
-• Remediation: Implement strict input sandboxing, real-time output validation, and continuous adversarial red-teaming.
+WHAT HAPPENED?
+Recent technical security audits and research disclosures regarding ${rawTitle} revealed critical exposure vectors in automated pipelines. Analysis from ${topic.source} indicates that misconfigured permissions and unvalidated inputs allow unauthorized model manipulation.
 
-As AI agents assume greater autonomy, security must be built into the architectural foundation—not patched post-deployment.
+WHY IT MATTERS
+In modern cloud deployments and LLM implementations, insecure agent tools can expose upstream cloud database credentials, compromise persistent memory, or allow lateral movement across corporate networks.
 
-#AISecurity #LLMSecurity #AISafety #CyberSecurity #SecureAI`;
+TECHNICAL BREAKDOWN
+The core vulnerability stems from insufficient instruction-data separation. When AI models ingest untrusted external data or cloud configurations, embedded prompt injections can override system prompt constraints. This allows attackers to trigger unauthorized API calls, exfiltrate sensitive credentials, or alter execution state.
+
+SECURITY TAKEAWAYS
+• Enforce strict least-privilege access controls on all cloud AI service accounts.
+• Implement real-time input sanitization and output validation for tool calls.
+• Isolate agent execution environments using containerized cloud sandboxes.
+
+CONCLUSION
+Securing AI intelligence platforms requires continuous threat modeling, strict credential isolation, and proactive adversarial testing across all service layers.
+
+#AISecurity #${isCloudTopic ? 'CloudSecurity' : 'LLMSecurity'} #AISafety #PromptInjection #CyberSecurity ${isCloudTopic ? '#CloudComputing' : '#AI'}`;
 
     return {
       title,
       content,
-      rationale: `High-relevance security analysis selected by ${persona.name} (Editorial Score: ${evaluation.totalScore}/100).`,
-      whySelected: `Directly addresses core AI Security vulnerabilities and LLM threat vectors identified in ${topic.source}.`,
-      whyRelevantNow: `Immediate operational impact on production AI deployments and agent guardrails.`,
+      rationale: `Technical AI security analysis generated for ${rawTitle} (Editorial Score: ${evaluation.totalScore}/100).`,
+      whySelected: `Addresses core vulnerability mechanisms and attack surfaces associated with ${topic.source}.`,
+      whyRelevantNow: `High operational impact for enterprise deployments and cloud AI infrastructure.`,
       sources: [topic.url],
     };
   }

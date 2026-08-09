@@ -1,100 +1,135 @@
 # Autonomous AI Creator 🤖📱
 
-**Autonomous AI Creator** is a production-ready, full-stack autonomous AI publishing system. Once initialized with a single request (`POST /api/agent/init`), the agent independently discovers AI and technology news, enforces strict **AI Security** domain filtering, scores candidates on a 0–100 scale (requiring score > 80 to publish), checks database memory to prevent repetition, and synthesizes short **LinkedIn/X style social posts (100–250 words)** continuously over time without human intervention.
+**Autonomous AI Creator** is a state-of-the-art, full-stack autonomous AI publishing intelligence platform. Once initialized with a single request (`POST /api/agent/init`) or through the modern web dashboard, the system independently discovers technology & AI news, enforces strict **AI Security** domain filtering, scores candidates on a 0–100 scale (requiring a score > 80 to publish), passes content through multi-agent **Fact-Checker** and **Critic** feedback loops with self-improvement rewrites, checks persistent database memory to prevent duplicates, and publishes short **LinkedIn/X style social posts (100–250 words)** continuously without human intervention.
 
-This is **not** a simple chatbot. It is an **autonomous AI social publishing agent**.
-
----
-
-## 🌟 Enhanced Capabilities
-
-* **LinkedIn / X Post Generator**: Generates concise, punchy social media posts (100–250 words) complete with technical hooks, threat breakdowns, actionable takeaways, and security hashtags (`#AISecurity #LLMSecurity #AISafety`).
-* **Strict AI Security Whitelist**: Filtered exclusively for *AI Security*, *Prompt Injection*, *AI Safety*, *LLM Security*, *AI Vulnerabilities*, *Model Attacks*, *AI Agents Security*, *AI Privacy*, *AI Governance*, and *Secure AI Development*.
-* **Rejection of Non-Security Content**: Instantly rejects generic AI news (e.g. weather forecasting, robotics, healthcare AI, finance AI, generic LLM updates) and logs the explicit rejection reason in the database.
-* **Topic Scoring Matrix (Score > 80)**: Scores candidate topics on a 0–100 scale across 5 metrics (*Relevance*, *Novelty*, *Impact*, *Timeliness*, *Duplicate Score*). Only candidate topics scoring **> 80** are approved for publication.
-* **Persistent Memory & Duplicate Prevention**: Cross-references topic URLs and computes title token similarity against past memories to drop duplicates before generation.
-* **LinkedIn Feed UI**: Modern glassmorphic LinkedIn-style card UI dashboard with profile avatars, social post formatting, editorial telemetry drawers, reaction buttons, and rejected topic audit logs.
+It is **not** a simple chatbot—it is a fully **autonomous AI social publishing agent system**.
 
 ---
 
-## 🏗️ Architecture & Component Flow
+## 🌟 Modern Web UI & Feature Highlights
+
+The web interface (`http://localhost:3000`) is built with a glassmorphism theme, smooth animations, and rich telemetry:
+
+### 1. 📊 Overview & KPI Control Center
+* **Live System Metrics**: Track Active Agents, Total Content Created, Publication Approval Rate (%), and Average Quality Score in real time.
+* **Autonomy Status & Manual Override**: View background scheduler status and trigger an instant autonomous discovery cycle (`Force Cycle`) with a single click.
+* **Workflow Architecture Visualizer**: Interactive 7-node visual pipeline depicting live execution states across discovery, research, drafting, fact-checking, critic review, self-improvement, and publishing.
+
+### 2. 🧠 ADA — Autonomous Brain Dashboard
+* **Central Intelligence Orb & Neural Network**: Animated central orb with SVG connection paths visualizing real-time execution across the autonomous stages.
+* **Live Activity Overlay**: Displays active step statuses and real-time cycle execution counters (`#0001`, `#0002`...).
+* **Global Metrics & Quality Radar**: Real-time telemetry tracking scanned topics, rejected candidates, generated drafts, approved posts, and 5-metric quality score breakdowns (*Relevance*, *Novelty*, *Impact*, *Timeliness*, *Duplicate Risk*).
+
+### 3. 🤖 Active Agents & Dedicated Agent Feeds
+* **Multi-Agent Management**: View agent profiles, assigned technical domains, system roles, writing styles, total posts, and persistent memories.
+* **Interactive Agent Workspace**: Filter feeds by specific agent, review last publication timestamps, and trigger targeted manual post generation.
+
+### 4. 📰 Published Content Feed & Lifecycle Controls
+* **LinkedIn/X Styled Post Cards**: Complete with technical hooks, threat breakdowns, remediation takeaways, source links, and domain hashtags (`#AISecurity #LLMSecurity #AISafety #CyberSecurity`).
+* **Inline Content Editing**: Edit post headlines, body copy, platform targets, and publication status directly from the card.
+* **AI Post Regeneration**: Re-trigger OpenAI post generation pipelines on demand for any existing post.
+* **Post Lifecycle Actions**: Publish toggle, inline saving, and instant deletion capabilities.
+
+### 5. 🛑 Rejected Content & Audit Telemetry
+* **Audit Transparency**: Detailed log drawer showing topics rejected by the Editorial Engine or quality filters, complete with total scores, timestamped reasons, and weakness breakdown.
+* **Live Telemetry Stream**: Real-time activity log tracking background cron triggers, topic scoring, fact-checker corrections, and database operations.
+
+---
+
+## 🛡️ Domain Whitelist & Editorial Quality Matrix
+
+* **Strict AI Security Whitelist**: Candidates are evaluated exclusively against: *AI Security*, *Prompt Injection*, *AI Safety*, *LLM Security*, *AI Vulnerabilities*, *Model Attacks*, *AI Agents Security*, *AI Privacy*, *AI Governance*, and *Secure AI Development*.
+* **Automatic Rejection of Non-Security Topics**: Generic AI topics (e.g. weather forecasting, robotics, healthcare AI, finance, gaming, non-security benchmarks) are automatically rejected and recorded with explicit audit reasons.
+* **5-Metric Topic Scoring (Score > 80)**: Candidates are evaluated across:
+  $$\text{Total Score} = \text{Round}(0.35 \times \text{Relevance} + 0.25 \times \text{Impact} + 0.20 \times \text{Novelty} + 0.20 \times \text{Timeliness} - 0.40 \times \text{Duplicate Score})$$
+  Only topics with **Total Score > 80**, **Relevance $\ge$ 70**, and **Duplicate Score < 30** pass to post generation.
+* **Fact Checker & Critic Self-Improvement Loop**: Draft posts undergo verification by an AI Fact-Checker and Critic. If confidence is low or overall score is < 80, the system automatically performs up to 3 rewrite iterations before deciding whether to publish or reject.
+
+---
+
+## 🏗️ System Architecture & Workflow
 
 ```mermaid
 flowchart TD
-    A[POST /api/agent/init] --> B[Create Agent & Persona in DB]
+    A[POST /api/agent/init or UI Modal] --> B[Initialize Agent Persona in SQLite DB]
     B --> C[Start node-cron Background Scheduler]
-    C --> D[Step 1: Live Topic Discovery]
-    D -->|RSS, HN, GitHub, arXiv| E[Normalized Candidate Topics]
-    E --> F[Step 2: AI Security Editorial Filter]
-    F -->|Check Whitelist & Non-Security Topics| G{Is Topic AI Security?}
-    G -->|No| H[Store in DB Log with Rejection Reason]
-    G -->|Yes| I[Step 3: Memory & Similarity Check]
+    C --> D[Stage 1: Multi-Source Live Discovery]
+    D -->|RSS Feeds, Hacker News, GitHub Trending, arXiv| E[Normalized Candidate Topics]
+    E --> F[Stage 2: AI Security Editorial Filter]
+    F -->|Whitelist & Non-Security Check| G{Is Topic AI Security?}
+    G -->|No| H[Record Log & Audit with Rejection Reason]
+    G -->|Yes| I[Stage 3: Topic Memory & Similarity Check]
     I -->|Duplicate Detected| H
-    I -->|Unique Topic| J[Step 4: 0-100 Topic Scoring]
+    I -->|Unique Topic| J[Stage 4: 5-Metric Topic Scoring]
     J --> K{Score > 80?}
     K -->|No| H
-    K -->|Yes| L[Step 5: Generate LinkedIn/X Post 100-250 words]
-    L --> M[Step 6: Save to SQLite via Prisma]
-    M --> N[Save Topic Memory Record]
-    N --> O[LinkedIn Feed Updated at GET /api/agent/feed]
+    K -->|Yes| L[Stage 5: Writer Engine Draft Generation]
+    L --> M[Stage 6: Fact-Checker & Critic Loop]
+    M -->|Quality < 80 / Issues Found| N{Attempt <= 3?}
+    N -->|Yes| O[AI Rewrite Generator]
+    O --> M
+    N -->|No| H
+    M -->|Passed| P[Stage 7: Publish Post & Save Memory]
+    P --> Q[Feed Dashboard Updated via GET /api/agent/feed]
 ```
 
 ---
 
-## 📁 Folder Structure
+## 📁 Project Structure
 
 ```
 autonomous-ai-creator/
-│
 ├── src/
 │   ├── api/
-│   │   ├── init.ts         # POST /api/agent/init
-│   │   ├── feed.ts         # GET /api/agent/feed
-│   │   └── agent.ts        # Helper status, list, trigger, and log APIs
+│   │   ├── init.ts             # POST /api/agent/init endpoint
+│   │   ├── feed.ts             # GET /api/agent/feed endpoint
+│   │   └── agent.ts            # Agent status, list, trigger, logs, and post management APIs
 │   │
 │   ├── agent/
-│   │   ├── scheduler.ts    # Background node-cron scheduling pipeline
-│   │   ├── topicDiscovery.ts# Multi-source article collector & normalizer
-│   │   ├── editorial.ts    # AI Security filter & 0-100 topic scoring
-│   │   ├── memory.ts       # Database topic memory & duplicate checker
-│   │   └── writer.ts       # LinkedIn/X style post generator (100-250 words)
+│   │   ├── scheduler.ts        # Background node-cron scheduling pipeline
+│   │   ├── topicDiscovery.ts   # Multi-source collector (RSS, HN, GitHub, arXiv)
+│   │   ├── editorial.ts        # Editorial evaluation & 0-100 topic scoring
+│   │   ├── memory.ts           # Persistent topic memory & similarity deduplication
+│   │   └── writer.ts           # Post generator, fact-checker & critic self-improvement loop
 │   │
 │   ├── services/
-│   │   ├── openai.ts       # OpenAI API integration & fallback generator
-│   │   ├── rss.ts          # RSS parser for AI blogs & news outlets
-│   │   ├── hackernews.ts   # Hacker News REST API collector
-│   │   ├── github.ts       # GitHub Trending repositories API
-│   │   └── arxiv.ts        # arXiv research paper API
+│   │   ├── openai.ts           # OpenAI Service (evaluations, writer, fact-checker, critic, rewrites)
+│   │   ├── rss.ts              # RSS parser for tech blogs & security news
+│   │   ├── hackernews.ts       # Hacker News REST API collector
+│   │   ├── github.ts           # GitHub Trending repositories collector
+│   │   └── arxiv.ts            # arXiv research papers API collector
 │   │
 │   ├── database/
-│   │   └── prisma.ts       # Prisma ORM singleton client
+│   │   └── prisma.ts           # Prisma ORM singleton client
 │   │
 │   ├── prompts/
-│   │   ├── personaPrompt.ts # System prompt defining Ada persona & style
-│   │   ├── editorialPrompt.ts# System prompt for 0-100 scoring & whitelisting
-│   │   └── writerPrompt.ts  # System prompt for 100-250 word social posts
+│   │   ├── personaPrompt.ts    # Persona system prompts
+│   │   ├── editorialPrompt.ts  # Editorial scoring prompts
+│   │   ├── writerPrompt.ts     # Social post writer prompts
+│   │   ├── factCheckerPrompt.ts# Fact-checker verification prompts
+│   │   ├── criticPrompt.ts     # Critic evaluation prompts
+│   │   └── rewritePrompt.ts    # Self-improvement rewrite prompts
 │   │
 │   ├── models/
-│   │   └── types.ts        # TypeScript interfaces and data models
+│   │   └── types.ts            # TypeScript interfaces & data models
 │   │
 │   ├── utils/
-│   │   └── logger.ts       # Audit logger & DB log persistence
+│   │   └── logger.ts           # System audit logger & database log persistence
 │   │
 │   ├── config/
-│   │   └── index.ts        # Environment configurations
+│   │   └── index.ts            # App environment configurations
 │   │
-│   └── server.ts           # Express server & static asset handler
+│   └── server.ts               # Express server & static dashboard asset handler
 │
 ├── prisma/
-│   └── schema.prisma       # Database schema (Agent, Post, Memory, AgentLog)
+│   └── schema.prisma           # SQLite Schema (Agent, Post, Memory, AgentLog, ImprovementAttempt)
 │
 ├── public/
-│   └── index.html          # LinkedIn-style Web UI Dashboard
+│   └── index.html              # Glassmorphic Web Dashboard UI
 │
-├── README.md               # Architecture, setup, API documentation
-├── PROMPT.md               # Technical breakdown & system prompts
-├── .env.example            # Environment variables template
-└── package.json            # Project dependencies and scripts
+├── README.md                   # Complete documentation
+├── .env.example                # Environment template
+└── package.json                # Dependencies & npm scripts
 ```
 
 ---
@@ -102,89 +137,133 @@ autonomous-ai-creator/
 ## 🚀 Quick Start Guide
 
 ### 1. Prerequisites
-- Node.js (v18+)
-- npm or yarn
+- **Node.js**: v18.0.0 or higher
+- **npm** or **yarn**
 
-### 2. Installation & Setup
-
+### 2. Installation
 ```bash
 npm install
 ```
 
-Set up environment variables:
-
+### 3. Environment Configuration
+Create a `.env` file based on `.env.example`:
 ```bash
 cp .env.example .env
 ```
+Ensure your `.env` specifies an OpenAI API key (optional fallback heuristic engines are used if omitted):
+```env
+PORT=3000
+DATABASE_URL="file:./dev.db"
+OPENAI_API_KEY="your-openai-api-key"
+CRON_SCHEDULE="*/30 * * * *"
+LOG_LEVEL="info"
+```
 
-### 3. Database Migration
-
+### 4. Database Setup
+Run Prisma migrations to initialize your SQLite database:
 ```bash
 npx prisma migrate dev --name init
 ```
 
-### 4. Development Server
-
+### 5. Start Development Server
 ```bash
 npm run dev
 ```
 
-Open your browser to `http://localhost:3000` to view the **LinkedIn-style Autonomous AI Creator Dashboard**.
+Open your browser and navigate to:
+**`http://localhost:3000`**
 
 ---
 
-## 📡 API Documentation
+## 📡 API Reference
 
-### 1. Initialize Autonomous Agent
+### Agent Initialization & Status
 
-* **Endpoint**: `POST /api/agent/init`
-* **Content-Type**: `application/json`
-
-**Request Body**
-```json
-{
-  "persona": {
-    "name": "Ada",
-    "domain": "AI Security"
-  }
-}
-```
-
-**Response (201 Created)**
-```json
-{
-  "agentId": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
-
----
-
-### 2. Fetch LinkedIn-Style Feed
-
-* **Endpoint**: `GET /api/agent/feed?agentId=550e8400-e29b-41d4-a716-446655440000`
-
-**Response (200 OK)**
-```json
-{
-  "posts": [
-    {
-      "id": "c7b3d8e0-1234-5678-9abc-def012345678",
-      "agentId": "550e8400-e29b-41d4-a716-446655440000",
-      "title": "🚨 AI Security Alert: Jailbreaking Agent Memory via Prompt Injection",
-      "content": "🚨 Critical AI Security Alert: Indirect Prompt Injection in Autonomous Agents\n\nRecent disclosures demonstrate that unvalidated memory retrieval allows malicious context injection into downstream LLM planners...\n\nKey Takeaways:\n• Threat Vector: Memory corruption via untrusted web inputs.\n• Fix: Implement strict input sandboxing and prompt guardrails.\n\n#AISecurity #LLMSecurity #AISafety #CyberSecurity",
-      "rationale": "High-relevance security analysis selected by Ada (Editorial Score: 92/100).",
-      "whySelected": "Directly addresses core AI Security vulnerabilities.",
-      "whyRelevantNow": "Immediate operational impact on production AI deployments.",
-      "sources": [
-        "http://export.arxiv.org/api/query"
-      ],
-      "topicUrl": "http://export.arxiv.org/api/query",
-      "topicSource": "arXiv AI",
-      "publishedAt": "2026-08-07T21:30:00.000Z"
+#### `POST /api/agent/init`
+Initialize a new autonomous agent and launch its background scheduler.
+* **Body**:
+  ```json
+  {
+    "persona": {
+      "name": "Ada",
+      "domain": "AI Security",
+      "role": "AI Security Researcher",
+      "style": "technical, concise, analytical, evidence-based"
     }
-  ]
-}
-```
+  }
+  ```
+* **Response (201 Created)**:
+  ```json
+  {
+    "agentId": "550e8400-e29b-41d4-a716-446655440000"
+  }
+  ```
+
+#### `GET /api/agent/list`
+Fetch list of all active agents with post, memory, and log counts.
+
+#### `GET /api/agent/status?agentId=<id>`
+Retrieve agent metadata, total published posts, total memories, and last activity time.
+
+#### `POST /api/agent/trigger`
+Force an immediate autonomous discovery and publishing cycle for an agent.
+* **Body**: `{ "agentId": "<id>" }`
+
+#### `GET /api/agent/logs?agentId=<id>`
+Retrieve telemetry and audit logs for an agent.
+
+---
+
+### Content Feed & Post Management
+
+#### `GET /api/agent/feed?agentId=<id>`
+Retrieve all published posts for an agent ordered newest first.
+* **Response**:
+  ```json
+  {
+    "posts": [
+      {
+        "id": "c7b3d8e0-1234-5678-9abc-def012345678",
+        "agentId": "550e8400-e29b-41d4-a716-446655440000",
+        "title": "🚨 AI Security Alert: Jailbreaking Agent Memory via Prompt Injection",
+        "content": "🚨 Critical AI Security Alert: Indirect Prompt Injection in Autonomous Agents...",
+        "rationale": "High-relevance security analysis selected by Ada (Editorial Score: 92/100).",
+        "whySelected": "Directly addresses core AI Security vulnerabilities.",
+        "whyRelevantNow": "Immediate operational impact on production AI deployments.",
+        "sources": ["https://arxiv.org/abs/2401.00000"],
+        "topicUrl": "https://arxiv.org/abs/2401.00000",
+        "topicSource": "arXiv AI",
+        "publishedAt": "2026-08-09T08:00:00.000Z"
+      }
+    ]
+  }
+  ```
+
+#### `POST /api/agent/post/generate`
+Manually trigger post generation for a specific topic with custom options.
+* **Body**:
+  ```json
+  {
+    "agentId": "<id>",
+    "topic": "LLM Jailbreak Techniques",
+    "postType": "Educational",
+    "platform": "LinkedIn / X",
+    "tone": "Professional",
+    "instructions": "Focus on guardrails and input sandboxing."
+  }
+  ```
+
+#### `PUT /api/agent/post/:id`
+Update post details inline (title, content, platform, status).
+
+#### `POST /api/agent/post/:id/regenerate`
+Trigger an AI regeneration of an existing post draft.
+
+#### `POST /api/agent/post/:id/publish`
+Publish a draft post.
+
+#### `DELETE /api/agent/post/:id`
+Delete a post record from database.
 
 ---
 

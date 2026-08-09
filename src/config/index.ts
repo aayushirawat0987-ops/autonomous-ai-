@@ -8,3 +8,6 @@ export const config = {
   cronSchedule: process.env.CRON_SCHEDULE || '*/30 * * * *',
   logLevel: process.env.LOG_LEVEL || 'info',
 };
+
+export { OpenAIService } from '../services/openai';
+

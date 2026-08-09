@@ -548,7 +548,7 @@ Topic selection
 Keep the existing UI and add only the necessary UI changes to clearly visualize the multi-agent workflow.
 
 
-#prompt 6 
+# prompt 6 
 Redesign the EXISTING Autonomous AI Creator frontend to look like a premium, modern AI product suitable for a winning hackathon demo.
 
 IMPORTANT:
@@ -1005,7 +1005,7 @@ rather than:
 
 Keep the interface elegant, minimal, futuristic, and highly presentable for a hackathon jury.
 
-#prompt 7 
+# prompt 7 
 Improve ONLY the frontend UI of the existing Autonomous AI Creator.
 
 Do not change backend logic, APIs, database, agent functionality, or data flow.
@@ -1605,3 +1605,531 @@ Data Persists After Refresh
 The final result should feel like a production-ready Autonomous AI Creator dashboard where every AI agent has its own persistent content history and can continuously generate and manage its own posts.
 
 After implementation, run the application and verify that the complete flow works without console errors, routing errors, database errors, or broken buttons.
+# prompt 8
+# CONTENT GENERATION QUALITY UPGRADE — AUTONOMOUS AI CREATOR
+
+Improve the **AI-generated content/post generation system** of my existing Autonomous AI Creator.
+
+IMPORTANT:
+
+Do NOT change the website layout.
+
+Do NOT change the dashboard UI.
+
+Do NOT change the database structure unless absolutely necessary.
+
+Do NOT change the autonomous workflow.
+
+Only improve the **quality, structure, readability, professionalism, and consistency of generated content**.
+
+The generated posts must feel like they were written by a knowledgeable **AI Security researcher**, not like generic AI-generated text.
+
+---
+
+# 1. STRICT WORD LIMIT
+
+Every generated social media post must contain:
+
+### Minimum: 150 words
+
+### Maximum: 220 words
+
+Target:
+
+**180–200 words**
+
+Never generate:
+
+* less than 150 words
+* more than 220 words
+
+The word count must be calculated from the final generated content.
+
+Display the word count in the dashboard.
+
+Example:
+
+**Word Count: 187 / 220**
+
+If the generated content exceeds 220 words:
+
+→ automatically rewrite/shorten it.
+
+If it is below 150 words:
+
+→ automatically expand it with useful technical explanation.
+
+Do not add meaningless filler just to reach the word count.
+
+---
+
+# 2. FIXED PROFESSIONAL STRUCTURE
+
+Every generated post must follow this structure.
+
+## SECTION 1 — HOOK
+
+1–2 sentences.
+
+Immediately explain the important development/security issue.
+
+The opening should create interest without using clickbait.
+
+Example style:
+
+"AI agents are becoming more capable—but their growing autonomy also creates a new attack surface: indirect prompt injection."
+
+---
+
+## SECTION 2 — WHAT HAPPENED?
+
+2–3 sentences.
+
+Clearly explain:
+
+* What happened?
+* What technology is involved?
+* Who discovered/reported it?
+* What is new?
+
+Use verified information from the available source.
+
+Do NOT invent facts.
+
+---
+
+## SECTION 3 — WHY IT MATTERS
+
+2–4 sentences.
+
+Explain the real-world security impact.
+
+Focus on:
+
+* risk
+* affected systems
+* attack surface
+* potential consequences
+* why organizations should care
+
+The explanation must be understandable to a technical student as well as a professional reader.
+
+---
+
+## SECTION 4 — TECHNICAL BREAKDOWN
+
+3–5 sentences.
+
+Explain the underlying technical concept.
+
+For example:
+
+* prompt injection
+* LLM vulnerability
+* agent manipulation
+* data leakage
+* model attack
+* insecure tool use
+* excessive permissions
+* memory poisoning
+
+Use technically correct terminology.
+
+However:
+
+### DO NOT use unnecessarily complicated language.
+
+Explain technical terms naturally.
+
+Example:
+
+Instead of:
+
+"Adversarially crafted indirect instructions exploit the model's contextual instruction hierarchy."
+
+Prefer:
+
+"An attacker can place malicious instructions inside external content that the AI agent reads. If the agent treats that content as trusted instructions, the attacker may influence its next action."
+
+---
+
+## SECTION 5 — SECURITY TAKEAWAYS
+
+Use 3 concise bullet points.
+
+Example:
+
+• Treat external content as untrusted input.
+
+• Restrict agent permissions to the minimum required.
+
+• Validate tool calls before executing sensitive actions.
+
+These should provide practical defensive value.
+
+---
+
+## SECTION 6 — CONCLUSION
+
+1–2 sentences.
+
+End with a strong professional insight.
+
+The conclusion should explain what developers/security teams should remember.
+
+---
+
+## SECTION 7 — HASHTAGS
+
+Add 4–6 relevant hashtags.
+
+Examples:
+
+#AISecurity
+#LLMSecurity
+#AISafety
+#PromptInjection
+#CyberSecurity
+#AI
+
+Only use hashtags relevant to the actual topic.
+
+Do NOT add random hashtags.
+
+---
+
+# 3. LANGUAGE STYLE
+
+The generated content must use:
+
+### Professional + Knowledgeable + Clear + Human-readable language
+
+The writing should sound like:
+
+**An experienced AI Security researcher explaining a complex topic clearly.**
+
+NOT like:
+
+* a textbook
+* a marketing advertisement
+* a generic chatbot
+* an academic paper
+* overly complicated technical documentation
+
+---
+
+# 4. READABILITY RULE
+
+Use short paragraphs.
+
+Most sentences should be between:
+
+10–25 words.
+
+Avoid extremely long sentences.
+
+Avoid unnecessary jargon.
+
+When technical terminology is necessary, explain it briefly.
+
+Example:
+
+"Prompt injection is a technique where malicious instructions are inserted into content an AI system processes."
+
+This is better than assuming the reader already knows the term.
+
+---
+
+# 5. PROFESSIONAL WRITING RULES
+
+Every post must:
+
+* Start with a strong but factual hook.
+* Clearly explain the event.
+* Explain why it matters.
+* Explain the technical mechanism.
+* Provide practical security recommendations.
+* End with a meaningful conclusion.
+* Use verified facts.
+* Avoid repetition.
+* Avoid filler.
+* Avoid exaggerated claims.
+
+---
+
+# 6. NO FAKE INFORMATION
+
+This is extremely important.
+
+The Writer Agent must ONLY use information supported by the discovered sources and research.
+
+Never invent:
+
+* company statements
+* researchers
+* CVE numbers
+* vulnerability severity
+* attack statistics
+* dates
+* affected products
+* research findings
+* quotes
+* URLs
+
+If a fact cannot be verified:
+
+Do not state it as fact.
+
+---
+
+# 7. SOURCE-AWARE WRITING
+
+The generated post should be based on the actual discovered topic.
+
+Before writing:
+
+1. Read the available source information.
+2. Identify the main security development.
+3. Extract verified facts.
+4. Identify technical significance.
+5. Identify practical defensive recommendations.
+6. Generate the post.
+
+Do NOT generate a generic AI Security article unrelated to the source.
+
+---
+
+# 8. FACT CHECKER IMPROVEMENT
+
+The Fact Checker should verify:
+
+### Accuracy
+
+Are the claims supported?
+
+### Technical correctness
+
+Is the security explanation technically accurate?
+
+### Source consistency
+
+Does the post match the source?
+
+### No hallucinations
+
+Did the writer invent anything?
+
+### Relevance
+
+Does the post actually discuss the selected topic?
+
+### Word count
+
+Is the post between 150–220 words?
+
+If any check fails:
+
+→ send the post to the Rewrite Agent.
+
+---
+
+# 9. CRITIC AGENT
+
+The Critic should score the generated content from 0–100.
+
+Evaluate:
+
+### 1. Accuracy — 25%
+
+### 2. Technical Knowledge — 20%
+
+### 3. Relevance — 20%
+
+### 4. Readability — 15%
+
+### 5. Professionalism — 10%
+
+### 6. Structure — 10%
+
+Required:
+
+**Overall Score >= 80**
+
+If score < 80:
+
+→ generate improvement feedback.
+
+Then:
+
+→ Rewrite.
+
+Maximum:
+
+**3 improvement attempts.**
+
+---
+
+# 10. SELF-IMPROVEMENT LOOP
+
+The content generation pipeline should work like:
+
+SOURCE
+
+↓
+
+RESEARCH
+
+↓
+
+DRAFT
+
+↓
+
+WORD COUNT CHECK
+
+↓
+
+FACT CHECKER
+
+↓
+
+CRITIC
+
+↓
+
+QUALITY SCORE
+
+↓
+
+IF SCORE < 80
+
+↓
+
+REWRITE
+
+↓
+
+FACT CHECKER
+
+↓
+
+CRITIC
+
+↓
+
+FINAL APPROVAL
+
+Only approved content should reach the publishing stage.
+
+---
+
+# 11. CONTENT FORMAT EXAMPLE
+
+Every generated post should approximately follow this structure:
+
+**HOOK**
+
+AI agents are gaining the ability to independently browse, reason and use external tools. That autonomy also introduces a growing security risk: prompt injection.
+
+**WHAT HAPPENED?**
+
+Researchers identified a technique where malicious instructions can be embedded inside external content consumed by an AI agent. When the agent interprets that content as trusted instructions, the attacker may influence its behavior.
+
+**WHY IT MATTERS**
+
+This becomes especially dangerous when agents have access to email, files, databases or external tools. A successful attack could potentially cause unintended actions or expose sensitive information.
+
+**TECHNICAL BREAKDOWN**
+
+The core problem is the lack of a strong boundary between data and instructions. An agent may process attacker-controlled content as part of its context and incorrectly follow embedded commands. Limiting permissions and validating tool calls can reduce this risk.
+
+**SECURITY TAKEAWAYS**
+
+• Treat external content as untrusted input.
+
+• Apply least-privilege permissions to AI agents.
+
+• Validate sensitive tool calls before execution.
+
+**CONCLUSION**
+
+As AI systems become more autonomous, security must extend beyond the model itself to the tools, data and permissions surrounding it.
+
+#AISecurity #PromptInjection #LLMSecurity #AISafety #CyberSecurity
+
+---
+
+# 12. DASHBOARD DISPLAY
+
+When displaying generated content in the existing feed, show:
+
+### Content Quality
+
+**92 / 100**
+
+### Word Count
+
+**187 / 220 words**
+
+### Content Structure
+
+✓ Hook
+✓ Context
+✓ Impact
+✓ Technical Breakdown
+✓ Security Takeaways
+✓ Conclusion
+
+### Verification
+
+✓ Fact Checked
+✓ Critic Approved
+✓ Source Verified
+
+This will make the generated content look much more professional and trustworthy.
+
+---
+
+# 13. FINAL QUALITY STANDARD
+
+Before publishing, the system must ask:
+
+"Would this look credible if posted by a professional AI Security researcher on LinkedIn or X?"
+
+If the answer is NO:
+
+→ Rewrite.
+
+The final content must be:
+
+**Professional**
+**Knowledgeable**
+**Fact-based**
+**Technically accurate**
+**Easy to understand**
+**Well structured**
+**150–220 words**
+**Non-repetitive**
+**Useful to the reader**
+
+Do not publish content simply because it is grammatically correct.
+
+Publish only when it provides genuine **AI Security insight and practical value**.
+
+---
+
+# IMPLEMENTATION
+
+Update the existing:
+
+* Writer Prompt
+* Fact Checker Prompt
+* Critic Prompt
+* Rewrite Prompt
+* Content validation logic
+
+Do not create a separate fake content-generation system.
+
+Integrate these rules into the existing autonomous publishing pipeline.
+
+After implementation, test the system with multiple AI Security topics and verify that every generated post follows the required structure and word limit.

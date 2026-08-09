@@ -1,6 +1,6 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
-import { OpenAIService } from '../services/openai';
+import { OpenAIService } from '../config';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
@@ -32,10 +32,10 @@ export class WriterEngine {
     while (attempt <= MAX_ATTEMPTS) {
       // 1. Fact Checker
       const factCheckResult = await this.openaiService.factCheckPost(persona, topic, postData);
-      
+
       if (!factCheckResult.passed) {
         Logger.warn(`Fact Checker found issues: ${factCheckResult.issues.join(', ')}`, agentId);
-        
+
         await prisma.improvementAttempt.create({
           data: {
             agentId,
@@ -66,7 +66,7 @@ export class WriterEngine {
 
       if (!criticResult.passed || criticResult.scores.overallScore < 80) {
         Logger.warn(`Critic found weaknesses`, agentId);
-        
+
         await prisma.improvementAttempt.create({
           data: {
             agentId,
@@ -172,22 +172,34 @@ export class WriterEngine {
 
     const postData = await this.openaiService.generatePost(persona, topic, evaluation);
 
-    const createdPost = await prisma.post.create({
-      data: {
-        agentId,
-        title: postData.title || topicTitle,
-        content: postData.content,
-        rationale: postData.rationale || `Manually requested by user for ${agent.name}`,
-        whySelected: postData.whySelected || `User requested ${postType} post in ${agent.domain}`,
-        whyRelevantNow: postData.whyRelevantNow || `Key ${agent.domain} updates for ${platform}`,
-        sources: JSON.stringify(postData.sources || [topic.url]),
-        topicUrl: topic.url,
-        topicSource: 'Manual Request',
-        platform: platform || 'LinkedIn / X',
-        status: 'Published',
-        publishedAt: new Date(),
-      },
-    });
+    const basePostPayload: any = {
+      agentId,
+      title: postData.title || topicTitle,
+      content: postData.content,
+      rationale: postData.rationale || `Manually requested by user for ${agent.name}`,
+      whySelected: postData.whySelected || `User requested ${postType} post in ${agent.domain}`,
+      whyRelevantNow: postData.whyRelevantNow || `Key ${agent.domain} updates for ${platform}`,
+      sources: JSON.stringify(postData.sources || [topic.url]),
+      topicUrl: topic.url,
+      topicSource: 'Manual Request',
+      publishedAt: new Date(),
+    };
+
+    let createdPost;
+    try {
+      createdPost = await prisma.post.create({
+        data: {
+          ...basePostPayload,
+          platform: platform || 'LinkedIn / X',
+          status: 'Published',
+        } as any,
+      });
+    } catch (err) {
+      Logger.warn(`Prisma client runtime lacks platform/status fields. Saving standard post payload.`, agentId);
+      createdPost = await prisma.post.create({
+        data: basePostPayload,
+      });
+    }
 
     await this.memoryEngine.saveMemory(agentId, topic, postData.rationale);
     Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name}`, agentId);
