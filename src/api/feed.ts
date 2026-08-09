@@ -6,27 +6,26 @@ export async function handleAgentFeed(req: Request, res: Response) {
   try {
     const { agentId } = req.query;
 
-    if (!agentId || typeof agentId !== 'string') {
-      return res.status(400).json({
-        error: 'Missing required query parameter: agentId',
-      });
-    }
+    let whereClause: any = {};
 
-    // Verify agent existence
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
-    });
-
-    if (!agent) {
-      return res.status(404).json({
-        error: `Agent with ID '${agentId}' not found.`,
+    if (agentId && typeof agentId === 'string') {
+      const agent = await prisma.agent.findUnique({
+        where: { id: agentId },
       });
+
+      if (!agent) {
+        return res.status(404).json({
+          error: `Agent with ID '${agentId}' not found.`,
+        });
+      }
+      whereClause.agentId = agentId;
     }
 
     // Retrieve posts ordered newest first
     const rawPosts = await prisma.post.findMany({
-      where: { agentId },
+      where: whereClause,
       orderBy: { publishedAt: 'desc' },
+      take: 50,
     });
 
     const posts = rawPosts.map(p => {

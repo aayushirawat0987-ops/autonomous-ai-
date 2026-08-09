@@ -7,6 +7,7 @@ export const config = {
   openaiApiKey: process.env.OPENAI_API_KEY || '',
   cronSchedule: process.env.CRON_SCHEDULE || '*/30 * * * *',
   logLevel: process.env.LOG_LEVEL || 'info',
+  backendUrl: process.env.BACKEND_URL || 'https://autonomous-ai-m8ki.onrender.com',
 };
 
 export { OpenAIService } from '../services/openai';

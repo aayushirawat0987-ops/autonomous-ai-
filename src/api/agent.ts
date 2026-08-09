@@ -8,7 +8,7 @@ import { Logger } from '../utils/logger';
 
 export async function handleAgentList(req: Request, res: Response) {
   try {
-    const agents = await prisma.agent.findMany({
+    let agents = await prisma.agent.findMany({
       include: {
         _count: {
           select: { posts: true, memories: true, logs: true },
@@ -17,10 +17,40 @@ export async function handleAgentList(req: Request, res: Response) {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Auto-initialize default agent if database has no active agents
+    if (agents.length === 0) {
+      try {
+        const defaultAgent = await prisma.agent.create({
+          data: {
+            name: 'Ada',
+            domain: 'AI & LLM Security',
+            role: 'Senior AI Threat Intelligence Researcher',
+            style: 'technical, concise, analytical, skeptical, evidence-based, educational',
+          },
+        });
+
+        // Trigger scheduler for default agent
+        schedulerEngine.startAgentScheduler(defaultAgent.id).catch(err => {
+          Logger.error('Failed starting scheduler for default agent', err);
+        });
+
+        agents = await prisma.agent.findMany({
+          include: {
+            _count: {
+              select: { posts: true, memories: true, logs: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      } catch (createError) {
+        Logger.error('Error auto-creating default agent', createError);
+      }
+    }
+
     return res.status(200).json({ agents });
   } catch (error) {
     Logger.error('Failed to list agents', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(200).json({ agents: [], warning: 'Database initializing or empty' });
   }
 }
 

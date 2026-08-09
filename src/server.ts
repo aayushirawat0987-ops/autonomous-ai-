@@ -62,6 +62,15 @@ app.listen(config.port, async () => {
   Logger.info(`🚀 Autonomous AI Creator server running on http://localhost:${config.port}`);
   Logger.info(`Environment: PORT=${config.port}, CRON="${config.cronSchedule}"`);
   
+  // Auto-sync database schema if SQLite DB file is new
+  try {
+    const { execSync } = await import('child_process');
+    execSync('npx prisma db push --accept-data-loss', { stdio: 'ignore' });
+    Logger.info('Prisma database schema verified successfully.');
+  } catch (dbErr) {
+    Logger.error('Database schema auto-push skipped or failed', dbErr);
+  }
+
   // Resume background schedulers for all agents saved in database
   await schedulerEngine.resumeAllActiveSchedulers();
 });

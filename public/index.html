@@ -1257,6 +1257,9 @@
         </div>
         <div class="flex items-center gap-4">
           <div class="text-xs text-muted flex items-center gap-2">
+            Backend: <span id="backendUrlDisplay" class="font-mono text-primary font-semibold" style="background: var(--primary-light); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm); border: 1px solid rgba(37,99,235,0.15);">https://autonomous-ai-m8ki.onrender.com</span>
+          </div>
+          <div class="text-xs text-muted flex items-center gap-2">
             Last activity: <span id="lastActivityTime" class="font-medium text-main">Just now</span>
           </div>
           <button class="btn btn-primary text-xs" id="headerInitBtn" onclick="openInitModal()">
@@ -1765,6 +1768,40 @@
   </div>
 
   <script>
+    const DEFAULT_BACKEND = 'https://autonomous-ai-m8ki.onrender.com';
+    
+    // Determine API_BASE:
+    // 1. Allow explicit URL query parameter override e.g. ?backend=https://...
+    const urlParams = new URLSearchParams(window.location.search);
+    const customBackend = urlParams.get('backend');
+
+    function getApiBase() {
+      if (customBackend) {
+        return customBackend.replace(/\/+$/, '');
+      }
+      // If served directly by the exact backend service host on Render
+      if (window.location.origin.includes('autonomous-ai-m8ki.onrender.com')) {
+        return '';
+      }
+      // If served by local backend node server on port 4000 or 3000
+      if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+          (window.location.port === '4000' || window.location.port === '3000')) {
+        return '';
+      }
+      // Default to the specified production backend URL for all other frontend origins (Netlify, Vercel, static Render site, Live Server, local html file, etc.)
+      return DEFAULT_BACKEND;
+    }
+
+    const API_BASE = getApiBase();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const badge = document.getElementById('backendUrlDisplay');
+      if (badge) {
+        const targetHost = API_BASE ? API_BASE : window.location.origin;
+        badge.innerText = targetHost.replace(/^https?:\/\//, '');
+      }
+    });
+
     let activeAgentId = null;
     let currentSelectedAgent = null;
     let refreshInterval = null;
@@ -1869,7 +1906,7 @@
         }
 
         try {
-          const res = await fetch('/api/agent/init', {
+          const res = await fetch(`${API_BASE}/api/agent/init`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ persona: { name, domain } })
@@ -1920,7 +1957,7 @@
         }
 
         try {
-          const res = await fetch('/api/agent/post/generate', {
+          const res = await fetch(`${API_BASE}/api/agent/post/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1960,7 +1997,7 @@
         const status = document.getElementById('editPostStatus').value;
 
         try {
-          const res = await fetch(`/api/agent/post/${id}`, {
+          const res = await fetch(`${API_BASE}/api/agent/post/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, content, platform, status })
@@ -2004,7 +2041,7 @@
         animateWorkflow();
 
         try {
-          await fetch('/api/agent/trigger', {
+          await fetch(`${API_BASE}/api/agent/trigger`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ agentId: activeAgentId })
@@ -2039,7 +2076,7 @@
 
     async function loadAgents() {
       try {
-        const res = await fetch('/api/agent/list');
+        const res = await fetch(`${API_BASE}/api/agent/list`);
         const data = await res.json();
 
         const grid = document.getElementById('agentsGrid');
@@ -2088,7 +2125,19 @@
 
         document.getElementById('kpiPosts').innerText = totalPosts;
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching agents:', err);
+        const grid = document.getElementById('agentsGrid');
+        if (grid) {
+          const hostDisplay = (API_BASE || DEFAULT_BACKEND).replace(/^https?:\/\//, '');
+          grid.innerHTML = `
+            <div class="text-center py-6 px-4" style="grid-column: 1 / -1;">
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔌</div>
+              <div class="font-semibold text-main text-sm">Connecting to backend service (${escapeHtml(hostDisplay)})...</div>
+              <div class="text-xs text-muted mt-1">If the server is waking from cold sleep, this may take 20-40 seconds. Retrying automatically...</div>
+            </div>
+          `;
+        }
+        setTimeout(loadAgents, 5000);
       }
     }
 
@@ -2113,7 +2162,7 @@
       document.getElementById('view-agent-details').classList.add('active');
 
       try {
-        const res = await fetch(`/api/agent/status?agentId=${id}`);
+        const res = await fetch(`${API_BASE}/api/agent/status?agentId=${id}`);
         const data = await res.json();
 
         if (data.agent) {
@@ -2141,7 +2190,7 @@
       container.innerHTML = '<div class="text-muted text-center py-8">Loading agent feed...</div>';
 
       try {
-        const res = await fetch(`/api/agent/feed?agentId=${agentId}`);
+        const res = await fetch(`${API_BASE}/api/agent/feed?agentId=${agentId}`);
         const data = await res.json();
 
         if (!data.posts || data.posts.length === 0) {
@@ -2168,7 +2217,7 @@
 
       try {
         const agentId = activeAgentId || '';
-        const url = agentId ? `/api/agent/feed?agentId=${agentId}` : '/api/agent/feed';
+        const url = agentId ? `${API_BASE}/api/agent/feed?agentId=${agentId}` : `${API_BASE}/api/agent/feed`;
         const res = await fetch(url);
         const data = await res.json();
 
@@ -2253,7 +2302,7 @@
       if (!confirm('Are you sure you want to delete this post?')) return;
 
       try {
-        const res = await fetch(`/api/agent/post/${postId}`, { method: 'DELETE' });
+        const res = await fetch(`${API_BASE}/api/agent/post/${postId}`, { method: 'DELETE' });
         if (res.ok) {
           if (activeAgentId) {
             await openAgentDetails(activeAgentId);
@@ -2275,7 +2324,7 @@
       btnEl.disabled = true;
 
       try {
-        const res = await fetch(`/api/agent/post/${postId}/regenerate`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/agent/post/${postId}/regenerate`, { method: 'POST' });
         const data = await res.json();
         if (res.ok && data.post) {
           if (activeAgentId) {
@@ -2296,7 +2345,7 @@
 
     async function publishPost(postId) {
       try {
-        const res = await fetch(`/api/agent/post/${postId}/publish`, { method: 'POST' });
+        const res = await fetch(`${API_BASE}/api/agent/post/${postId}/publish`, { method: 'POST' });
         if (res.ok) {
           if (activeAgentId) {
             await loadAgentFeed(activeAgentId);
@@ -2312,7 +2361,7 @@
     async function loadLogs() {
       if (!activeAgentId) return;
       try {
-        const res = await fetch(`/api/agent/logs?agentId=${activeAgentId}`);
+        const res = await fetch(`${API_BASE}/api/agent/logs?agentId=${activeAgentId}`);
         const data = await res.json();
 
         const activityContainer = document.getElementById('activityLogContainer');
@@ -2363,7 +2412,7 @@
         }
 
         // Fetch and update mission / trend info
-        fetch(`/api/agent/mission/latest?agentId=${activeAgentId}`).then(r => r.json()).then(mData => {
+        fetch(`${API_BASE}/api/agent/mission/latest?agentId=${activeAgentId}`).then(r => r.json()).then(mData => {
           if (mData.mission) {
             const ms = document.getElementById('brainMissionStatus');
             if (ms) ms.innerText = mData.mission.status;
