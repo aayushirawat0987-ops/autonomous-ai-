@@ -118,7 +118,8 @@ export class SchedulerEngine {
 
       // STEP 3: Memory Check & Security Evaluation
       Logger.info('MISSION STAGE: MEMORY CHECK & EVALUATE', agentId);
-      const evaluation = await this.editorialEngine.evaluateTopics(agentId, persona, [emergingTrend.signals[0].topic]);
+      const signalTopics = emergingTrend.signals.map(s => s.topic);
+      const evaluation = await this.editorialEngine.evaluateTopics(agentId, persona, signalTopics);
       const approvedEvaluations = evaluation.filter(e => e.passed);
 
       // STEP 4: Generate Post, Self-Critique & Publish
@@ -132,11 +133,11 @@ export class SchedulerEngine {
           await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Published: " + post.title } });
         } else {
           Logger.warn('Post was rejected after self-critique retries.', agentId);
-          await prisma.mission.update({ where: { id: mission.id }, data: { status: "FAILED", result: "Failed self-critique" } });
+          await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Filtered: Failed self-critique" } });
         }
       } else {
-        Logger.info('Emerging trend rejected by editorial memory or quality thresholds.', agentId);
-        await prisma.mission.update({ where: { id: mission.id }, data: { status: "FAILED", result: "Rejected by Editorial" } });
+        Logger.info('Emerging trend topics filtered by editorial memory or quality thresholds.', agentId);
+        await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Filtered by Editorial" } });
       }
 
       Logger.info(`=== COMPLETED AUTONOMOUS MISSION FOR AGENT ${agent.name} ===`, agentId);

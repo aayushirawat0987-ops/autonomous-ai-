@@ -5,6 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
+    "render-build": "npm install && npx prisma generate && npx prisma db push && npm run build",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "prisma:generate": "prisma generate",
@@ -23,7 +24,7 @@
   "author": "Antigravity AI",
   "license": "MIT",
   "dependencies": {
-    "@prisma/client": "^5.10.2",
+    "@prisma/client": "^5.22.0",
     "axios": "^1.6.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -38,7 +39,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.20",
     "@types/node-cron": "^3.0.11",
-    "prisma": "^5.10.2",
+    "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
