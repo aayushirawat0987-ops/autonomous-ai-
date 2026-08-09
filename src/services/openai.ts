@@ -279,8 +279,15 @@ export class OpenAIService {
       'trading', 'movie', 'music', 'gaming', 'sports', 'recipe', 'fashion'
     ];
 
+    // AI & Security relevant domain keywords
+    const aiTechKeywords = [
+      'ai', 'llm', 'gpt', 'model', 'agent', 'rag', 'transformer', 'deep learning',
+      'machine learning', 'repository', 'arxiv', 'github', 'neural', 'paper', 'code'
+    ];
+
     const isExplicitNonSecurity = nonSecurityKeywords.some(k => combined.includes(k)) && !securityKeywords.some(s => combined.includes(s));
     const matchedSecurityCount = securityKeywords.filter(k => combined.includes(k)).length;
+    const matchedAiTech = aiTechKeywords.some(k => combined.includes(k));
 
     const isDuplicate = memorySummaries.some(m => m.toLowerCase().includes(topic.title.toLowerCase().substring(0, 15)));
 
@@ -290,13 +297,15 @@ export class OpenAIService {
     } else if (matchedSecurityCount >= 2) {
       relevance = 95;
     } else if (matchedSecurityCount === 1) {
-      relevance = 85;
+      relevance = 88;
+    } else if (matchedAiTech) {
+      relevance = 82; // Baseline AI / LLM research topic suitable for security analysis
     } else {
-      relevance = 40; // General AI news without security focus
+      relevance = 65;
     }
 
-    const novelty = titleLower.includes('paper') || titleLower.includes('new') || titleLower.includes('zero-day') ? 90 : 75;
-    const impact = relevance >= 80 ? 90 : 40;
+    const novelty = titleLower.includes('paper') || titleLower.includes('new') || titleLower.includes('zero-day') ? 90 : 80;
+    const impact = relevance >= 80 ? 88 : 50;
     const timeliness = 90;
     const duplicateScore = isDuplicate ? 95 : 5;
 
