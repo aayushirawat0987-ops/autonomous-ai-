@@ -20,6 +20,8 @@ model Agent {
   memories Memory[]
   logs     AgentLog[]
   attempts ImprovementAttempt[]
+  missions Mission[]
+  trends   EmergingTrend[]
 }
 
 model Post {
@@ -76,5 +78,35 @@ model ImprovementAttempt {
   finalDecision         String
   createdAt             DateTime @default(now())
 
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model Mission {
+  id        String   @id @default(uuid())
+  agentId   String
+  status    String   @default("RUNNING")
+  result    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model EmergingTrend {
+  id                String   @id @default(uuid())
+  agentId           String
+  title             String
+  confidence        Float
+  securityScore     Float
+  novelty           Float
+  impact            Float
+  timeliness        Float
+  sourceDiversity   Float
+  supportingSources Int
+  isPublished       Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  
+  signals           String   @default("[]") // JSON string of connected topics
+  
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }

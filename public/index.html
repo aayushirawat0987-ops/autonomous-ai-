@@ -1267,111 +1267,82 @@
               <h2 class="font-bold text-2xl">ADA — Autonomous Intelligence Brain</h2>
               <p class="text-xs text-muted">Neural visual map tracking real-time autonomous publishing cycles.</p>
             </div>
-            <div class="status-indicator" style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
-              <div class="dot pulse" style="background: var(--primary);"></div> AUTONOMOUS BRAIN ONLINE
+            <div class="flex items-center gap-4">
+              <button class="btn btn-primary text-sm font-bold" id="startMissionBtn">START AUTONOMOUS MISSION</button>
+              <div class="status-indicator" style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
+                <div class="dot pulse" style="background: var(--primary);"></div> AUTONOMOUS BRAIN ONLINE
+              </div>
             </div>
           </div>
 
-          <div class="grid" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem;">
-            <!-- Main Brain Visualization Orb & Neural Map -->
-            <div class="glass-card flex-col items-center justify-center relative" style="position: relative; min-height: 640px; overflow: hidden; background: radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%);">
-              
-              <svg id="brain-svg-lines"></svg>
+              <!-- Threat Map & Pipeline -->
+              <div class="glass-card flex-col relative" style="position: relative; min-height: 640px; overflow: hidden; background: radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%);">
+                <div class="font-bold text-sm text-muted p-4 pb-0 absolute" style="z-index: 30; top: 0; left: 0;">EMERGING THREAT MAP & PIPELINE</div>
+                
+                <svg id="brain-svg-lines"></svg>
+                <div class="brain-nodes-container" id="brainNodesContainer"></div>
+                <div class="brain-nodes-container" id="threatMapContainer"></div>
 
-              <!-- Central Brain Orb -->
-              <div class="brain-orb">
-                <div class="brain-core">ADA</div>
-                <div class="brain-subtext">BRAIN</div>
-                <div class="brain-ring ring-1"></div>
-                <div class="brain-ring ring-2"></div>
-                <div class="brain-ring ring-3"></div>
-              </div>
-
-              <!-- Autonomous Nodes Container -->
-              <div class="brain-nodes-container" id="brainNodesContainer"></div>
-              
-              <!-- Live Activity Status Banner overlay -->
-              <div style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem; z-index: 20;">
-                <div class="glass-card" style="background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); gap: 1rem;">
-                   <div style="flex: 1; min-width: 0;">
-                     <div class="text-xs font-bold text-muted tracking-wide mb-0.5">LIVE INTELLIGENCE ACTIVITY</div>
-                     <div class="font-mono font-semibold text-sm text-primary" id="brainLiveStatus" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">Waiting for discovery cycle...</div>
-                   </div>
-                   <div class="text-right" style="flex-shrink: 0;">
-                     <div class="text-xs text-muted font-medium">Cycle Counter</div>
-                     <div class="font-bold text-sm font-mono text-main" id="brainCycleId">#0001</div>
-                   </div>
+                <!-- Live Activity Status Banner overlay -->
+                <div style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem; z-index: 20;">
+                  <div class="glass-card" style="background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); gap: 1rem;">
+                     <div style="flex: 1; min-width: 0;">
+                       <div class="text-xs font-bold text-muted tracking-wide mb-0.5">LIVE INTELLIGENCE ACTIVITY</div>
+                       <div class="font-mono font-semibold text-sm text-primary" id="brainLiveStatus" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">Waiting for discovery cycle...</div>
+                     </div>
+                     <div class="text-right" style="flex-shrink: 0;">
+                       <div class="text-xs text-muted font-medium">Mission Status</div>
+                       <div class="font-bold text-sm font-mono text-main" id="brainMissionStatus">IDLE</div>
+                     </div>
+                  </div>
                 </div>
               </div>
 
-            </div>
-
-            <!-- Side Intelligence Panels -->
-            <div class="flex-col gap-4" style="display: flex; flex-direction: column;">
-              
-              <!-- Metrics -->
-              <div class="glass-card p-4">
-                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">GLOBAL METRICS</h3>
-                <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                  <div>
-                    <div class="text-xs text-muted mb-1">Scanned Topics</div>
-                    <div class="font-bold text-lg text-main" id="brainTopicsScanned">1,240</div>
-                  </div>
-                  <div>
-                    <div class="text-xs text-muted mb-1">Rejected</div>
-                    <div class="font-bold text-lg text-danger" id="brainTopicsRejected">142</div>
-                  </div>
-                  <div>
-                    <div class="text-xs text-muted mb-1">Drafts Gen</div>
-                    <div class="font-bold text-lg text-main" id="brainPostsGen">48</div>
-                  </div>
-                  <div>
-                    <div class="text-xs text-muted mb-1">Published</div>
-                    <div class="font-bold text-lg text-success" id="brainPostsPub">32</div>
-                  </div>
-                  <div style="grid-column: span 2;">
-                    <div class="text-xs text-muted mb-1">Avg Quality Score</div>
-                    <div class="font-bold text-xl text-primary" id="brainAvgScore">91 / 100</div>
-                  </div>
-                </div>
-              </div>
+              <!-- Side Intelligence Panels -->
+              <div class="flex-col gap-4" style="display: flex; flex-direction: column;">
 
               <!-- Latest Evaluation breakdown -->
-              <div class="glass-card p-4">
-                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">LATEST TOPIC EVALUATION</h3>
+              <div class="glass-card p-4 flex-1">
+                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">WHY ADA THINKS THIS MATTERS</h3>
+                <div class="font-bold text-sm text-main mb-2" id="trendTitleLabel">Waiting for intelligence mission...</div>
+                
                 <div class="flex flex-col gap-2.5" style="display: flex; flex-direction: column; gap: 0.6rem;">
                   <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Relevance</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 90%;"></div></div> <span class="text-xs font-bold font-mono">90</span></div>
+                    <span class="text-xs font-semibold text-muted">Security Relevance</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barRelevance" style="height: 100%; background: var(--success); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreRelevance">0</span></div>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-xs font-semibold text-muted">Novelty</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 85%;"></div></div> <span class="text-xs font-bold font-mono">85</span></div>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barNovelty" style="height: 100%; background: var(--primary); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreNovelty">0</span></div>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-xs font-semibold text-muted">Impact</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--primary); width: 92%;"></div></div> <span class="text-xs font-bold font-mono">92</span></div>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barImpact" style="height: 100%; background: var(--primary); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreImpact">0</span></div>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-xs font-semibold text-muted">Timeliness</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--warning); width: 78%;"></div></div> <span class="text-xs font-bold font-mono">78</span></div>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barTimeliness" style="height: 100%; background: var(--warning); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreTimeliness">0</span></div>
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Dup Risk</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div style="height: 100%; background: var(--success); width: 15%;"></div></div> <span class="text-xs font-bold font-mono">15</span></div>
+                    <span class="text-xs font-semibold text-muted">Source Diversity</span>
+                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barDiversity" style="height: 100%; background: var(--success); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreDiversity">0</span></div>
                   </div>
                   <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                     <span class="font-bold text-xs">Total Score</span>
-                     <span class="font-bold text-base text-success font-mono">88 / 100</span>
+                     <span class="font-bold text-xs">Emerging Threat Confidence</span>
+                     <span class="font-bold text-base text-success font-mono" id="scoreConfidence">0%</span>
+                  </div>
+                  <div class="text-xs text-muted mt-2">
+                    Supporting Sources: <strong id="trendSourcesCount">0</strong><br>
+                    Previously Covered: <strong>No</strong>
                   </div>
                 </div>
               </div>
 
               <!-- Decision Card -->
-              <div class="glass-card p-4" style="border-left: 4px solid var(--success);" id="brainDecisionCard">
+              <div class="glass-card p-4" style="border-left: 4px solid var(--primary);" id="brainDecisionCard">
                 <h3 class="text-xs font-bold text-muted tracking-wide mb-2">DECISION VERDICT</h3>
-                <div class="font-bold text-success text-base mb-1" id="brainDecisionStatus">APPROVED</div>
-                <div class="text-xs text-muted" id="brainDecisionReason">Reason: High relevance to AI Security whitelist and novel vulnerability disclosure.</div>
+                <div class="font-bold text-primary text-base mb-1" id="brainDecisionStatus">EVALUATING</div>
+                <div class="text-xs text-muted" id="brainDecisionReason">Awaiting mission output...</div>
               </div>
 
             </div>
@@ -1745,14 +1716,22 @@
 
       // Trigger Cycle Button
       document.getElementById('triggerCycleBtn').addEventListener('click', async () => {
+        triggerMission(document.getElementById('triggerCycleBtn'), 'Running Cycle...');
+      });
+
+      // Start Mission Button
+      document.getElementById('startMissionBtn').addEventListener('click', async () => {
+        triggerMission(document.getElementById('startMissionBtn'), 'MISSION IN PROGRESS...');
+      });
+
+      async function triggerMission(btn, activeText) {
         if (!activeAgentId) {
           alert('No active agent. Please select or initialize an agent first.');
           return;
         }
         
-        const btn = document.getElementById('triggerCycleBtn');
         const originalText = btn.innerHTML;
-        btn.innerHTML = 'Running Cycle...';
+        btn.innerHTML = activeText;
         btn.disabled = true;
         
         animateWorkflow();
@@ -1776,7 +1755,7 @@
           btn.innerHTML = originalText;
           btn.disabled = false;
         }
-      });
+      }
     });
 
     async function animateWorkflow() {
@@ -2115,6 +2094,26 @@
              updateBrainVisualizationState(latestLog.message, latestLog.level, latestLog.details);
            }
         }
+        
+        // Fetch and update mission / trend info
+        fetch(`/api/agent/mission/latest?agentId=${activeAgentId}`).then(r => r.json()).then(mData => {
+           if (mData.mission) {
+              const ms = document.getElementById('brainMissionStatus');
+              if (ms) ms.innerText = mData.mission.status;
+           }
+           if (mData.trend) {
+              document.getElementById('trendTitleLabel').innerText = mData.trend.title || 'Unknown Trend';
+              updateScore('Relevance', mData.trend.securityScore);
+              updateScore('Novelty', mData.trend.novelty);
+              updateScore('Impact', mData.trend.impact);
+              updateScore('Timeliness', mData.trend.timeliness);
+              updateScore('Diversity', mData.trend.sourceDiversity);
+              document.getElementById('scoreConfidence').innerText = (mData.trend.confidence || 0) + '%';
+              document.getElementById('trendSourcesCount').innerText = mData.trend.supportingSources || 0;
+              
+              drawThreatMap(mData.trend);
+           }
+        }).catch(err => console.error(err));
 
         activityContainer.innerHTML = activityLogs.length ? activityLogs.join('') : '<div class="text-muted">No standard activity telemetry.</div>';
         rejectedContainer.innerHTML = rejectedLogs.length ? rejectedLogs.join('') : '<div class="text-muted">No rejected content recorded.</div>';
@@ -2138,18 +2137,24 @@
       return String(str).replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/\r/g, "");
     }
 
+    function updateScore(id, val) {
+      const bar = document.getElementById('bar' + id);
+      const text = document.getElementById('score' + id);
+      if (bar) bar.style.width = (val || 0) + '%';
+      if (text) text.innerText = (val || 0);
+    }
+
     /* --- Brain Visualization Logic --- */
     const brainStages = [
       { id: 'st-research', label: 'RESEARCH', icon: '🔍' },
-      { id: 'st-discovery', label: 'TOPIC DISCOVERY', icon: '💡' },
-      { id: 'st-security', label: 'SECURITY FILTER', icon: '🛡️' },
+      { id: 'st-signals', label: 'COLLECT SIGNALS', icon: '📡' },
+      { id: 'st-connect', label: 'CONNECT SIGNALS', icon: '🔗' },
+      { id: 'st-trend', label: 'DETECT TREND', icon: '📈' },
       { id: 'st-memory', label: 'MEMORY CHECK', icon: '🧠' },
-      { id: 'st-eval', label: 'AI EVALUATION', icon: '⚖️' },
-      { id: 'st-gen', label: 'CONTENT GENERATION', icon: '✍️' },
+      { id: 'st-eval', label: 'EVALUATE', icon: '⚖️' },
+      { id: 'st-create', label: 'CREATE', icon: '✍️' },
       { id: 'st-critique', label: 'SELF-CRITIQUE', icon: '🧐' },
-      { id: 'st-approve', label: 'APPROVE / REJECT', icon: '✅' },
-      { id: 'st-publish', label: 'PUBLISH', icon: '🚀' },
-      { id: 'st-mem-update', label: 'MEMORY UPDATE', icon: '💾' }
+      { id: 'st-publish', label: 'PUBLISH', icon: '🚀' }
     ];
 
     let brainInitialized = false;
@@ -2162,8 +2167,8 @@
 
       const centerX = container.clientWidth / 2;
       const centerY = container.clientHeight / 2;
-      const radiusX = Math.min(centerX - 100, 240);
-      const radiusY = Math.min(centerY - 105, 185);
+      const radiusX = Math.min(centerX - 80, 280);
+      const radiusY = Math.min(centerY - 80, 220);
 
       let html = '';
       let svgHtml = '';
@@ -2203,20 +2208,19 @@
       let state = 'active';
 
       if (lmsg.includes('research') || lmsg.includes('scanning')) activeStageId = 'st-research';
-      else if (lmsg.includes('discover') || lmsg.includes('topics')) activeStageId = 'st-discovery';
-      else if (lmsg.includes('security') || lmsg.includes('vulnerabilit')) activeStageId = 'st-security';
-      else if (lmsg.includes('memory') || lmsg.includes('duplicate')) activeStageId = 'st-memory';
-      else if (lmsg.includes('evaluat') || lmsg.includes('score')) activeStageId = 'st-eval';
-      else if (lmsg.includes('generat') || lmsg.includes('writing')) activeStageId = 'st-gen';
-      else if (lmsg.includes('critique') || lmsg.includes('fact')) activeStageId = 'st-critique';
-      else if (lmsg.includes('approve') || lmsg.includes('reject')) activeStageId = 'st-approve';
-      else if (lmsg.includes('publish')) activeStageId = 'st-publish';
-      else if (lmsg.includes('updat') || lmsg.includes('saving')) activeStageId = 'st-mem-update';
+      else if (lmsg.includes('collect signals')) activeStageId = 'st-signals';
+      else if (lmsg.includes('connect signals') || lmsg.includes('group')) activeStageId = 'st-connect';
+      else if (lmsg.includes('detect trend') || lmsg.includes('emerging trend')) activeStageId = 'st-trend';
+      else if (lmsg.includes('memory check')) activeStageId = 'st-memory';
+      else if (lmsg.includes('evaluat')) activeStageId = 'st-eval';
+      else if (lmsg.includes('create') || lmsg.includes('writing') || lmsg.includes('generate')) activeStageId = 'st-create';
+      else if (lmsg.includes('critique') || lmsg.includes('fact check')) activeStageId = 'st-critique';
+      else if (lmsg.includes('publish') || lmsg.includes('remember')) activeStageId = 'st-publish';
 
       if (!activeStageId) return;
 
       if (level === 'ERROR' || lmsg.includes('reject') || lmsg.includes('fail') || lmsg.includes('duplicate')) state = 'rejected';
-      else if (lmsg.includes('publish') || lmsg.includes('success') || lmsg.includes('approved')) state = 'completed';
+      else if (lmsg.includes('publish') || lmsg.includes('success') || lmsg.includes('completed')) state = 'completed';
 
       brainStages.forEach((stage) => {
         const el = document.getElementById(stage.id);
@@ -2249,14 +2253,64 @@
         }
       });
       
-      if (lmsg.includes('discover')) {
-         const sc = document.getElementById('brainTopicsScanned');
-         if (sc) sc.innerText = (parseInt(sc.innerText.replace(',','')) + Math.floor(Math.random()*10)).toLocaleString();
-      }
       if (state === 'rejected') {
          const rj = document.getElementById('brainTopicsRejected');
          if (rj) rj.innerText = (parseInt(rj.innerText) + 1).toLocaleString();
       }
+    }
+
+    let threatMapDrawn = false;
+    let lastTrendId = null;
+
+    function drawThreatMap(trend) {
+      if (!trend || !trend.signals || lastTrendId === trend.id) return;
+      lastTrendId = trend.id;
+      
+      const container = document.getElementById('threatMapContainer');
+      const svg = document.getElementById('brain-svg-lines');
+      if (!container || !svg || container.clientWidth === 0) return;
+
+      // Ensure nodes container is clear of old network nodes
+      const oldNodes = container.querySelectorAll('.threat-node');
+      oldNodes.forEach(n => n.remove());
+      const oldLines = svg.querySelectorAll('.threat-line');
+      oldLines.forEach(l => l.remove());
+
+      let signals = [];
+      try {
+        signals = JSON.parse(trend.signals);
+      } catch(e) {}
+      if(signals.length === 0) return;
+
+      const centerX = container.clientWidth / 2;
+      const centerY = container.clientHeight / 2;
+      
+      // Central Trend Node
+      let html = `<div class="threat-node central" style="position:absolute; top:${centerY}px; left:${centerX}px; transform:translate(-50%, -50%); z-index:15; background:var(--bg-surface); padding:1rem; border-radius:var(--radius-lg); border:2px solid var(--primary); box-shadow:0 0 20px var(--primary-glow); text-align:center; max-width:180px;">
+        <div style="font-size:1.5rem; margin-bottom:0.25rem;">📈</div>
+        <div style="font-size:0.75rem; font-weight:700; color:var(--text-main);">${escapeHtml(trend.title)}</div>
+        <div style="font-size:0.65rem; color:var(--primary); font-weight:bold; margin-top:0.25rem;">CONFIDENCE: ${trend.confidence}%</div>
+      </div>`;
+      
+      let svgHtml = '';
+      
+      const numSignals = signals.length;
+      signals.forEach((sigTitle, i) => {
+         const angle = (i / numSignals) * Math.PI * 2;
+         const dist = 140 + Math.random() * 40;
+         const x = centerX + Math.cos(angle) * dist;
+         const y = centerY + Math.sin(angle) * dist;
+         
+         html += `<div class="threat-node" style="position:absolute; top:${y}px; left:${x}px; transform:translate(-50%, -50%); z-index:10; background:var(--bg-surface); padding:0.5rem; border-radius:var(--radius-md); border:1px solid var(--border-dark); box-shadow:0 4px 10px rgba(0,0,0,0.05); text-align:center; max-width:130px; cursor:pointer;" onclick="alert('Signal: ${escapeJs(sigTitle)}')">
+            <div style="font-size:1rem; margin-bottom:0.15rem;">📄</div>
+            <div style="font-size:0.6rem; font-weight:600; color:var(--text-muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(sigTitle)}</div>
+         </div>`;
+         
+         svgHtml += `<path d="M${centerX},${centerY} L${x},${y}" class="threat-line bn-line active"></path>`;
+      });
+      
+      container.innerHTML += html;
+      svg.innerHTML += svgHtml;
     }
 
     window.addEventListener('resize', () => {

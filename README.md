@@ -12,13 +12,13 @@ The web interface (`http://localhost:3000`) is built with a glassmorphism theme,
 
 ### 1. 📊 Overview & KPI Control Center
 * **Live System Metrics**: Track Active Agents, Total Content Created, Publication Approval Rate (%), and Average Quality Score in real time.
-* **Autonomy Status & Manual Override**: View background scheduler status and trigger an instant autonomous discovery cycle (`Force Cycle`) with a single click.
-* **Workflow Architecture Visualizer**: Interactive 7-node visual pipeline depicting live execution states across discovery, research, drafting, fact-checking, critic review, self-improvement, and publishing.
+* **Autonomy Status & Manual Override**: View background scheduler status and trigger an instant autonomous discovery cycle (`Force Cycle`) or an `Autonomous Mission` with a single click.
+* **Workflow Architecture Visualizer**: Interactive visual pipeline depicting live execution states across discovery, research, drafting, fact-checking, critic review, self-improvement, and publishing.
 
 ### 2. 🧠 ADA — Autonomous Brain Dashboard
-* **Central Intelligence Orb & Neural Network**: Animated central orb with SVG connection paths visualizing real-time execution across the autonomous stages.
-* **Live Activity Overlay**: Displays active step statuses and real-time cycle execution counters (`#0001`, `#0002`...).
-* **Global Metrics & Quality Radar**: Real-time telemetry tracking scanned topics, rejected candidates, generated drafts, approved posts, and 5-metric quality score breakdowns (*Relevance*, *Novelty*, *Impact*, *Timeliness*, *Duplicate Risk*).
+* **Emerging Threat Map & Pipeline**: A neural visual network showing the current active Autonomous Mission. Grouped signals and topics form an interactive map connected to the central emerging trend.
+* **Live Intelligence Activity Overlay**: Displays active pipeline steps (RESEARCH ↓ COLLECT SIGNALS ↓ CONNECT SIGNALS ↓ DETECT TREND...) and real-time mission status.
+* **"Why Ada thinks this matters" Panel**: Explains the rationale behind selected trends with an Emerging Threat Score calculation based on *Security Relevance*, *Novelty*, *Impact*, *Timeliness*, and *Source Diversity*.
 
 ### 3. 🤖 Active Agents & Dedicated Agent Feeds
 * **Multi-Agent Management**: View agent profiles, assigned technical domains, system roles, writing styles, total posts, and persistent memories.
@@ -51,26 +51,23 @@ The web interface (`http://localhost:3000`) is built with a glassmorphism theme,
 
 ```mermaid
 flowchart TD
-    A[POST /api/agent/init or UI Modal] --> B[Initialize Agent Persona in SQLite DB]
-    B --> C[Start node-cron Background Scheduler]
-    C --> D[Stage 1: Multi-Source Live Discovery]
-    D -->|RSS Feeds, Hacker News, GitHub Trending, arXiv| E[Normalized Candidate Topics]
-    E --> F[Stage 2: AI Security Editorial Filter]
-    F -->|Whitelist & Non-Security Check| G{Is Topic AI Security?}
-    G -->|No| H[Record Log & Audit with Rejection Reason]
-    G -->|Yes| I[Stage 3: Topic Memory & Similarity Check]
+    A[Autonomous Mission Start] --> B[Stage 1: Scan Security Feeds]
+    B -->|RSS, HackerNews, arXiv, GitHub| C[Raw Candidate Signals]
+    C --> D[Stage 2: Threat Intelligence Engine]
+    D --> E[Correlate & Group Related Signals]
+    E --> F[Detect Emerging Trend]
+    F -->|Calculate Threat Score| G{Score > Threshold & Unique?}
+    G -->|No| H[Record Rejection Log]
+    G -->|Yes| I[Stage 3: Editorial Memory Check]
     I -->|Duplicate Detected| H
-    I -->|Unique Topic| J[Stage 4: 5-Metric Topic Scoring]
-    J --> K{Score > 80?}
-    K -->|No| H
-    K -->|Yes| L[Stage 5: Writer Engine Draft Generation]
-    L --> M[Stage 6: Fact-Checker & Critic Loop]
-    M -->|Quality < 80 / Issues Found| N{Attempt <= 3?}
-    N -->|Yes| O[AI Rewrite Generator]
-    O --> M
-    N -->|No| H
-    M -->|Passed| P[Stage 7: Publish Post & Save Memory]
-    P --> Q[Feed Dashboard Updated via GET /api/agent/feed]
+    I -->|Unique Trend| J[Stage 4: Writer Engine Draft Generation]
+    J --> K[Stage 5: Fact-Checker & Critic Loop]
+    K -->|Quality < 80 / Issues Found| L{Attempt <= 3?}
+    L -->|Yes| M[AI Rewrite Generator]
+    M --> K
+    L -->|No| H
+    K -->|Passed| N[Stage 6: Publish Post & Save Memory]
+    N --> O[Feed Dashboard Updated & Trend Persisted]
 ```
 
 ---
@@ -88,6 +85,7 @@ autonomous-ai-creator/
 │   ├── agent/
 │   │   ├── scheduler.ts        # Background node-cron scheduling pipeline
 │   │   ├── topicDiscovery.ts   # Multi-source collector (RSS, HN, GitHub, arXiv)
+│   │   ├── threatIntelligence.ts # Signal correlation and trend detection logic
 │   │   ├── editorial.ts        # Editorial evaluation & 0-100 topic scoring
 │   │   ├── memory.ts           # Persistent topic memory & similarity deduplication
 │   │   └── writer.ts           # Post generator, fact-checker & critic self-improvement loop

@@ -264,3 +264,27 @@ export async function handlePostPublish(req: Request, res: Response) {
     return res.status(500).json({ error: 'Failed to publish post' });
   }
 }
+
+export async function handleAgentMission(req: Request, res: Response) {
+  try {
+    const { agentId } = req.query;
+    if (!agentId || typeof agentId !== 'string') {
+      return res.status(400).json({ error: 'Missing agentId' });
+    }
+
+    const mission = await prisma.mission.findFirst({
+      where: { agentId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const trend = await prisma.emergingTrend.findFirst({
+      where: { agentId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return res.status(200).json({ mission, trend });
+  } catch (error) {
+    Logger.error('Failed to fetch mission state', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}

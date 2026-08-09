@@ -6,11 +6,13 @@ import { Logger } from '../utils/logger';
 import { EditorialEngine } from './editorial';
 import { TopicDiscoveryEngine } from './topicDiscovery';
 import { WriterEngine } from './writer';
+import { ThreatIntelligenceEngine } from './threatIntelligence';
 
 export class SchedulerEngine {
   private discoveryEngine: TopicDiscoveryEngine;
   private editorialEngine: EditorialEngine;
   private writerEngine: WriterEngine;
+  private threatEngine: ThreatIntelligenceEngine;
   private activeJobs: Map<string, cron.ScheduledTask> = new Map();
   private runningAgents: Set<string> = new Set();
 
@@ -18,6 +20,7 @@ export class SchedulerEngine {
     this.discoveryEngine = new TopicDiscoveryEngine();
     this.editorialEngine = new EditorialEngine();
     this.writerEngine = new WriterEngine();
+    this.threatEngine = new ThreatIntelligenceEngine();
   }
 
   async startAgentScheduler(agentId: string): Promise<void> {
@@ -68,40 +71,75 @@ export class SchedulerEngine {
         style: agent.style,
       };
 
-      Logger.info(`=== STARTING AUTONOMOUS PUBLISHING CYCLE FOR AGENT ${agent.name} (${agent.domain}) ===`, agentId);
+      Logger.info(`=== STARTING AUTONOMOUS MISSION FOR AGENT ${agent.name} (${agent.domain}) ===`, agentId);
+      
+      const mission = await prisma.mission.create({
+        data: { agentId, status: "RUNNING" }
+      });
 
-      // STEP 1: Discover Topics
+      // STEP 1: Discover Topics & Normalize
+      Logger.info('MISSION STAGE: RESEARCH (Scanning AI Security sources)', agentId);
       const candidateTopics = await this.discoveryEngine.discoverAllTopics(agentId);
 
       if (candidateTopics.length === 0) {
         Logger.warn('No candidate topics discovered in current cycle.', agentId);
+        await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "No topics found" } });
         return { publishedCount: 0 };
       }
+      
+      // STEP 2: Group Related Signals & Detect Emerging Trend
+      Logger.info('MISSION STAGE: COLLECT SIGNALS & CONNECT SIGNALS', agentId);
+      const emergingTrend = await this.threatEngine.detectEmergingTrend(agentId, candidateTopics);
+      
+      if (!emergingTrend) {
+        Logger.warn('Failed to detect any emerging trends.', agentId);
+        await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "No trends detected" } });
+        return { publishedCount: 0 };
+      }
+      
+      // Save Trend
+      await prisma.emergingTrend.create({
+        data: {
+          agentId,
+          title: emergingTrend.title,
+          confidence: emergingTrend.confidence,
+          securityScore: emergingTrend.securityScore,
+          novelty: emergingTrend.novelty,
+          impact: emergingTrend.impact,
+          timeliness: emergingTrend.timeliness,
+          sourceDiversity: emergingTrend.sourceDiversity,
+          supportingSources: emergingTrend.supportingSources,
+          signals: JSON.stringify(emergingTrend.signals.map(s => s.topic.title)),
+        }
+      });
+      
+      Logger.info('MISSION STAGE: DETECT TREND', agentId);
+      Logger.info(`Emerging Threat Score: ${emergingTrend.confidence}/100. Supporting sources: ${emergingTrend.supportingSources}`, agentId);
 
-      // STEP 2 & 3 & 4: Editorial Evaluation, Rejection of Weak Topics, Memory Check
-      const evaluations = await this.editorialEngine.evaluateTopics(agentId, persona, candidateTopics);
+      // STEP 3: Memory Check & Security Evaluation
+      Logger.info('MISSION STAGE: MEMORY CHECK & EVALUATE', agentId);
+      const evaluation = await this.editorialEngine.evaluateTopics(agentId, persona, [emergingTrend.signals[0].topic]);
+      const approvedEvaluations = evaluation.filter(e => e.passed);
 
-      // Filter passed topics
-      const approvedEvaluations = evaluations.filter(e => e.passed);
-      Logger.info(`Editorial review complete. ${approvedEvaluations.length} of ${evaluations.length} topics approved.`, agentId);
-
-      // STEP 5 & 6: Generate Post and Save to Database
-      // Pick top approved candidate (highest aggregate score)
+      // STEP 4: Generate Post, Self-Critique & Publish
       if (approvedEvaluations.length > 0) {
-        approvedEvaluations.sort((a, b) => b.totalScore - a.totalScore);
         const topCandidate = approvedEvaluations[0];
-        
-        if (topCandidate && topCandidate.topic) {
-          Logger.info(`Topic selected for content generation: "${topCandidate.topic.title}" (Score: ${topCandidate.totalScore})`, agentId);
-
-          await this.writerEngine.createAndPublishPost(agentId, persona, topCandidate.topic, topCandidate);
+        Logger.info('MISSION STAGE: CREATE & SELF-CRITIQUE', agentId);
+        const post = await this.writerEngine.createAndPublishPost(agentId, persona, topCandidate.topic, topCandidate);
+        if (post) {
           publishedCount++;
+          Logger.info('MISSION STAGE: PUBLISH & REMEMBER', agentId);
+          await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Published: " + post.title } });
+        } else {
+          Logger.warn('Post was rejected after self-critique retries.', agentId);
+          await prisma.mission.update({ where: { id: mission.id }, data: { status: "FAILED", result: "Failed self-critique" } });
         }
       } else {
-        Logger.info('No topics passed editorial quality thresholds during this cycle.', agentId);
+        Logger.info('Emerging trend rejected by editorial memory or quality thresholds.', agentId);
+        await prisma.mission.update({ where: { id: mission.id }, data: { status: "FAILED", result: "Rejected by Editorial" } });
       }
 
-      Logger.info(`=== COMPLETED AUTONOMOUS PUBLISHING CYCLE FOR AGENT ${agent.name} ===`, agentId);
+      Logger.info(`=== COMPLETED AUTONOMOUS MISSION FOR AGENT ${agent.name} ===`, agentId);
     } catch (error) {
       Logger.error(`Autonomous cycle failed for agent ${agentId}`, error, agentId);
     } finally {

@@ -798,6 +798,133 @@ Critic score: 76
 Self-improvement started
 
 ● 18:42:31
+Approved
+
+# Prompt 7 
+
+Add a major differentiating capability to the existing Autonomous AI Creator called:
+
+"EMERGING THREAT INTELLIGENCE"
+
+The goal is to make Ada more than an AI content generator. Ada should autonomously identify emerging AI Security trends by connecting multiple related signals from different sources and then decide whether the trend is important enough to publish.
+
+IMPORTANT:
+- Inspect the existing project before changing anything.
+- Do NOT rebuild the project from scratch.
+- Preserve existing APIs, UI functionality, Prisma models, scheduler and OpenAI integration.
+- Extend the existing architecture.
+- Do not fake results or hardcode a demonstration.
+- Use the existing live topic discovery and OpenAI pipeline.
+- Never expose chain-of-thought or private reasoning. Show only safe summaries, scores, evidence and decisions.
+
+==================================================
+1. NEW AUTONOMOUS INTELLIGENCE LOOP
+==================================================
+
+Extend the existing autonomous cycle:
+
+DISCOVER (Scan raw feeds)
+↓
+NORMALIZE
+↓
+GROUP RELATED SIGNALS (Connect the dots)
+↓
+DETECT EMERGING TREND
+↓
+MEMORY CHECK (Did we cover this trend already?)
+↓
+SECURITY EVALUATION (Is it high-impact?)
+↓
+GENERATE POST
+↓
+SELF-CRITIQUE
+↓
+APPROVE / REJECT
+↓
+PUBLISH
+↓
+REMEMBER
+
+==================================================
+2. SIGNAL CORRELATION LAYER
+==================================================
+
+Currently, Ada discovers topics and processes them one by one.
+Change this logic: Ada must collect multiple raw topics ("Signals") and attempt to group them.
+
+Example:
+- Signal 1 (Arxiv): "New prompt injection vulnerability in LLMs"
+- Signal 2 (HackerNews): "ChatGPT system prompt bypassed again"
+- Signal 3 (GitHub): "Open source tool for testing prompt injections"
+
+Ada should recognize these are related and group them into a single "Emerging Trend":
+"Increasing prevalence of prompt injection vulnerabilities across LLM platforms."
+
+==================================================
+3. EMERGING THREAT SCORE (0-100)
+==================================================
+
+Create a scoring engine that evaluates an Emerging Trend.
+Calculate the score based on:
+
+- Security Relevance
+- Novelty
+- Impact
+- Timeliness
+- Source Diversity (e.g., found on both Arxiv and GitHub = higher score)
+
+==================================================
+4. AUTONOMOUS MISSIONS
+==================================================
+
+Instead of just "running a cycle," Ada now runs an "Autonomous Mission".
+Store mission results in the database (e.g. `Mission` model) so we have a history of her research attempts, even if they result in no published post.
+
+==================================================
+5. EDITORIAL GATE & SELF-CRITIQUE
+==================================================
+
+Ensure that Ada's editorial capabilities are intact. If she calculates a Threat Score below the threshold, she must reject it and log the reason.
+If she drafts a post but her self-critique fails, she must attempt to rewrite it (up to 3 times) before giving up.
+
+==================================================
+6. ADA — AUTONOMOUS BRAIN (UI)
+==================================================
+
+Add a visually impressive "ADA — AUTONOMOUS BRAIN" section to the existing frontend.
+The UI should show the current mission.
+
+Display a live pipeline:
+RESEARCH ↓ COLLECT SIGNALS ↓ CONNECT SIGNALS ↓ DETECT TREND ↓ MEMORY CHECK ↓ EVALUATE ↓ CREATE ↓ SELF-CRITIQUE ↓ PUBLISH
+
+Highlight the current stage.
+Show completed stages.
+
+==================================================
+7. EMERGING THREAT MAP (UI)
+==================================================
+
+Build a visual representation of the connected signals.
+Nodes represent discovered signals/topics.
+Connections represent meaningful similarity or shared security themes.
+The central/emerging trend should be visually highlighted.
+
+Clicking a node should show the source title.
+
+==================================================
+8. WHY ADA THINKS THIS MATTERS (UI)
+==================================================
+
+Add a panel displaying the Emerging Threat Score breakdown.
+Show the safe, explainable rationale for why this trend is important.
+Never show internal reasoning or raw JSON.
+
+==================================================
+9. HACKATHON DEMO MODE
+==================================================
+
+Add a clearly labeled, optional "START AUTONOMOUS MISSION" button in the UI.
+When clicked, it should force the backend to immediately trigger the entire loop and stream the progress back to the UI.
 Final score: 91
 
 ✓ Published
