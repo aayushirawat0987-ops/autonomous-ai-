@@ -72,7 +72,7 @@ export class OpenAIService {
       };
     } catch (error) {
       Logger.error('OpenAI editorial evaluation failed, falling back to heuristic engine.', error);
-      return this.fallbackEditorialEvaluation(topic, memorySummaries);
+      return this.fallbackEditorialEvaluation(persona, topic, memorySummaries);
     }
   }
 
@@ -88,7 +88,7 @@ export class OpenAIService {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a senior AI Security Researcher writing short LinkedIn/X social posts. Output strictly raw JSON.' },
+          { role: 'system', content: `You are a senior ${persona.domain} Researcher writing technical social posts. Output strictly raw JSON.` },
           { role: 'user', content: prompt },
         ],
         response_format: { type: 'json_object' },
@@ -101,9 +101,9 @@ export class OpenAIService {
       return {
         title: parsed.title || topic.title,
         content: parsed.content || this.fallbackGeneratePost(persona, topic, evaluation).content,
-        rationale: parsed.rationale || `Evaluated by ${persona.name} for AI Security relevance.`,
-        whySelected: parsed.whySelected || `Selected due to high security impact (Score: ${evaluation.totalScore}/100).`,
-        whyRelevantNow: parsed.whyRelevantNow || `Critical threat vector affecting current LLM infrastructure.`,
+        rationale: parsed.rationale || `Evaluated by ${persona.name} for ${persona.domain} relevance.`,
+        whySelected: parsed.whySelected || `Selected due to high domain impact (Score: ${evaluation.totalScore}/100).`,
+        whyRelevantNow: parsed.whyRelevantNow || `Critical vector affecting current ${persona.domain} implementations.`,
         sources: Array.isArray(parsed.sources) ? parsed.sources : [topic.url],
       };
     } catch (error) {
@@ -131,7 +131,7 @@ export class OpenAIService {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an expert AI Security Fact-Checker. Output strictly raw JSON.' },
+          { role: 'system', content: `You are an expert ${persona.domain} Fact-Checker. Output strictly raw JSON.` },
           { role: 'user', content: prompt },
         ],
         response_format: { type: 'json_object' },
@@ -177,7 +177,7 @@ export class OpenAIService {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an expert Content Evaluator. Output strictly raw JSON.' },
+          { role: 'system', content: `You are an expert Content Evaluator for ${persona.domain}. Output strictly raw JSON.` },
           { role: 'user', content: prompt },
         ],
         response_format: { type: 'json_object' },
@@ -237,7 +237,7 @@ export class OpenAIService {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are a senior AI Security Researcher revising a post. Output strictly raw JSON.' },
+          { role: 'system', content: `You are a senior ${persona.domain} Researcher revising a post. Output strictly raw JSON.` },
           { role: 'user', content: prompt },
         ],
         response_format: { type: 'json_object' },
@@ -261,61 +261,56 @@ export class OpenAIService {
     }
   }
 
-  private fallbackEditorialEvaluation(topic: DiscoveredTopic, memorySummaries: string[]): EditorialEvaluation {
+  private fallbackEditorialEvaluation(persona: Persona, topic: DiscoveredTopic, memorySummaries: string[]): EditorialEvaluation {
     const titleLower = topic.title.toLowerCase();
     const summaryLower = topic.summary.toLowerCase();
     const combined = `${titleLower} ${summaryLower}`;
 
-    // AI Security Whitelist keywords
+    const domain = (persona?.domain || 'AI Security').toLowerCase();
+    const domainTerms = domain.split(/\s+/).filter(t => t.length > 2);
+
+    // Security & Domain Whitelist keywords
     const securityKeywords = [
       'security', 'prompt injection', 'safety', 'llm security', 'vulnerability', 'vulnerabilities',
       'attack', 'attacks', 'adversarial', 'agent security', 'privacy', 'governance', 'secure',
-      'jailbreak', 'exploit', 'red team', 'threat', 'malware', 'guardrail', 'poisoning'
+      'jailbreak', 'exploit', 'red team', 'threat', 'malware', 'guardrail', 'poisoning', ...domainTerms
     ];
 
-    // Explicit non-security topics to reject
-    const nonSecurityKeywords = [
+    // Explicit non-security / off-topic keywords to reject
+    const nonDomainKeywords = [
       'weather', 'robotics', 'robot', 'healthcare', 'medical', 'patient', 'finance', 'stock',
-      'trading', 'movie', 'music', 'gaming', 'sports', 'recipe', 'fashion'
+      'trading', 'movie', 'music', 'gaming', 'sports', 'recipe', 'fashion', 'entertainment'
     ];
 
-    // AI & Security relevant domain keywords
-    const aiTechKeywords = [
-      'ai', 'llm', 'gpt', 'model', 'agent', 'rag', 'transformer', 'deep learning',
-      'machine learning', 'repository', 'arxiv', 'github', 'neural', 'paper', 'code'
-    ];
-
-    const isExplicitNonSecurity = nonSecurityKeywords.some(k => combined.includes(k)) && !securityKeywords.some(s => combined.includes(s));
+    const isExplicitOffTopic = nonDomainKeywords.some(k => combined.includes(k)) && !securityKeywords.some(s => combined.includes(s));
     const matchedSecurityCount = securityKeywords.filter(k => combined.includes(k)).length;
-    const matchedAiTech = aiTechKeywords.some(k => combined.includes(k));
+    const matchesDomainDirectly = combined.includes(domain) || domainTerms.some(term => combined.includes(term));
 
     const isDuplicate = memorySummaries.some(m => m.toLowerCase().includes(topic.title.toLowerCase().substring(0, 15)));
 
     let relevance = 0;
-    if (isExplicitNonSecurity) {
-      relevance = 20;
-    } else if (matchedSecurityCount >= 2) {
+    if (isExplicitOffTopic) {
+      relevance = 15;
+    } else if (matchesDomainDirectly && matchedSecurityCount >= 2) {
       relevance = 95;
-    } else if (matchedSecurityCount === 1) {
+    } else if (matchedSecurityCount >= 1) {
       relevance = 88;
-    } else if (matchedAiTech) {
-      relevance = 82; // Baseline AI / LLM research topic suitable for security analysis
     } else {
-      relevance = 65;
+      relevance = 45; // Reject off-topic generic items
     }
 
     const novelty = titleLower.includes('paper') || titleLower.includes('new') || titleLower.includes('zero-day') ? 90 : 80;
-    const impact = relevance >= 80 ? 88 : 50;
+    const impact = relevance >= 80 ? 88 : 40;
     const timeliness = 90;
     const duplicateScore = isDuplicate ? 95 : 5;
 
     const totalScore = Math.round((relevance * 0.35) + (impact * 0.25) + (novelty * 0.20) + (timeliness * 0.20) - (duplicateScore * 0.4));
-    const passed = totalScore > 80 && relevance >= 70 && duplicateScore < 30 && !isExplicitNonSecurity;
+    const passed = totalScore > 80 && relevance >= 70 && duplicateScore < 30 && !isExplicitOffTopic;
 
     let rejectionReason: string | undefined = undefined;
     if (!passed) {
-      if (isExplicitNonSecurity || relevance < 70) {
-        rejectionReason = 'Topic is unrelated to AI Security (e.g. robotics, healthcare, weather, or non-security AI news)';
+      if (isExplicitOffTopic || relevance < 70) {
+        rejectionReason = `Topic is unrelated to core domain focus '${persona?.domain || 'AI Security'}'`;
       } else if (duplicateScore >= 30) {
         rejectionReason = 'Topic flagged as duplicate of previously covered memory';
       } else {
@@ -342,43 +337,44 @@ export class OpenAIService {
       .replace(/^GitHub Repository:\s*/i, '')
       .trim();
 
-    const title = `AI Security Analysis: ${rawTitle}`;
+    const domainName = persona?.domain || 'AI Security';
+    const title = `${domainName} Analysis: ${rawTitle}`;
 
     // Clean topic context for natural security analysis
     const isCloudTopic = /cloud|aws|azure|gcp|infrastructure|serverless|multi-tenant/i.test(rawTitle + ' ' + topic.summary);
     
     const topicContext = isCloudTopic 
-      ? 'cloud AI infrastructure, multi-tenant isolation, and cloud API key exposure'
-      : `${rawTitle.toLowerCase()} vulnerabilities and system security architecture`;
+      ? `cloud ${domainName} architecture, multi-tenant isolation, and infrastructure key exposure`
+      : `${rawTitle.toLowerCase()} technical mechanisms and ${domainName} architecture`;
 
     const content = `HOOK
-As AI workloads transition into production ${topicContext}, emerging threat vectors highlight the urgent need for robust security boundaries around model execution.
+As systems transition into production ${topicContext}, emerging technical vectors highlight the urgent need for strict operational boundaries around model execution.
 
 WHAT HAPPENED?
-Recent technical security audits and research disclosures regarding ${rawTitle} revealed critical exposure vectors in automated pipelines. Analysis from ${topic.source} indicates that misconfigured permissions and unvalidated inputs allow unauthorized model manipulation.
+Recent technical audits and research disclosures regarding ${rawTitle} revealed critical exposure vectors in automated pipelines. Analysis from ${topic.source} indicates that misconfigured permissions and unvalidated inputs allow unauthorized execution manipulation.
 
 WHY IT MATTERS
-In modern cloud deployments and LLM implementations, insecure agent tools can expose upstream cloud database credentials, compromise persistent memory, or allow lateral movement across corporate networks.
+In modern deployments and model implementations, insecure tool integration can expose credentials, compromise persistent memory, or allow lateral movement across corporate infrastructure.
 
 TECHNICAL BREAKDOWN
-The core vulnerability stems from insufficient instruction-data separation. When AI models ingest untrusted external data or cloud configurations, embedded prompt injections can override system prompt constraints. This allows attackers to trigger unauthorized API calls, exfiltrate sensitive credentials, or alter execution state.
+The core mechanism stems from insufficient instruction-data separation. When models ingest untrusted external inputs, embedded adversarial payloads can bypass system constraints. This allows unauthorized API calls, credential exfiltration, or state alteration within ${domainName}.
 
 SECURITY TAKEAWAYS
-• Enforce strict least-privilege access controls on all cloud AI service accounts.
+• Enforce strict least-privilege access controls across all service accounts.
 • Implement real-time input sanitization and output validation for tool calls.
-• Isolate agent execution environments using containerized cloud sandboxes.
+• Isolate execution environments using containerized cloud sandboxes.
 
 CONCLUSION
-Securing AI intelligence platforms requires continuous threat modeling, strict credential isolation, and proactive adversarial testing across all service layers.
+Securing intelligent platforms requires continuous threat modeling, strict credential isolation, and proactive adversarial testing across all service layers.
 
-#AISecurity #${isCloudTopic ? 'CloudSecurity' : 'LLMSecurity'} #AISafety #PromptInjection #CyberSecurity ${isCloudTopic ? '#CloudComputing' : '#AI'}`;
+#AISecurity #${domainName.replace(/\s+/g, '')} #AISafety #CyberSecurity #TechSecurity`;
 
     return {
       title,
       content,
-      rationale: `Technical AI security analysis generated for ${rawTitle} (Editorial Score: ${evaluation.totalScore}/100).`,
-      whySelected: `Addresses core vulnerability mechanisms and attack surfaces associated with ${topic.source}.`,
-      whyRelevantNow: `High operational impact for enterprise deployments and cloud AI infrastructure.`,
+      rationale: `Technical ${domainName} analysis generated for ${rawTitle} (Editorial Score: ${evaluation.totalScore}/100).`,
+      whySelected: `Addresses core technical vulnerability mechanisms and attack surfaces associated with ${topic.source}.`,
+      whyRelevantNow: `High operational impact for enterprise deployments and ${domainName} infrastructure.`,
       sources: [topic.url],
     };
   }

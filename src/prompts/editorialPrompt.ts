@@ -19,28 +19,19 @@ Topic Details:
 Recent Memory (Topics already covered):
 ${memorySummaries.length > 0 ? memorySummaries.map(s => `- ${s}`).join('\n') : 'None yet.'}
 
-ALLOWED DOMAIN WHITELIST:
-- AI Security
-- Prompt Injection
-- AI Safety
-- LLM Security
-- AI Vulnerabilities
-- Model Attacks
-- AI Agents Security
-- AI Privacy
-- AI Governance
-- Secure AI Development
+PRIMARY DOMAIN FOCUS MANDATE:
+- Required Focus Domain: ${persona.domain}
 
 CRITICAL REJECTION DIRECTIVES:
-1. REJECT (relevance < 50) if the topic is NOT directly about AI Security or the allowed domain list.
-   - Example non-security topics to REJECT: weather forecasting, robotics, healthcare AI, finance AI, generic LLM updates, art generation, or non-security benchmarks.
+1. REJECT (relevance < 50) if the topic is NOT directly focused on ${persona.domain} or its core technical security vectors.
+   - Example off-topic items to REJECT: general non-domain software updates, generic non-security AI news, robotics, weather, healthcare, finance, gaming, or generic benchmarks.
 2. REJECT if duplicateScore >= 30 (already covered in memory).
 3. Aggregate totalScore MUST BE STRICTLY GREATER THAN 80 to pass (totalScore > 80).
 
 SCORING METRICS (0 to 100):
-- relevance: How directly does this focus on AI Security / AI Safety / Prompt Injection / LLM Vulnerabilities? (0-100)
-- novelty: Is this a new finding, vulnerability, paper, or tool? (0-100)
-- impact: Does this have major technical/security consequences? (0-100)
+- relevance: How directly does this focus strictly on ${persona.domain}? (0-100)
+- novelty: Is this a new finding, vulnerability, paper, tool, or disclosure in ${persona.domain}? (0-100)
+- impact: Does this have major technical, security, or operational consequences? (0-100)
 - timeliness: Is this fresh and active? (0-100)
 - duplicateScore: 0 = unique, 100 = duplicate (0-100)
 
