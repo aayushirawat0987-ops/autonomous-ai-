@@ -13,12 +13,13 @@ export class GitHubService {
           q: 'topic:ai topic:machine-learning created:>2025-01-01',
           sort: 'stars',
           order: 'desc',
-          per_page: 5,
+          per_page: 5,                 
         },
         headers: {
           'User-Agent': 'Autonomous-AI-Agent/1.0',
           'Accept': 'application/vnd.github.v3+json',
         },
+        
         timeout: 8000,
       });
 

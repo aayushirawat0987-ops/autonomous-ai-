@@ -548,7 +548,7 @@ Topic selection
 Keep the existing UI and add only the necessary UI changes to clearly visualize the multi-agent workflow.
 
 
-# prompt 6 
+#prompt 6 
 Redesign the EXISTING Autonomous AI Creator frontend to look like a premium, modern AI product suitable for a winning hackathon demo.
 
 IMPORTANT:
@@ -798,133 +798,6 @@ Critic score: 76
 Self-improvement started
 
 ● 18:42:31
-Approved
-
-# Prompt 7 
-
-Add a major differentiating capability to the existing Autonomous AI Creator called:
-
-"EMERGING THREAT INTELLIGENCE"
-
-The goal is to make Ada more than an AI content generator. Ada should autonomously identify emerging AI Security trends by connecting multiple related signals from different sources and then decide whether the trend is important enough to publish.
-
-IMPORTANT:
-- Inspect the existing project before changing anything.
-- Do NOT rebuild the project from scratch.
-- Preserve existing APIs, UI functionality, Prisma models, scheduler and OpenAI integration.
-- Extend the existing architecture.
-- Do not fake results or hardcode a demonstration.
-- Use the existing live topic discovery and OpenAI pipeline.
-- Never expose chain-of-thought or private reasoning. Show only safe summaries, scores, evidence and decisions.
-
-==================================================
-1. NEW AUTONOMOUS INTELLIGENCE LOOP
-==================================================
-
-Extend the existing autonomous cycle:
-
-DISCOVER (Scan raw feeds)
-↓
-NORMALIZE
-↓
-GROUP RELATED SIGNALS (Connect the dots)
-↓
-DETECT EMERGING TREND
-↓
-MEMORY CHECK (Did we cover this trend already?)
-↓
-SECURITY EVALUATION (Is it high-impact?)
-↓
-GENERATE POST
-↓
-SELF-CRITIQUE
-↓
-APPROVE / REJECT
-↓
-PUBLISH
-↓
-REMEMBER
-
-==================================================
-2. SIGNAL CORRELATION LAYER
-==================================================
-
-Currently, Ada discovers topics and processes them one by one.
-Change this logic: Ada must collect multiple raw topics ("Signals") and attempt to group them.
-
-Example:
-- Signal 1 (Arxiv): "New prompt injection vulnerability in LLMs"
-- Signal 2 (HackerNews): "ChatGPT system prompt bypassed again"
-- Signal 3 (GitHub): "Open source tool for testing prompt injections"
-
-Ada should recognize these are related and group them into a single "Emerging Trend":
-"Increasing prevalence of prompt injection vulnerabilities across LLM platforms."
-
-==================================================
-3. EMERGING THREAT SCORE (0-100)
-==================================================
-
-Create a scoring engine that evaluates an Emerging Trend.
-Calculate the score based on:
-
-- Security Relevance
-- Novelty
-- Impact
-- Timeliness
-- Source Diversity (e.g., found on both Arxiv and GitHub = higher score)
-
-==================================================
-4. AUTONOMOUS MISSIONS
-==================================================
-
-Instead of just "running a cycle," Ada now runs an "Autonomous Mission".
-Store mission results in the database (e.g. `Mission` model) so we have a history of her research attempts, even if they result in no published post.
-
-==================================================
-5. EDITORIAL GATE & SELF-CRITIQUE
-==================================================
-
-Ensure that Ada's editorial capabilities are intact. If she calculates a Threat Score below the threshold, she must reject it and log the reason.
-If she drafts a post but her self-critique fails, she must attempt to rewrite it (up to 3 times) before giving up.
-
-==================================================
-6. ADA — AUTONOMOUS BRAIN (UI)
-==================================================
-
-Add a visually impressive "ADA — AUTONOMOUS BRAIN" section to the existing frontend.
-The UI should show the current mission.
-
-Display a live pipeline:
-RESEARCH ↓ COLLECT SIGNALS ↓ CONNECT SIGNALS ↓ DETECT TREND ↓ MEMORY CHECK ↓ EVALUATE ↓ CREATE ↓ SELF-CRITIQUE ↓ PUBLISH
-
-Highlight the current stage.
-Show completed stages.
-
-==================================================
-7. EMERGING THREAT MAP (UI)
-==================================================
-
-Build a visual representation of the connected signals.
-Nodes represent discovered signals/topics.
-Connections represent meaningful similarity or shared security themes.
-The central/emerging trend should be visually highlighted.
-
-Clicking a node should show the source title.
-
-==================================================
-8. WHY ADA THINKS THIS MATTERS (UI)
-==================================================
-
-Add a panel displaying the Emerging Threat Score breakdown.
-Show the safe, explainable rationale for why this trend is important.
-Never show internal reasoning or raw JSON.
-
-==================================================
-9. HACKATHON DEMO MODE
-==================================================
-
-Add a clearly labeled, optional "START AUTONOMOUS MISSION" button in the UI.
-When clicked, it should force the backend to immediately trigger the entire loop and stream the progress back to the UI.
 Final score: 91
 
 ✓ Published
@@ -1132,7 +1005,7 @@ rather than:
 
 Keep the interface elegant, minimal, futuristic, and highly presentable for a hackathon jury.
 
-# prompt 7 
+#prompt 7 
 Improve ONLY the frontend UI of the existing Autonomous AI Creator.
 
 Do not change backend logic, APIs, database, agent functionality, or data flow.
@@ -1732,531 +1605,598 @@ Data Persists After Refresh
 The final result should feel like a production-ready Autonomous AI Creator dashboard where every AI agent has its own persistent content history and can continuously generate and manage its own posts.
 
 After implementation, run the application and verify that the complete flow works without console errors, routing errors, database errors, or broken buttons.
-# prompt 8
-# CONTENT GENERATION QUALITY UPGRADE — AUTONOMOUS AI CREATOR
 
-Improve the **AI-generated content/post generation system** of my existing Autonomous AI Creator.
+#prompt 9 
+Add a premium "ADA — AUTONOMOUS BRAIN" visualization to the existing frontend.
 
 IMPORTANT:
+Do not change or rebuild the backend, APIs, database, scheduler, or AI logic.
+Use the existing agent data/activity if available. Only improve the frontend visualization.
 
-Do NOT change the website layout.
+Create a dedicated Agent Brain panel/page that visually shows what the autonomous agent is currently doing.
 
-Do NOT change the dashboard UI.
-
-Do NOT change the database structure unless absolutely necessary.
-
-Do NOT change the autonomous workflow.
-
-Only improve the **quality, structure, readability, professionalism, and consistency of generated content**.
-
-The generated posts must feel like they were written by a knowledgeable **AI Security researcher**, not like generic AI-generated text.
-
----
-
-# 1. STRICT WORD LIMIT
-
-Every generated social media post must contain:
-
-### Minimum: 150 words
-
-### Maximum: 220 words
-
-Target:
-
-**180–200 words**
-
-Never generate:
-
-* less than 150 words
-* more than 220 words
-
-The word count must be calculated from the final generated content.
-
-Display the word count in the dashboard.
-
-Example:
-
-**Word Count: 187 / 220**
-
-If the generated content exceeds 220 words:
-
-→ automatically rewrite/shorten it.
-
-If it is below 150 words:
-
-→ automatically expand it with useful technical explanation.
-
-Do not add meaningless filler just to reach the word count.
-
----
-
-# 2. FIXED PROFESSIONAL STRUCTURE
-
-Every generated post must follow this structure.
-
-## SECTION 1 — HOOK
-
-1–2 sentences.
-
-Immediately explain the important development/security issue.
-
-The opening should create interest without using clickbait.
-
-Example style:
-
-"AI agents are becoming more capable—but their growing autonomy also creates a new attack surface: indirect prompt injection."
-
----
-
-## SECTION 2 — WHAT HAPPENED?
-
-2–3 sentences.
-
-Clearly explain:
-
-* What happened?
-* What technology is involved?
-* Who discovered/reported it?
-* What is new?
-
-Use verified information from the available source.
-
-Do NOT invent facts.
-
----
-
-## SECTION 3 — WHY IT MATTERS
-
-2–4 sentences.
-
-Explain the real-world security impact.
-
-Focus on:
-
-* risk
-* affected systems
-* attack surface
-* potential consequences
-* why organizations should care
-
-The explanation must be understandable to a technical student as well as a professional reader.
-
----
-
-## SECTION 4 — TECHNICAL BREAKDOWN
-
-3–5 sentences.
-
-Explain the underlying technical concept.
-
-For example:
-
-* prompt injection
-* LLM vulnerability
-* agent manipulation
-* data leakage
-* model attack
-* insecure tool use
-* excessive permissions
-* memory poisoning
-
-Use technically correct terminology.
-
-However:
-
-### DO NOT use unnecessarily complicated language.
-
-Explain technical terms naturally.
-
-Example:
-
-Instead of:
-
-"Adversarially crafted indirect instructions exploit the model's contextual instruction hierarchy."
-
-Prefer:
-
-"An attacker can place malicious instructions inside external content that the AI agent reads. If the agent treats that content as trusted instructions, the attacker may influence its next action."
-
----
-
-## SECTION 5 — SECURITY TAKEAWAYS
-
-Use 3 concise bullet points.
-
-Example:
-
-• Treat external content as untrusted input.
-
-• Restrict agent permissions to the minimum required.
-
-• Validate tool calls before executing sensitive actions.
-
-These should provide practical defensive value.
-
----
-
-## SECTION 6 — CONCLUSION
-
-1–2 sentences.
-
-End with a strong professional insight.
-
-The conclusion should explain what developers/security teams should remember.
-
----
-
-## SECTION 7 — HASHTAGS
-
-Add 4–6 relevant hashtags.
-
-Examples:
-
-#AISecurity
-#LLMSecurity
-#AISafety
-#PromptInjection
-#CyberSecurity
-#AI
-
-Only use hashtags relevant to the actual topic.
-
-Do NOT add random hashtags.
-
----
-
-# 3. LANGUAGE STYLE
-
-The generated content must use:
-
-### Professional + Knowledgeable + Clear + Human-readable language
-
-The writing should sound like:
-
-**An experienced AI Security researcher explaining a complex topic clearly.**
-
-NOT like:
-
-* a textbook
-* a marketing advertisement
-* a generic chatbot
-* an academic paper
-* overly complicated technical documentation
-
----
-
-# 4. READABILITY RULE
-
-Use short paragraphs.
-
-Most sentences should be between:
-
-10–25 words.
-
-Avoid extremely long sentences.
-
-Avoid unnecessary jargon.
-
-When technical terminology is necessary, explain it briefly.
-
-Example:
-
-"Prompt injection is a technique where malicious instructions are inserted into content an AI system processes."
-
-This is better than assuming the reader already knows the term.
-
----
-
-# 5. PROFESSIONAL WRITING RULES
-
-Every post must:
-
-* Start with a strong but factual hook.
-* Clearly explain the event.
-* Explain why it matters.
-* Explain the technical mechanism.
-* Provide practical security recommendations.
-* End with a meaningful conclusion.
-* Use verified facts.
-* Avoid repetition.
-* Avoid filler.
-* Avoid exaggerated claims.
-
----
-
-# 6. NO FAKE INFORMATION
-
-This is extremely important.
-
-The Writer Agent must ONLY use information supported by the discovered sources and research.
-
-Never invent:
-
-* company statements
-* researchers
-* CVE numbers
-* vulnerability severity
-* attack statistics
-* dates
-* affected products
-* research findings
-* quotes
-* URLs
-
-If a fact cannot be verified:
-
-Do not state it as fact.
-
----
-
-# 7. SOURCE-AWARE WRITING
-
-The generated post should be based on the actual discovered topic.
-
-Before writing:
-
-1. Read the available source information.
-2. Identify the main security development.
-3. Extract verified facts.
-4. Identify technical significance.
-5. Identify practical defensive recommendations.
-6. Generate the post.
-
-Do NOT generate a generic AI Security article unrelated to the source.
-
----
-
-# 8. FACT CHECKER IMPROVEMENT
-
-The Fact Checker should verify:
-
-### Accuracy
-
-Are the claims supported?
-
-### Technical correctness
-
-Is the security explanation technically accurate?
-
-### Source consistency
-
-Does the post match the source?
-
-### No hallucinations
-
-Did the writer invent anything?
-
-### Relevance
-
-Does the post actually discuss the selected topic?
-
-### Word count
-
-Is the post between 150–220 words?
-
-If any check fails:
-
-→ send the post to the Rewrite Agent.
-
----
-
-# 9. CRITIC AGENT
-
-The Critic should score the generated content from 0–100.
-
-Evaluate:
-
-### 1. Accuracy — 25%
-
-### 2. Technical Knowledge — 20%
-
-### 3. Relevance — 20%
-
-### 4. Readability — 15%
-
-### 5. Professionalism — 10%
-
-### 6. Structure — 10%
-
-Required:
-
-**Overall Score >= 80**
-
-If score < 80:
-
-→ generate improvement feedback.
-
-Then:
-
-→ Rewrite.
-
-Maximum:
-
-**3 improvement attempts.**
-
----
-
-# 10. SELF-IMPROVEMENT LOOP
-
-The content generation pipeline should work like:
-
-SOURCE
-
-↓
+The visualization should communicate this live pipeline:
 
 RESEARCH
-
 ↓
-
-DRAFT
-
+TOPIC DISCOVERY
 ↓
-
-WORD COUNT CHECK
-
+SECURITY FILTER
 ↓
-
-FACT CHECKER
-
+MEMORY CHECK
 ↓
-
-CRITIC
-
+AI EVALUATION
 ↓
-
-QUALITY SCORE
-
+CONTENT GENERATION
 ↓
-
-IF SCORE < 80
-
+SELF-CRITIQUE
 ↓
-
-REWRITE
-
+APPROVE / REJECT
 ↓
-
-FACT CHECKER
-
+PUBLISH
 ↓
+MEMORY UPDATE
 
-CRITIC
+Design:
 
+1. Create a central "ADA" AI brain/orb in the middle with a subtle animated glow.
+2. Around it, display the autonomous stages as connected nodes.
+3. The current active stage should have a clear animated indicator.
+4. Completed stages should appear successful.
+5. Waiting stages should appear muted.
+6. Failed/rejected stages should clearly show the rejection state.
+7. Animate the connection/path between stages so the user can visually follow the agent's workflow.
+8. Add a small live activity panel beside/below the visualization showing events such as:
+
+   "Scanning AI Security sources..."
+   "23 topics discovered"
+   "Checking memory..."
+   "Duplicate topic rejected"
+   "Evaluating Prompt Injection research..."
+   "Editorial score: 91/100"
+   "Generating post..."
+   "Post approved"
+   "Published successfully"
+
+9. Add real metrics around the brain:
+
+   Topics Scanned
+   Topics Rejected
+   Posts Generated
+   Posts Published
+   Average Score
+   Current Cycle
+
+10. When an evaluation is available, show:
+
+   Relevance
+   Novelty
+   Impact
+   Timeliness
+   Duplicate Risk
+   Overall Score
+
+11. Add an "Agent Status" indicator:
+
+   ● AUTONOMOUS
+   Last cycle
+   Next cycle
+
+12. Add a small "Current Decision" card:
+
+   DECISION: APPROVED
+   SCORE: 91/100
+   REASON: Strong AI Security relevance and high novelty.
+
+13. The design should feel like a modern AI command center, NOT a chatbot and NOT a generic dashboard.
+
+Visual style:
+- Light premium SaaS background
+- White/glass cards
+- Deep indigo/blue primary
+- Cyan/teal accents
+- Green for successful states
+- Red for rejected states
+- Dark navy text
+- Subtle gradients
+- Soft shadows
+- Rounded modern cards
+- Smooth micro-animations
+- Clean typography
+- Responsive design
+
+Most important:
+The visualization must clearly communicate the concept:
+
+"ADA IS THINKING, EVALUATING, LEARNING FROM MEMORY, MAKING DECISIONS, AND ACTING AUTONOMOUSLY."
+
+Do not expose chain-of-thought or private reasoning.
+Only show high-level agent actions, states, scores, decisions, and safe summaries.
+
+Make this visually impressive enough to be the centerpiece of an AI hackathon demo.
+
+First inspect the existing frontend architecture and reuse the existing components, styles, state, and API data wherever possible.
+Do not break existing functionality.
+
+#Prompt 9 
+Add a major differentiating capability to the existing Autonomous AI Creator called:
+
+"EMERGING THREAT INTELLIGENCE"
+
+The goal is to make Ada more than an AI content generator. Ada should autonomously identify emerging AI Security trends by connecting multiple related signals from different sources and then decide whether the trend is important enough to publish.
+
+IMPORTANT:
+- Inspect the existing project before changing anything.
+- Do NOT rebuild the project from scratch.
+- Preserve existing APIs, UI functionality, Prisma models, scheduler and OpenAI integration.
+- Extend the existing architecture.
+- Do not fake results or hardcode a demonstration.
+- Use the existing live topic discovery and OpenAI pipeline.
+- Never expose chain-of-thought or private reasoning. Show only safe summaries, scores, evidence and decisions.
+
+==================================================
+1. NEW AUTONOMOUS INTELLIGENCE LOOP
+==================================================
+
+Extend the existing autonomous cycle:
+
+DISCOVER
+→ NORMALIZE
+→ GROUP RELATED SIGNALS
+→ DETECT EMERGING TREND
+→ MEMORY CHECK
+→ SECURITY EVALUATION
+→ GENERATE
+→ SELF-CRITIQUE
+→ APPROVE / REJECT
+→ PUBLISH
+→ REMEMBER
+
+Ada should not simply select one article.
+
+She should examine multiple discovered topics and identify when several sources are talking about the same underlying security issue.
+
+Example:
+
+Source A:
+"New prompt injection vulnerability discovered"
+
+Source B:
+"AI agent framework affected by indirect prompt injection"
+
+Source C:
+"Researchers demonstrate tool-manipulation attack"
+
+Source D:
+"New security mitigation for agentic systems"
+
+Ada should connect these signals and identify:
+
+"Emerging Trend:
+Prompt injection is becoming a broader security problem for autonomous AI agents."
+
+==================================================
+2. SIGNAL CORRELATION
+==================================================
+
+Create an intelligence layer that groups related discovered topics.
+
+For each potential trend calculate:
+
+- number of supporting sources
+- source diversity
+- topic similarity
+- security relevance
+- novelty
+- impact
+- timeliness
+- duplicate risk
+- confidence
+
+Do not consider multiple copies of the same article as multiple independent signals.
+
+Prefer independent sources.
+
+Example:
+
+3 independent sources
++ high AI Security relevance
++ recent activity
++ no previous coverage
+
+should produce a stronger emerging-trend signal.
+
+==================================================
+3. EMERGING THREAT SCORE
+==================================================
+
+Create an Emerging Threat Score from 0–100.
+
+Use factors such as:
+
+Security Relevance
+Signal Strength
+Source Diversity
+Novelty
+Impact
+Timeliness
+Historical/Memory Duplication
+
+The exact implementation should be consistent and documented.
+
+Only consider a trend "Emerging" when it crosses a sensible confidence threshold.
+
+Do not fabricate confidence.
+
+==================================================
+4. AUTONOMOUS MISSION
+==================================================
+
+Introduce the concept of an autonomous research mission.
+
+Example mission:
+
+"Find the most important emerging AI Security threat currently developing."
+
+Ada should autonomously:
+
+1. Scan available sources.
+2. Collect candidate signals.
+3. Group related signals.
+4. Identify emerging trends.
+5. Compare trends.
+6. Select the strongest one.
+7. Check memory.
+8. Research supporting evidence.
+9. Generate an analysis.
+10. Evaluate the generated content.
+11. Improve it if necessary.
+12. Publish only if it passes the editorial gate.
+13. Store the mission result in memory.
+
+The user should NOT need to manually tell Ada what topic to research.
+
+==================================================
+5. SELF-CRITIQUE AND RETRY
+==================================================
+
+Before publishing, Ada should evaluate the generated post.
+
+If the score is below the existing publishing threshold:
+
+DO NOT immediately publish.
+
+Perform a limited autonomous improvement cycle.
+
+Example:
+
+Attempt 1 → Score 68 → Rejected
+Reason → Too generic
+
+Attempt 2 → Score 76 → Rejected
+Reason → Insufficient novelty
+
+Attempt 3 → Score 89 → Approved
+
+Limit retries to avoid infinite loops.
+
+Store the attempts and final decision.
+
+Show only safe evaluation summaries, not hidden chain-of-thought.
+
+==================================================
+6. MEMORY INTELLIGENCE
+==================================================
+
+Use existing persistent memory.
+
+Ada should remember:
+
+- previously published topics
+- previously rejected topics
+- emerging trends already reported
+- important source URLs
+- previous editorial decisions
+
+Before publishing a new emerging trend, determine whether Ada has already covered substantially the same issue.
+
+If already covered:
+
+REJECT
+
+and explain:
+
+"Similar emerging trend already reported."
+
+==================================================
+7. AGENT BRAIN UI
+==================================================
+
+Add a visually impressive "ADA — AUTONOMOUS BRAIN" section to the existing frontend.
+
+The UI should show the current mission:
+
+MISSION:
+"Find the most important emerging AI Security threat."
+
+Display a live pipeline:
+
+RESEARCH
 ↓
+COLLECT SIGNALS
+↓
+CONNECT SIGNALS
+↓
+DETECT TREND
+↓
+MEMORY CHECK
+↓
+EVALUATE
+↓
+CREATE
+↓
+SELF-CRITIQUE
+↓
+PUBLISH
 
-FINAL APPROVAL
+Highlight the current stage.
 
-Only approved content should reach the publishing stage.
+Show completed stages, active stage and waiting stages differently.
 
----
+==================================================
+8. EMERGING THREAT MAP
+==================================================
 
-# 11. CONTENT FORMAT EXAMPLE
+Create a visual network showing relationships between discovered signals.
 
-Every generated post should approximately follow this structure:
+Example:
 
-**HOOK**
+             Prompt Injection
+                    ●
+                  / | \
+                 /  |  \
+                ●   ●   ●
+               /         \
+        AI Agents       LLM Security
+              \           /
+               \         /
+                ●───────●
+                 AI Safety
 
-AI agents are gaining the ability to independently browse, reason and use external tools. That autonomy also introduces a growing security risk: prompt injection.
+Nodes represent discovered signals/topics.
 
-**WHAT HAPPENED?**
+Connections represent meaningful similarity or shared security themes.
 
-Researchers identified a technique where malicious instructions can be embedded inside external content consumed by an AI agent. When the agent interprets that content as trusted instructions, the attacker may influence its behavior.
+The central/emerging trend should be visually highlighted.
 
-**WHY IT MATTERS**
+Clicking a node should show:
 
-This becomes especially dangerous when agents have access to email, files, databases or external tools. A successful attack could potentially cause unintended actions or expose sensitive information.
+- title
+- source
+- publication date
+- URL
+- relevance
+- relationship to the emerging trend
 
-**TECHNICAL BREAKDOWN**
+Do not invent relationships. Only display relationships generated from actual discovered data.
 
-The core problem is the lack of a strong boundary between data and instructions. An agent may process attacker-controlled content as part of its context and incorrectly follow embedded commands. Limiting permissions and validating tool calls can reduce this risk.
+==================================================
+9. "WHY ADA THINKS THIS MATTERS"
+==================================================
 
-**SECURITY TAKEAWAYS**
+For every detected emerging trend, show a safe decision summary:
 
-• Treat external content as untrusted input.
+WHY ADA THINKS THIS MATTERS
 
-• Apply least-privilege permissions to AI agents.
+Security Relevance: 94
+Novelty: 89
+Impact: 92
+Timeliness: 95
+Source Diversity: 87
+Confidence: 93
 
-• Validate sensitive tool calls before execution.
+Supporting Sources: 6
+Previously Covered: No
 
-**CONCLUSION**
+Decision:
+STRONG EMERGING THREAT
 
-As AI systems become more autonomous, security must extend beyond the model itself to the tools, data and permissions surrounding it.
+Add a "View Evidence" section showing the supporting articles.
 
-#AISecurity #PromptInjection #LLMSecurity #AISafety #CyberSecurity
+==================================================
+10. LIVE AGENT ACTIVITY
+==================================================
 
----
+Add a live activity stream such as:
 
-# 12. DASHBOARD DISPLAY
+12:41:03
+Scanning AI Security sources...
 
-When displaying generated content in the existing feed, show:
+12:41:08
+27 candidate signals discovered.
 
-### Content Quality
+12:41:11
+5 duplicate signals removed.
 
-**92 / 100**
+12:41:15
+3 related signals grouped.
 
-### Word Count
+12:41:19
+Potential emerging trend detected.
 
-**187 / 220 words**
+12:41:22
+6 independent sources support this trend.
 
-### Content Structure
+12:41:25
+Emerging Threat Score: 91/100.
 
-✓ Hook
-✓ Context
-✓ Impact
-✓ Technical Breakdown
-✓ Security Takeaways
-✓ Conclusion
+12:41:29
+Generating security analysis...
 
-### Verification
+12:41:35
+Editorial evaluation: 94/100.
 
-✓ Fact Checked
-✓ Critic Approved
-✓ Source Verified
+12:41:37
+✓ Published.
 
-This will make the generated content look much more professional and trustworthy.
+Use actual application events where possible.
 
----
+Do not create fake activity merely for animation.
 
-# 13. FINAL QUALITY STANDARD
+==================================================
+11. MISSION RESULT
+==================================================
 
-Before publishing, the system must ask:
+After a mission completes, show:
 
-"Would this look credible if posted by a professional AI Security researcher on LinkedIn or X?"
+MISSION COMPLETED
 
-If the answer is NO:
+Emerging Threat:
+"Prompt Injection Risks Are Expanding Across AI Agents"
 
-→ Rewrite.
+Confidence:
+93%
 
-The final content must be:
+Sources:
+6
 
-**Professional**
-**Knowledgeable**
-**Fact-based**
-**Technically accurate**
-**Easy to understand**
-**Well structured**
-**150–220 words**
-**Non-repetitive**
-**Useful to the reader**
+Security Score:
+94/100
 
-Do not publish content simply because it is grammatically correct.
+Editorial Score:
+91/100
 
-Publish only when it provides genuine **AI Security insight and practical value**.
+Previous Coverage:
+None
 
----
+Decision:
+✓ PUBLISHED
 
-# IMPLEMENTATION
+Also show the generated social-media post.
 
-Update the existing:
+==================================================
+12. AUTONOMOUS CONTINUATION
+==================================================
 
-* Writer Prompt
-* Fact Checker Prompt
-* Critic Prompt
-* Rewrite Prompt
-* Content validation logic
+After completing one mission, Ada should return to an autonomous state and be ready for the next scheduled cycle.
 
-Do not create a separate fake content-generation system.
+The system should behave as:
 
-Integrate these rules into the existing autonomous publishing pipeline.
+Mission 001
+→ Discover
+→ Analyze
+→ Publish
+→ Remember
 
-After implementation, test the system with multiple AI Security topics and verify that every generated post follows the required structure and word limit.
+Mission 002
+→ Discover
+→ Analyze
+→ Compare with Memory
+→ Find a different emerging threat
+→ Publish
+
+The system must prevent repetitive missions.
+
+==================================================
+13. HACKATHON DEMO MODE
+==================================================
+
+Add a clearly labeled optional:
+
+"START AUTONOMOUS MISSION"
+
+button.
+
+This should trigger the existing backend/autonomous pipeline rather than generating fake frontend data.
+
+When clicked, the judge should be able to watch Ada perform the complete process.
+
+Do not require manual topic selection.
+
+The judge should see:
+
+Research
+→ Signals
+→ Connections
+→ Emerging Trend
+→ Evaluation
+→ Decision
+→ Publication
+
+==================================================
+14. ARCHITECTURE
+==================================================
+
+Before implementing, inspect the existing architecture and reuse:
+
+- topicDiscovery
+- scheduler
+- editorial engine
+- writer
+- memory
+- OpenAI service
+- Prisma
+- existing activity logging
+- existing frontend components
+
+Create new modules only where necessary.
+
+Keep responsibilities separated.
+
+Avoid putting all logic into scheduler.ts.
+
+Use strict TypeScript.
+
+Do not use:
+- any
+- @ts-ignore
+- fake/static intelligence results
+- hardcoded articles
+- fake scores
+
+==================================================
+15. DOCUMENTATION
+==================================================
+
+Update PROMPT.md and README.md with the new capability.
+
+Document:
+
+- Emerging Threat Intelligence
+- Signal correlation
+- Autonomous missions
+- Emerging Threat Score
+- Memory interaction
+- Self-critique loop
+- Agent Brain
+- Emerging Threat Map
+- Explainable decisions
+
+Include a Mermaid architecture/flow diagram.
+
+==================================================
+16. FINAL VALIDATION
+==================================================
+
+After implementation:
+
+1. Run the TypeScript build.
+2. Fix every TypeScript error.
+3. Verify Prisma/database compatibility.
+4. Verify existing APIs still work.
+5. Verify frontend communicates with the real backend.
+6. Verify OpenAI calls use the environment variable.
+7. Verify the autonomous scheduler still works.
+8. Verify the new mission can execute end-to-end.
+
+Most importantly:
+
+Do not turn this into a static UI demonstration.
+
+The feature must represent REAL autonomous behavior using the existing AI, discovery, memory, scoring and database systems.
+
+The final product should feel like:
+
+"An autonomous AI Security intelligence agent that discovers emerging threats by connecting signals across the internet, evaluates their importance, learns from its memory, improves its own output, and independently decides what deserves to be published."
+
+This is the core differentiator of the project.
