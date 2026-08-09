@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Autonomous AI Creator — Light Premium AI Intelligence Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       /* Main Background & Surfaces */
@@ -14,47 +17,47 @@
       --bg-surface: #FFFFFF;
       --bg-surface-elevated: #FFFFFF;
       --bg-surface-light: #F1F5F9;
-      
+
       /* Primary Color System */
       --primary: #2563EB;
       --primary-hover: #1D4ED8;
       --primary-light: #EFF6FF;
       --primary-glow: rgba(37, 99, 235, 0.15);
-      
+
       /* Secondary & Accents */
       --secondary: #0891B2;
       --secondary-light: #ECFEFF;
       --secondary-glow: rgba(8, 145, 178, 0.15);
-      
+
       --purple: #7C3AED;
       --purple-light: #F5F3FF;
       --purple-glow: rgba(124, 58, 237, 0.15);
-      
+
       --success: #16A34A;
       --success-light: #F0FDF4;
       --warning: #D97706;
       --warning-light: #FFFBEB;
       --danger: #DC2626;
       --danger-light: #FEF2F2;
-      
+
       /* Typography Colors */
       --text-main: #0F172A;
       --text-muted: #475569;
       --text-faint: #64748B;
-      
+
       /* Borders & Shadows */
       --border-color: #E2E8F0;
       --border-light: #F1F5F9;
       --border-dark: #CBD5E1;
-      
+
       --card-shadow: 0 8px 30px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
       --card-shadow-hover: 0 14px 40px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
       --modal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-      
+
       /* Fonts */
       --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
-      
+
       /* Radii */
       --radius-sm: 8px;
       --radius-md: 12px;
@@ -76,7 +79,7 @@
       line-height: 1.5;
       overflow-x: hidden;
       /* Layered Premium Light Background with Subtle Faint AI Grid */
-      background-image: 
+      background-image:
         linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
         radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.08) 0%, transparent 45%),
@@ -86,39 +89,138 @@
     }
 
     /* Utility Helpers */
-    .flex { display: flex; }
-    .flex-col { display: flex; flex-direction: column; }
-    .items-center { align-items: center; }
-    .justify-between { justify-content: space-between; }
-    .justify-center { justify-content: center; }
-    .flex-wrap { flex-wrap: wrap; }
-    .gap-1 { gap: 0.25rem; }
-    .gap-2 { gap: 0.5rem; }
-    .gap-3 { gap: 0.75rem; }
-    .gap-4 { gap: 1rem; }
-    .gap-6 { gap: 1.5rem; }
-    .gap-8 { gap: 2rem; }
-    .w-full { width: 100%; }
-    .h-full { height: 100%; }
-    .relative { position: relative !important; }
-    .absolute { position: absolute !important; }
-    .text-sm { font-size: 0.875rem; }
-    .text-xs { font-size: 0.75rem; }
-    .text-lg { font-size: 1.125rem; }
-    .text-xl { font-size: 1.25rem; }
-    .text-2xl { font-size: 1.5rem; }
-    .text-muted { color: var(--text-muted); }
-    .text-faint { color: var(--text-faint); }
-    .text-primary { color: var(--primary); }
-    .text-secondary { color: var(--secondary); }
-    .text-success { color: var(--success); }
-    .text-warning { color: var(--warning); }
-    .text-danger { color: var(--danger); }
-    .font-medium { font-weight: 500; }
-    .font-semibold { font-weight: 600; }
-    .font-bold { font-weight: 700; }
-    .font-mono { font-family: var(--font-mono); }
-    .hidden { display: none !important; }
+    .flex {
+      display: flex;
+    }
+
+    .flex-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .justify-between {
+      justify-content: space-between;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .flex-wrap {
+      flex-wrap: wrap;
+    }
+
+    .gap-1 {
+      gap: 0.25rem;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .gap-3 {
+      gap: 0.75rem;
+    }
+
+    .gap-4 {
+      gap: 1rem;
+    }
+
+    .gap-6 {
+      gap: 1.5rem;
+    }
+
+    .gap-8 {
+      gap: 2rem;
+    }
+
+    .w-full {
+      width: 100%;
+    }
+
+    .h-full {
+      height: 100%;
+    }
+
+    .relative {
+      position: relative !important;
+    }
+
+    .absolute {
+      position: absolute !important;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+    }
+
+    .text-xs {
+      font-size: 0.75rem;
+    }
+
+    .text-lg {
+      font-size: 1.125rem;
+    }
+
+    .text-xl {
+      font-size: 1.25rem;
+    }
+
+    .text-2xl {
+      font-size: 1.5rem;
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .text-faint {
+      color: var(--text-faint);
+    }
+
+    .text-primary {
+      color: var(--primary);
+    }
+
+    .text-secondary {
+      color: var(--secondary);
+    }
+
+    .text-success {
+      color: var(--success);
+    }
+
+    .text-warning {
+      color: var(--warning);
+    }
+
+    .text-danger {
+      color: var(--danger);
+    }
+
+    .font-medium {
+      font-weight: 500;
+    }
+
+    .font-semibold {
+      font-weight: 600;
+    }
+
+    .font-bold {
+      font-weight: 700;
+    }
+
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+
+    .hidden {
+      display: none !important;
+    }
 
     /* Layout */
     .app-layout {
@@ -131,6 +233,7 @@
       .app-layout {
         grid-template-columns: 1fr;
       }
+
       .sidebar {
         display: none;
       }
@@ -237,9 +340,20 @@
     }
 
     @keyframes pulse-green {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      }
+
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(22, 163, 74, 0);
+      }
+
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+      }
     }
 
     /* Main Area & Header */
@@ -602,7 +716,7 @@
       border-color: rgba(22, 163, 74, 0.2);
       color: var(--success);
     }
-    
+
     .badge.danger {
       background: var(--danger-light);
       border-color: rgba(220, 38, 38, 0.2);
@@ -761,8 +875,15 @@
 
     /* Animations */
     @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-8px); }
-      to { opacity: 1; transform: translateX(0); }
+      from {
+        opacity: 0;
+        transform: translateX(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
     }
 
     .fade-enter {
@@ -770,8 +891,13 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     /* Loading Sequence */
@@ -785,12 +911,12 @@
       border-radius: var(--radius-md);
       border: 1px solid var(--border-color);
     }
-    
+
     .view-section {
       display: none;
       animation: fadeIn 0.25s ease;
     }
-    
+
     .view-section.active {
       display: block;
     }
@@ -799,17 +925,20 @@
     ::-webkit-scrollbar {
       width: 7px;
     }
+
     ::-webkit-scrollbar-track {
       background: transparent;
     }
+
     ::-webkit-scrollbar-thumb {
       background: #CBD5E1;
       border-radius: 4px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
       background: #94A3B8;
     }
-    
+
     /* Agent Cards Grid */
     .agent-card {
       background: #FFFFFF;
@@ -820,7 +949,9 @@
       box-shadow: var(--card-shadow);
       transition: all 0.2s ease;
     }
-    .agent-card:hover, .agent-card.active {
+
+    .agent-card:hover,
+    .agent-card.active {
       border-color: var(--primary);
       box-shadow: 0 10px 30px var(--primary-glow);
     }
@@ -868,23 +999,56 @@
       border-radius: 50%;
       animation: pulseRing 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
-    .brain-ring.ring-1 { width: 170px; height: 170px; animation-delay: 0s; }
-    .brain-ring.ring-2 { width: 230px; height: 230px; animation-delay: 1.2s; }
-    .brain-ring.ring-3 { width: 290px; height: 290px; animation-delay: 2.4s; border: 1px dashed rgba(37, 99, 235, 0.15); }
+
+    .brain-ring.ring-1 {
+      width: 170px;
+      height: 170px;
+      animation-delay: 0s;
+    }
+
+    .brain-ring.ring-2 {
+      width: 230px;
+      height: 230px;
+      animation-delay: 1.2s;
+    }
+
+    .brain-ring.ring-3 {
+      width: 290px;
+      height: 290px;
+      animation-delay: 2.4s;
+      border: 1px dashed rgba(37, 99, 235, 0.15);
+    }
 
     @keyframes floatOrb {
-      0%, 100% { transform: translate(-50%, -50%); }
-      50% { transform: translate(-50%, -54%); }
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%);
+      }
+
+      50% {
+        transform: translate(-50%, -54%);
+      }
     }
 
     @keyframes pulseRing {
-      0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+      0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+      }
     }
 
     .brain-nodes-container {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       pointer-events: none;
     }
 
@@ -946,7 +1110,7 @@
       justify-content: center;
       font-size: 1.25rem;
       transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
     }
 
     .bn-label {
@@ -965,27 +1129,31 @@
 
     #brain-svg-lines {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       z-index: 1;
       pointer-events: none;
     }
-    
+
     .bn-line {
       fill: none;
       stroke: var(--border-color);
       stroke-width: 2;
       transition: stroke 0.5s ease;
     }
-    
+
     .bn-line.active {
       stroke: var(--primary);
       stroke-dasharray: 6 6;
       animation: lineDash 20s linear infinite;
     }
-    
+
     @keyframes lineDash {
-      to { stroke-dashoffset: -1000; }
+      to {
+        stroke-dashoffset: -1000;
+      }
     }
 
     .threat-node {
@@ -1031,6 +1199,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="app-layout">
@@ -1083,7 +1252,8 @@
       <header class="top-header">
         <div>
           <h1 class="font-semibold text-lg text-main">Autonomous Intelligence Center</h1>
-          <p class="text-xs text-muted">Autonomous agents research, evaluate, and publish AI security content continuously.</p>
+          <p class="text-xs text-muted">Autonomous agents research, evaluate, and publish AI security content
+            continuously.</p>
         </div>
         <div class="flex items-center gap-4">
           <div class="text-xs text-muted flex items-center gap-2">
@@ -1096,25 +1266,31 @@
       </header>
 
       <div class="content-wrapper">
-        
+
         <!-- OVERVIEW VIEW -->
         <div id="view-overview" class="view-section active">
           <div class="hero-section">
             <div>
               <h2 class="hero-title">Autonomous AI Creator</h2>
-              <p class="hero-subtitle">Multi-agent intelligence system researching, writing, fact-checking, critiquing, and publishing content without human intervention.</p>
+              <p class="hero-subtitle">Multi-agent intelligence system researching, writing, fact-checking, critiquing,
+                and publishing content without human intervention.</p>
             </div>
             <div class="glass-card" style="min-width: 290px;">
               <div class="flex justify-between items-center mb-4">
                 <span class="text-xs font-bold text-muted tracking-wide">AUTONOMY STATUS</span>
-                <div class="status-indicator" style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
-                  <div class="dot pulse" style="background: var(--primary); box-shadow: 0 0 0 0 var(--primary-glow);"></div> ACTIVE
+                <div class="status-indicator"
+                  style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
+                  <div class="dot pulse" style="background: var(--primary); box-shadow: 0 0 0 0 var(--primary-glow);">
+                  </div> ACTIVE
                 </div>
               </div>
-              <div class="text-sm mb-2"><span class="text-muted">Scheduler:</span> <strong class="text-main">Running</strong></div>
-              <div class="text-sm mb-2"><span class="text-muted">Cycle Interval:</span> <strong class="text-main">Continuous (30m)</strong></div>
-              <div class="text-sm"><span class="text-muted">Score Threshold:</span> <strong class="text-primary">80 / 100</strong></div>
-              
+              <div class="text-sm mb-2"><span class="text-muted">Scheduler:</span> <strong
+                  class="text-main">Running</strong></div>
+              <div class="text-sm mb-2"><span class="text-muted">Cycle Interval:</span> <strong
+                  class="text-main">Continuous (30m)</strong></div>
+              <div class="text-sm"><span class="text-muted">Score Threshold:</span> <strong class="text-primary">80 /
+                  100</strong></div>
+
               <button class="btn btn-outline w-full mt-4" id="triggerCycleBtn">
                 ⚡ Force Cycle
               </button>
@@ -1156,10 +1332,11 @@
                 <div class="kpi-icon-box" style="background: var(--purple-light); color: var(--purple);">⭐</div>
               </div>
               <div class="kpi-value text-primary">91</div>
-              <div class="kpi-trend text-muted"><span class="text-primary font-bold">Fact-checked & approved</span></div>
+              <div class="kpi-trend text-muted"><span class="text-primary font-bold">Fact-checked & approved</span>
+              </div>
             </div>
           </div>
-          
+
           <h3 class="font-bold text-lg mb-4">Autonomous 7-Stage Workflow Architecture</h3>
           <div class="workflow-container">
             <div class="workflow-node" id="wf-discovery">
@@ -1208,7 +1385,8 @@
             </div>
             <button class="btn btn-primary text-sm" onclick="openInitModal()">+ Initialize New Agent</button>
           </div>
-          <div id="agentsGrid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+          <div id="agentsGrid" class="grid"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
             <div class="text-muted">Loading active agents...</div>
           </div>
         </div>
@@ -1216,20 +1394,25 @@
         <!-- AGENT DETAILS & DEDICATED FEED VIEW -->
         <div id="view-agent-details" class="view-section">
           <div class="flex justify-between items-center mb-6">
-            <button class="btn btn-outline text-sm flex items-center gap-2" onclick="showAgentsView()">← Back to Agents</button>
+            <button class="btn btn-outline text-sm flex items-center gap-2" onclick="showAgentsView()">← Back to
+              Agents</button>
             <button class="btn btn-primary text-sm" onclick="openGenerateModal()">+ Generate New Post</button>
           </div>
 
           <div class="glass-card mb-6" id="agentDetailsHeader">
             <div class="flex justify-between items-start flex-wrap gap-4 mb-4">
               <div class="flex items-center gap-4">
-                <div class="author-avatar" id="detailAgentAvatar" style="width:52px; height:52px; font-size:1.6rem; font-weight:800;">A</div>
+                <div class="author-avatar" id="detailAgentAvatar"
+                  style="width:52px; height:52px; font-size:1.6rem; font-weight:800;">A</div>
                 <div>
                   <div class="flex items-center gap-3">
                     <h2 class="font-bold text-2xl" id="detailAgentName">ADA</h2>
-                    <span class="text-xs text-secondary font-bold tracking-wide" id="detailAgentDomain" style="background: var(--secondary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm);">AI SECURITY</span>
+                    <span class="text-xs text-secondary font-bold tracking-wide" id="detailAgentDomain"
+                      style="background: var(--secondary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm);">AI
+                      SECURITY</span>
                   </div>
-                  <div class="text-xs text-muted mt-1" id="detailAgentRoleStyle">Researcher • Writer • Fact Checker • Critic</div>
+                  <div class="text-xs text-muted mt-1" id="detailAgentRoleStyle">Researcher • Writer • Fact Checker •
+                    Critic</div>
                 </div>
               </div>
               <div class="flex items-center gap-3">
@@ -1242,7 +1425,8 @@
                 </div>
               </div>
             </div>
-            <div class="flex justify-between items-center text-xs text-muted pt-3" style="border-top: 1px solid var(--border-color);">
+            <div class="flex justify-between items-center text-xs text-muted pt-3"
+              style="border-top: 1px solid var(--border-color);">
               <span>Last generated post: <strong id="detailLastPostTime" class="text-main">Never</strong></span>
               <span id="detailAgentIdBadge" class="font-mono text-faint">ID: -</span>
             </div>
@@ -1276,7 +1460,8 @@
           <div class="flex justify-between items-center mb-6">
             <div>
               <h2 class="font-bold text-2xl">Live Agent Activity Telemetry</h2>
-              <p class="text-xs text-muted">Real-time audit log stream of discovery, evaluation, rewrite, and publication steps.</p>
+              <p class="text-xs text-muted">Real-time audit log stream of discovery, evaluation, rewrite, and
+                publication steps.</p>
             </div>
           </div>
           <div class="glass-card">
@@ -1291,11 +1476,13 @@
           <div class="flex justify-between items-center mb-6">
             <div>
               <h2 class="font-bold text-2xl">Rejected Content Audit Log</h2>
-              <p class="text-xs text-muted">Candidate topics that failed AI Security whitelist, duplicate memory check, or score threshold (> 80).</p>
+              <p class="text-xs text-muted">Candidate topics that failed AI Security whitelist, duplicate memory check,
+                or score threshold (> 80).</p>
             </div>
           </div>
           <div class="glass-card" style="border-left: 4px solid var(--danger);">
-            <p class="text-muted text-sm mb-4">Content audit logs listing explicit rejection reasons, scores, and factual/critic feedback.</p>
+            <p class="text-muted text-sm mb-4">Content audit logs listing explicit rejection reasons, scores, and
+              factual/critic feedback.</p>
             <div id="rejectedLogContainer" class="activity-log">
               <div class="text-muted">Loading rejected logs...</div>
             </div>
@@ -1311,88 +1498,121 @@
             </div>
             <div class="flex items-center gap-4">
               <button class="btn btn-primary text-sm font-bold" id="startMissionBtn">START AUTONOMOUS MISSION</button>
-              <div class="status-indicator" style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
+              <div class="status-indicator"
+                style="background: var(--primary-light); color: var(--primary); border-color: rgba(37,99,235,0.2);">
                 <div class="dot pulse" style="background: var(--primary);"></div> AUTONOMOUS BRAIN ONLINE
               </div>
             </div>
           </div>
 
-              <!-- Threat Map & Pipeline -->
-              <div class="glass-card flex-col relative" style="position: relative; min-height: 640px; overflow: hidden; background: radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%);">
-                <div class="font-bold text-sm text-muted p-4 pb-0 absolute" style="z-index: 30; top: 0; left: 0;">EMERGING THREAT MAP & PIPELINE</div>
-                
-                <svg id="brain-svg-lines"></svg>
-                <div class="brain-nodes-container" id="brainNodesContainer"></div>
-                <div class="brain-nodes-container" id="threatMapContainer"></div>
+          <!-- Threat Map & Pipeline -->
+          <div class="glass-card flex-col relative"
+            style="position: relative; min-height: 640px; overflow: hidden; background: radial-gradient(circle at center, #FFFFFF 0%, #F8FAFC 100%);">
+            <div class="font-bold text-sm text-muted p-4 pb-0 absolute" style="z-index: 30; top: 0; left: 0;">EMERGING
+              THREAT MAP & PIPELINE</div>
 
-                <!-- Live Activity Status Banner overlay -->
-                <div style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem; z-index: 20;">
-                  <div class="glass-card" style="background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); gap: 1rem;">
-                     <div style="flex: 1; min-width: 0;">
-                       <div class="text-xs font-bold text-muted tracking-wide mb-0.5">LIVE INTELLIGENCE ACTIVITY</div>
-                       <div class="font-mono font-semibold text-sm text-primary" id="brainLiveStatus" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">Waiting for discovery cycle...</div>
-                     </div>
-                     <div class="text-right" style="flex-shrink: 0;">
-                       <div class="text-xs text-muted font-medium">Mission Status</div>
-                       <div class="font-bold text-sm font-mono text-main" id="brainMissionStatus">IDLE</div>
-                     </div>
-                  </div>
+            <svg id="brain-svg-lines"></svg>
+            <div class="brain-nodes-container" id="brainNodesContainer"></div>
+            <div class="brain-nodes-container" id="threatMapContainer"></div>
+
+            <!-- Live Activity Status Banner overlay -->
+            <div style="position: absolute; bottom: 1rem; left: 1rem; right: 1rem; z-index: 20;">
+              <div class="glass-card"
+                style="background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.25rem; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); gap: 1rem;">
+                <div style="flex: 1; min-width: 0;">
+                  <div class="text-xs font-bold text-muted tracking-wide mb-0.5">LIVE INTELLIGENCE ACTIVITY</div>
+                  <div class="font-mono font-semibold text-sm text-primary" id="brainLiveStatus"
+                    style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">Waiting for
+                    discovery cycle...</div>
+                </div>
+                <div class="text-right" style="flex-shrink: 0;">
+                  <div class="text-xs text-muted font-medium">Mission Status</div>
+                  <div class="font-bold text-sm font-mono text-main" id="brainMissionStatus">IDLE</div>
                 </div>
               </div>
-
-              <!-- Side Intelligence Panels -->
-              <div class="flex-col gap-4" style="display: flex; flex-direction: column;">
-
-              <!-- Latest Evaluation breakdown -->
-              <div class="glass-card p-4 flex-1">
-                <h3 class="text-xs font-bold text-muted tracking-wide mb-3">WHY ADA THINKS THIS MATTERS</h3>
-                <div class="font-bold text-sm text-main mb-2" id="trendTitleLabel">Waiting for intelligence mission...</div>
-                
-                <div class="flex flex-col gap-2.5" style="display: flex; flex-direction: column; gap: 0.6rem;">
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Security Relevance</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barRelevance" style="height: 100%; background: var(--success); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreRelevance">0</span></div>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Novelty</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barNovelty" style="height: 100%; background: var(--primary); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreNovelty">0</span></div>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Impact</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barImpact" style="height: 100%; background: var(--primary); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreImpact">0</span></div>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Timeliness</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barTimeliness" style="height: 100%; background: var(--warning); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreTimeliness">0</span></div>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-muted">Source Diversity</span>
-                    <div class="flex items-center gap-2"><div style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;"><div id="barDiversity" style="height: 100%; background: var(--success); width: 0%;"></div></div> <span class="text-xs font-bold font-mono" id="scoreDiversity">0</span></div>
-                  </div>
-                  <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                     <span class="font-bold text-xs">Emerging Threat Confidence</span>
-                     <span class="font-bold text-base text-success font-mono" id="scoreConfidence">0%</span>
-                  </div>
-                  <div class="text-xs text-muted mt-2">
-                    Supporting Sources: <strong id="trendSourcesCount">0</strong><br>
-                    Previously Covered: <strong>No</strong>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Decision Card -->
-              <div class="glass-card p-4" style="border-left: 4px solid var(--primary);" id="brainDecisionCard">
-                <h3 class="text-xs font-bold text-muted tracking-wide mb-2">DECISION VERDICT</h3>
-                <div class="font-bold text-primary text-base mb-1" id="brainDecisionStatus">EVALUATING</div>
-                <div class="text-xs text-muted" id="brainDecisionReason">Awaiting mission output...</div>
-              </div>
-
             </div>
           </div>
-        </div>
 
+          <!-- Side Intelligence Panels -->
+          <div class="flex-col gap-4" style="display: flex; flex-direction: column;">
+
+            <!-- Latest Evaluation breakdown -->
+            <div class="glass-card p-4 flex-1">
+              <h3 class="text-xs font-bold text-muted tracking-wide mb-3">WHY ADA THINKS THIS MATTERS</h3>
+              <div class="font-bold text-sm text-main mb-2" id="trendTitleLabel">Waiting for intelligence mission...
+              </div>
+
+              <div class="flex flex-col gap-2.5" style="display: flex; flex-direction: column; gap: 0.6rem;">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-semibold text-muted">Security Relevance</span>
+                  <div class="flex items-center gap-2">
+                    <div
+                      style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;">
+                      <div id="barRelevance" style="height: 100%; background: var(--success); width: 0%;"></div>
+                    </div> <span class="text-xs font-bold font-mono" id="scoreRelevance">0</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-semibold text-muted">Novelty</span>
+                  <div class="flex items-center gap-2">
+                    <div
+                      style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;">
+                      <div id="barNovelty" style="height: 100%; background: var(--primary); width: 0%;"></div>
+                    </div> <span class="text-xs font-bold font-mono" id="scoreNovelty">0</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-semibold text-muted">Impact</span>
+                  <div class="flex items-center gap-2">
+                    <div
+                      style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;">
+                      <div id="barImpact" style="height: 100%; background: var(--primary); width: 0%;"></div>
+                    </div> <span class="text-xs font-bold font-mono" id="scoreImpact">0</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-semibold text-muted">Timeliness</span>
+                  <div class="flex items-center gap-2">
+                    <div
+                      style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;">
+                      <div id="barTimeliness" style="height: 100%; background: var(--warning); width: 0%;"></div>
+                    </div> <span class="text-xs font-bold font-mono" id="scoreTimeliness">0</span>
+                  </div>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-semibold text-muted">Source Diversity</span>
+                  <div class="flex items-center gap-2">
+                    <div
+                      style="width: 70px; height: 7px; background: #E2E8F0; border-radius: 9999px; overflow: hidden;">
+                      <div id="barDiversity" style="height: 100%; background: var(--success); width: 0%;"></div>
+                    </div> <span class="text-xs font-bold font-mono" id="scoreDiversity">0</span>
+                  </div>
+                </div>
+                <div
+                  style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                  <span class="font-bold text-xs">Emerging Threat Confidence</span>
+                  <span class="font-bold text-base text-success font-mono" id="scoreConfidence">0%</span>
+                </div>
+                <div class="text-xs text-muted mt-2">
+                  Supporting Sources: <strong id="trendSourcesCount">0</strong><br>
+                  Previously Covered: <strong>No</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Decision Card -->
+            <div class="glass-card p-4" style="border-left: 4px solid var(--primary);" id="brainDecisionCard">
+              <h3 class="text-xs font-bold text-muted tracking-wide mb-2">DECISION VERDICT</h3>
+              <div class="font-bold text-primary text-base mb-1" id="brainDecisionStatus">EVALUATING</div>
+              <div class="text-xs text-muted" id="brainDecisionReason">Awaiting mission output...</div>
+            </div>
+
+          </div>
+        </div>
       </div>
-    </main>
+
+  </div>
+  </main>
   </div>
 
   <!-- INIT AGENT MODAL -->
@@ -1413,7 +1633,8 @@
           </div>
           <div class="form-group">
             <label class="form-label">Domain Focus</label>
-            <input type="text" id="agentDomain" class="form-input" value="AI Security" placeholder="e.g. AI Security" required>
+            <input type="text" id="agentDomain" class="form-input" value="AI Security" placeholder="e.g. AI Security"
+              required>
           </div>
           <div class="form-group">
             <label class="form-label">Writing Style</label>
@@ -1429,10 +1650,11 @@
             </div>
             <div class="form-group w-full">
               <label class="form-label">Quality Threshold</label>
-              <input type="text" class="form-input" value="80 / 100" disabled style="background: var(--bg-surface-light);">
+              <input type="text" class="form-input" value="80 / 100" disabled
+                style="background: var(--bg-surface-light);">
             </div>
           </div>
-          
+
           <div id="initSequenceDisplay" class="init-sequence hidden"></div>
 
           <button type="submit" class="btn btn-primary w-full mt-4" id="submitInitBtn">Launch Autonomous Agent</button>
@@ -1446,7 +1668,8 @@
     <div class="modal-content">
       <div class="modal-header">
         <div>
-          <h3 class="font-bold text-lg">Generate Post for <span id="genAgentNameTitle" class="text-primary">Agent</span></h3>
+          <h3 class="font-bold text-lg">Generate Post for <span id="genAgentNameTitle" class="text-primary">Agent</span>
+          </h3>
           <p class="text-xs text-muted">Synthesize technical social content using OpenAI models.</p>
         </div>
         <button class="close-btn" onclick="closeGenerateModal()">✕</button>
@@ -1455,7 +1678,8 @@
         <form id="generatePostForm">
           <div class="form-group mb-3">
             <label class="form-label">Topic / Subject</label>
-            <input type="text" id="genPostTopic" class="form-input" placeholder="e.g. Indirect Prompt Injection in Multi-Agent Memory" required>
+            <input type="text" id="genPostTopic" class="form-input"
+              placeholder="e.g. Indirect Prompt Injection in Multi-Agent Memory" required>
           </div>
           <div class="flex gap-3 mb-3">
             <div class="form-group w-full">
@@ -1487,7 +1711,8 @@
           </div>
           <div class="form-group mb-3">
             <label class="form-label">Additional Instructions</label>
-            <textarea id="genInstructions" class="form-input" rows="2" placeholder="Specific security takeaways, CVE references, or remediation advice..."></textarea>
+            <textarea id="genInstructions" class="form-input" rows="2"
+              placeholder="Specific security takeaways, CVE references, or remediation advice..."></textarea>
           </div>
 
           <div id="genSequenceDisplay" class="init-sequence hidden mb-3"></div>
@@ -1549,11 +1774,11 @@
       item.addEventListener('click', (e) => {
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         e.currentTarget.classList.add('active');
-        
+
         const targetId = e.currentTarget.getAttribute('data-target');
         document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
         document.getElementById(targetId).classList.add('active');
-        
+
         if (targetId === 'view-agents') {
           loadAgents();
         } else if (targetId === 'view-activity' || targetId === 'view-rejected') {
@@ -1576,7 +1801,7 @@
       document.getElementById('initSequenceDisplay').innerHTML = '';
       document.getElementById('submitInitBtn').classList.remove('hidden');
     }
-    
+
     function closeInitModal() {
       document.getElementById('initModal').classList.remove('active');
     }
@@ -1616,19 +1841,19 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadAgents();
       setInterval(loadAgents, 30000); // refresh every 30s
-      
+
       // Form: Init Agent
       document.getElementById('initForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitInitBtn');
         const seq = document.getElementById('initSequenceDisplay');
-        
+
         btn.classList.add('hidden');
         seq.classList.remove('hidden');
-        
+
         const name = document.getElementById('agentName').value;
         const domain = document.getElementById('agentDomain').value;
-        
+
         const steps = [
           `Initializing Persona '${name}'...`,
           'Connecting to AI Language Models...',
@@ -1636,7 +1861,7 @@
           'Starting Autonomous Scheduler...',
           'Agent Ready ✓'
         ];
-        
+
         seq.innerHTML = '';
         for (let i = 0; i < steps.length; i++) {
           seq.innerHTML += `<div>> ${steps[i]}</div>`;
@@ -1771,11 +1996,11 @@
           alert('No active agent. Please select or initialize an agent first.');
           return;
         }
-        
+
         const originalText = btn.innerHTML;
         btn.innerHTML = activeText;
         btn.disabled = true;
-        
+
         animateWorkflow();
 
         try {
@@ -1816,9 +2041,9 @@
       try {
         const res = await fetch('/api/agent/list');
         const data = await res.json();
-        
+
         const grid = document.getElementById('agentsGrid');
-        
+
         if (!data.agents || data.agents.length === 0) {
           grid.innerHTML = '<div class="text-muted">No agents active. Click "+ Initialize New Agent" to launch one.</div>';
           document.getElementById('kpiAgents').innerText = '0';
@@ -1827,11 +2052,11 @@
         }
 
         if (!activeAgentId) activeAgentId = data.agents[0].id;
-        
+
         document.getElementById('kpiAgents').innerText = data.agents.length;
-        
+
         let totalPosts = 0;
-        
+
         grid.innerHTML = data.agents.map(a => {
           const count = a._count?.posts || 0;
           totalPosts += count;
@@ -1860,7 +2085,7 @@
             </div>
           </div>
         `}).join('');
-        
+
         document.getElementById('kpiPosts').innerText = totalPosts;
       } catch (err) {
         console.error(err);
@@ -1890,7 +2115,7 @@
       try {
         const res = await fetch(`/api/agent/status?agentId=${id}`);
         const data = await res.json();
-        
+
         if (data.agent) {
           currentSelectedAgent = data.agent;
           const a = data.agent;
@@ -2089,10 +2314,10 @@
       try {
         const res = await fetch(`/api/agent/logs?agentId=${activeAgentId}`);
         const data = await res.json();
-        
+
         const activityContainer = document.getElementById('activityLogContainer');
         const rejectedContainer = document.getElementById('rejectedLogContainer');
-        
+
         if (!data.logs || data.logs.length === 0) {
           activityContainer.innerHTML = '<div class="text-muted">No activity telemetry recorded yet.</div>';
           rejectedContainer.innerHTML = '<div class="text-muted">No rejected content logged.</div>';
@@ -2105,7 +2330,7 @@
         data.logs.forEach(log => {
           const msg = log.message.toLowerCase();
           const time = new Date(log.createdAt).toLocaleTimeString();
-          
+
           let styleClass = '';
           if (msg.includes('approved') || msg.includes('published')) styleClass = 'success';
           else if (msg.includes('issues') || msg.includes('weaknesses') || msg.includes('rewrite')) styleClass = 'warning';
@@ -2129,38 +2354,38 @@
 
         // Update Brain panel if recent log exists
         if (data.logs.length > 0) {
-           const latestLog = data.logs[0];
-           const statusEl = document.getElementById('brainLiveStatus');
-           if (statusEl) {
-             statusEl.innerText = latestLog.message;
-             updateBrainVisualizationState(latestLog.message, latestLog.level, latestLog.details);
-           }
+          const latestLog = data.logs[0];
+          const statusEl = document.getElementById('brainLiveStatus');
+          if (statusEl) {
+            statusEl.innerText = latestLog.message;
+            updateBrainVisualizationState(latestLog.message, latestLog.level, latestLog.details);
+          }
         }
-        
+
         // Fetch and update mission / trend info
         fetch(`/api/agent/mission/latest?agentId=${activeAgentId}`).then(r => r.json()).then(mData => {
-           if (mData.mission) {
-              const ms = document.getElementById('brainMissionStatus');
-              if (ms) ms.innerText = mData.mission.status;
-           }
-           if (mData.trend) {
-              document.getElementById('trendTitleLabel').innerText = mData.trend.title || 'Unknown Trend';
-              updateScore('Relevance', mData.trend.securityScore);
-              updateScore('Novelty', mData.trend.novelty);
-              updateScore('Impact', mData.trend.impact);
-              updateScore('Timeliness', mData.trend.timeliness);
-              updateScore('Diversity', mData.trend.sourceDiversity);
-              document.getElementById('scoreConfidence').innerText = (mData.trend.confidence || 0) + '%';
-              document.getElementById('trendSourcesCount').innerText = mData.trend.supportingSources || 0;
-              
-              drawThreatMap(mData.trend);
-           }
+          if (mData.mission) {
+            const ms = document.getElementById('brainMissionStatus');
+            if (ms) ms.innerText = mData.mission.status;
+          }
+          if (mData.trend) {
+            document.getElementById('trendTitleLabel').innerText = mData.trend.title || 'Unknown Trend';
+            updateScore('Relevance', mData.trend.securityScore);
+            updateScore('Novelty', mData.trend.novelty);
+            updateScore('Impact', mData.trend.impact);
+            updateScore('Timeliness', mData.trend.timeliness);
+            updateScore('Diversity', mData.trend.sourceDiversity);
+            document.getElementById('scoreConfidence').innerText = (mData.trend.confidence || 0) + '%';
+            document.getElementById('trendSourcesCount').innerText = mData.trend.supportingSources || 0;
+
+            drawThreatMap(mData.trend);
+          }
         }).catch(err => console.error(err));
 
         activityContainer.innerHTML = activityLogs.length ? activityLogs.join('') : '<div class="text-muted">No standard activity telemetry.</div>';
         rejectedContainer.innerHTML = rejectedLogs.length ? rejectedLogs.join('') : '<div class="text-muted">No rejected content recorded.</div>';
-        
-      } catch(err) {}
+
+      } catch (err) { }
     }
 
     function showDecisionTrace(button) {
@@ -2231,7 +2456,7 @@
 
         // Line to center
         svgHtml += `<path d="M${centerX},${centerY} L${x},${y}" id="line-${stage.id}" class="bn-line"></path>`;
-        
+
         // Line to next node
         const nextAngle = ((i + 1) % brainStages.length) / brainStages.length * Math.PI * 2 - Math.PI / 2;
         const nextX = centerX + Math.cos(nextAngle) * radiusX;
@@ -2251,7 +2476,7 @@
     function updateBrainVisualizationState(msg, level, details) {
       if (!brainInitialized) return;
       const lmsg = msg.toLowerCase();
-      
+
       let activeStageId = null;
       let state = 'active';
 
@@ -2281,7 +2506,7 @@
         if (stage.id === activeStageId) {
           el.classList.add(state);
           if (line) line.classList.add('active');
-          
+
           if (state === 'rejected') {
             document.getElementById('brainDecisionCard').style.borderLeftColor = 'var(--danger)';
             document.getElementById('brainDecisionStatus').innerText = 'REJECTED';
@@ -2300,17 +2525,17 @@
           }
         }
       });
-      
+
       if (state === 'rejected') {
-         const rj = document.getElementById('brainTopicsRejected');
-         if (rj) rj.innerText = (parseInt(rj.innerText) + 1).toLocaleString();
+        const rj = document.getElementById('brainTopicsRejected');
+        if (rj) rj.innerText = (parseInt(rj.innerText) + 1).toLocaleString();
       }
     }
 
     function drawThreatMap(trend) {
       if (!trend || !trend.signals) return;
       lastTrendData = trend;
-      
+
       const container = document.getElementById('threatMapContainer');
       const svg = document.getElementById('brain-svg-lines');
       if (!container || !svg || container.clientWidth === 0) return;
@@ -2323,20 +2548,20 @@
       let signals = [];
       try {
         signals = typeof trend.signals === 'string' ? JSON.parse(trend.signals) : trend.signals;
-      } catch(e) {}
+      } catch (e) { }
       if (!Array.isArray(signals) || signals.length === 0) return;
 
       const centerX = container.clientWidth / 2;
       const centerY = container.clientHeight / 2;
-      
+
       // Calculate outer radius matching stage nodes
       const outerRadiusX = Math.min(centerX - 90, 310);
       const outerRadiusY = Math.min(centerY - 65, 240);
-      
+
       // Signals sit on an inner orbit (48% of outer perimeter) to prevent collision with stage nodes
       const innerRadiusX = outerRadiusX * 0.48;
       const innerRadiusY = outerRadiusY * 0.48;
-      
+
       // Central Trend Node
       let html = `
         <div class="threat-node central" style="left:${centerX}px; top:${centerY}px; transform:translate(-50%, -50%);">
@@ -2345,26 +2570,26 @@
           <div style="margin-top:0.35rem;"><span style="font-size:0.65rem; font-weight:800; color:var(--primary); background:var(--primary-light); border:1px solid rgba(37,99,235,0.2); padding:0.15rem 0.55rem; border-radius:9999px;">CONFIDENCE: ${trend.confidence}%</span></div>
         </div>
       `;
-      
+
       let svgHtml = '';
       const numSignals = signals.length;
       const angleOffset = -Math.PI / 4;
 
       signals.forEach((sigTitle, i) => {
-         const angle = angleOffset + (i / numSignals) * Math.PI * 2;
-         const x = centerX + Math.cos(angle) * innerRadiusX;
-         const y = centerY + Math.sin(angle) * innerRadiusY;
-         
-         html += `
+        const angle = angleOffset + (i / numSignals) * Math.PI * 2;
+        const x = centerX + Math.cos(angle) * innerRadiusX;
+        const y = centerY + Math.sin(angle) * innerRadiusY;
+
+        html += `
            <div class="threat-node" style="left:${x}px; top:${y}px; transform:translate(-50%, -50%);" title="Discovered Signal: ${escapeHtml(sigTitle)}" onclick="alert('Discovered Signal Source:\\n\\n${escapeJs(sigTitle)}')">
               <div style="font-size:0.9rem; margin-bottom:0.15rem; color:var(--primary);">📄</div>
               <div style="font-size:0.68rem; font-weight:600; color:var(--text-muted); line-height:1.2; max-height:2.4em; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${escapeHtml(sigTitle)}</div>
            </div>
          `;
-         
-         svgHtml += `<path d="M${centerX},${centerY} L${x},${y}" class="threat-line bn-line active" style="stroke-opacity: 0.45; stroke-dasharray: 4 4;"></path>`;
+
+        svgHtml += `<path d="M${centerX},${centerY} L${x},${y}" class="threat-line bn-line active" style="stroke-opacity: 0.45; stroke-dasharray: 4 4;"></path>`;
       });
-      
+
       container.innerHTML = html;
       svg.insertAdjacentHTML('beforeend', svgHtml);
     }
@@ -2378,4 +2603,5 @@
 
   </script>
 </body>
+
 </html>

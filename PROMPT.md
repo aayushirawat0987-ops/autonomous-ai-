@@ -1606,7 +1606,7 @@ The final result should feel like a production-ready Autonomous AI Creator dashb
 
 After implementation, run the application and verify that the complete flow works without console errors, routing errors, database errors, or broken buttons.
 
-#prompt 9 
+#Prompt 9 
 Add a premium "ADA — AUTONOMOUS BRAIN" visualization to the existing frontend.
 
 IMPORTANT:
@@ -2200,3 +2200,412 @@ The final product should feel like:
 "An autonomous AI Security intelligence agent that discovers emerging threats by connecting signals across the internet, evaluates their importance, learns from its memory, improves its own output, and independently decides what deserves to be published."
 
 This is the core differentiator of the project.
+
+#Prompt  10
+Add a new premium feature to the existing Autonomous AI Creator called:
+
+# ADA THREAT RADAR — Autonomous AI Security Intelligence
+
+IMPORTANT:
+- Inspect the existing project before making changes.
+- Extend the current frontend and backend architecture.
+- Do not rebuild the application from scratch.
+- Do not break existing APIs, scheduler, Prisma, OpenAI integration, memory, topic discovery or feed.
+- Use REAL data from the existing agent pipeline.
+- Do not hardcode fake threats, fake scores or fake activity.
+- Do not expose chain-of-thought. Show only safe summaries, evidence, scores and decisions.
+
+==================================================
+1. THREAT RADAR — MAIN HERO COMPONENT
+==================================================
+
+Create a visually impressive interactive "ADA THREAT RADAR" as the main centerpiece of the dashboard.
+
+The concept:
+
+Internet Sources
+      ↓
+Security Signals
+      ↓
+ADA
+      ↓
+Emerging Threats
+      ↓
+Investigation
+      ↓
+Decision
+      ↓
+Publication
+
+Create a circular radar visualization.
+
+Center:
+ADA
+AI SECURITY AGENT
+● AUTONOMOUS
+
+Around Ada, display discovered AI Security signals/threats.
+
+Examples of categories:
+
+- Prompt Injection
+- AI Agent Security
+- LLM Vulnerabilities
+- Model Attacks
+- AI Privacy
+- AI Safety
+- AI Governance
+- Secure AI Development
+
+Use real discovered topics from the backend.
+
+==================================================
+2. LIVE RADAR ANIMATION
+==================================================
+
+Make the radar feel alive.
+
+When a new topic/signal is discovered:
+
+- Show a radar pulse.
+- Add the signal as a node.
+- Animate the signal moving into the intelligence network.
+- Connect related signals.
+- Highlight the strongest emerging threat.
+
+Do NOT use meaningless infinite animations.
+
+Animations should represent real application states whenever possible.
+
+Use subtle professional animations rather than flashy gaming effects.
+
+==================================================
+3. EMERGING THREAT DETECTION
+==================================================
+
+When multiple related signals are discovered, visually group them.
+
+Example:
+
+Prompt Injection
+      |
+      +--- AI Agent Attack
+      |
+      +--- Tool Manipulation
+      |
+      +--- Data Exposure
+
+Ada should identify the underlying security theme.
+
+Display:
+
+🚨 EMERGING THREAT DETECTED
+
+Threat:
+"Prompt Injection Risk Across AI Agents"
+
+Threat Score:
+91/100
+
+Confidence:
+93%
+
+Supporting Sources:
+6
+
+Previously Reported:
+No
+
+Decision:
+INVESTIGATE / PUBLISH
+
+Only show this when supported by actual agent data.
+
+==================================================
+4. THREAT EVOLUTION
+==================================================
+
+Add a "Threat Evolution" visualization.
+
+Threat states:
+
+DETECTED
+   ↓
+DEVELOPING
+   ↓
+ESCALATING
+   ↓
+CRITICAL
+
+Show the current state based on the available historical evidence.
+
+Also show a trend indicator:
+
+Threat Activity
+  42 → 57 → 71 → 84 → 91
+                     ↑
+                  CURRENT
+
+If there is insufficient historical data, clearly show:
+
+"Insufficient historical data"
+
+Do not fabricate historical values.
+
+==================================================
+5. THREAT INTELLIGENCE PANEL
+==================================================
+
+When the user clicks a radar node, open a beautiful detail panel/drawer.
+
+Display:
+
+THREAT INTELLIGENCE
+
+Threat Name
+Category
+
+Threat Score
+Confidence
+Novelty
+Impact
+Timeliness
+Security Relevance
+Duplicate Risk
+
+Supporting Sources
+
+For each source show:
+
+- title
+- source
+- publication date
+- URL
+
+Also show:
+
+ADA'S DECISION
+
+APPROVED / REJECTED / INVESTIGATING
+
+Decision Summary:
+A short safe explanation of why Ada selected or rejected the threat.
+
+==================================================
+6. SOURCE SIGNAL NETWORK
+==================================================
+
+Show the relationship between sources and threats.
+
+Example:
+
+OpenAI
+       \
+arXiv ----→ Prompt Injection Threat
+       /
+GitHub
+
+Hacker News
+       \
+        → AI Agent Security
+       /
+Research Paper
+
+Use actual source data.
+
+The visualization should make it obvious that Ada is combining multiple signals instead of simply summarizing one article.
+
+==================================================
+7. LIVE AGENT ACTIVITY
+==================================================
+
+Add a live activity stream beside the radar.
+
+Example:
+
+● 14:21:03
+Scanning AI Security sources
+
+● 14:21:07
+18 signals discovered
+
+● 14:21:11
+5 duplicate signals removed
+
+● 14:21:15
+4 related signals connected
+
+● 14:21:20
+Emerging threat detected
+
+● 14:21:24
+Threat Score: 91/100
+
+● 14:21:30
+Generating intelligence post
+
+● 14:21:36
+Editorial Score: 94/100
+
+✓ 14:21:40
+Published
+
+Use real application events where available.
+
+==================================================
+8. VISUAL DESIGN
+==================================================
+
+Make this the most visually impressive part of the application.
+
+Theme:
+
+- Light premium AI/SaaS interface
+- Very light cool-gray background
+- White/glass cards
+- Deep indigo/blue primary
+- Cyan/teal accents
+- Green for approved
+- Amber for investigating
+- Red for critical/rejected
+- Dark navy typography
+- Subtle gradients
+- Soft shadows
+- Rounded cards
+- Thin elegant borders
+
+The radar should have:
+
+- glowing center
+- subtle radar sweep
+- signal pulses
+- connected nodes
+- smooth transitions
+- hover effects
+- selected-node highlighting
+
+Avoid excessive neon/cyberpunk styling.
+
+It should look like a premium AI Security intelligence platform.
+
+==================================================
+9. DASHBOARD HERO
+==================================================
+
+Make the top of the dashboard communicate:
+
+ADA THREAT RADAR
+
+"Autonomously discovering and tracking emerging AI Security threats."
+
+Show:
+
+Threats Detected
+Active Investigations
+Threats Escalating
+Published Intelligence
+
+==================================================
+10. INTERACTION
+==================================================
+
+Clicking a threat should:
+
+1. Highlight the node.
+2. Show connected signals.
+3. Open threat intelligence details.
+4. Show supporting sources.
+5. Show score breakdown.
+6. Show Ada's decision.
+7. Provide "View Published Post" if one exists.
+
+Hovering over a node should show a compact tooltip:
+
+Threat Name
+Score
+Confidence
+Sources
+Status
+
+==================================================
+11. RESPONSIVENESS
+==================================================
+
+Make the radar responsive.
+
+Desktop:
+Large interactive radar + intelligence panel + activity feed.
+
+Tablet:
+Radar + collapsible intelligence panel.
+
+Mobile:
+Radar becomes a simplified interactive card and threat details become a bottom drawer.
+
+==================================================
+12. IMPORTANT AGENT PRINCIPLE
+==================================================
+
+The UI must communicate:
+
+"Ada is not waiting for a user to tell her what to write."
+
+She is:
+
+RESEARCHING
+→ CONNECTING SIGNALS
+→ DETECTING THREATS
+→ TRACKING EVOLUTION
+→ EVALUATING EVIDENCE
+→ MAKING A DECISION
+→ PUBLISHING INTELLIGENCE
+→ REMEMBERING
+
+Do not make this a static dashboard decoration.
+
+Connect it to the existing autonomous agent state and data wherever possible.
+
+==================================================
+13. HACKATHON DEMO EXPERIENCE
+==================================================
+
+Add an optional:
+
+[ START AUTONOMOUS MISSION ]
+
+button.
+
+When clicked, trigger the existing autonomous pipeline.
+
+The judge should be able to watch:
+
+Sources scanned
+→ Signals discovered
+→ Signals connected
+→ Emerging threat detected
+→ Threat score calculated
+→ Ada investigates
+→ Content generated
+→ Content evaluated
+→ Published
+
+Do not create fake frontend events.
+
+==================================================
+14. FINAL REQUIREMENT
+==================================================
+
+After implementation:
+
+- Run the project build.
+- Fix all TypeScript errors.
+- Verify existing functionality.
+- Verify the radar uses real backend data.
+- Verify no existing API is broken.
+- Verify the feature works with empty/limited data gracefully.
+
+The final result should make the project feel like:
+
+"An autonomous AI Security intelligence system that watches the information landscape, detects emerging threats, connects evidence from multiple sources, tracks how threats evolve, and independently decides what deserves attention."
+
+This Threat Radar should become the visual centerpiece of the hackathon demo.
