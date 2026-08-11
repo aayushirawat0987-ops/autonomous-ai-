@@ -1197,6 +1197,311 @@
       stroke: var(--primary);
       stroke-width: 1.5;
     }
+
+    /* How Ada Works Section */
+    .ada-works-container {
+      background: var(--bg-surface);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-color);
+      padding: 1.75rem 2.5rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .ada-works-container:hover {
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--border-dark);
+    }
+    .ada-works-bg {
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      background: linear-gradient(135deg, rgba(37,99,235,0.03) 0%, rgba(8,145,178,0.03) 100%);
+      pointer-events: none;
+    }
+    .ada-works-header {
+      margin-bottom: 1.75rem;
+      position: relative;
+      z-index: 2;
+    }
+    .ada-works-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ada-works-title span {
+      color: var(--primary);
+    }
+    .ada-workflow-steps {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+      z-index: 2;
+    }
+    .ada-workflow-line-bg {
+      position: absolute;
+      top: 24px;
+      left: 50px;
+      right: 50px;
+      height: 2px;
+      background: var(--border-color);
+      z-index: 1;
+    }
+    .ada-workflow-line-fill {
+      position: absolute;
+      top: 24px;
+      left: 50px;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      z-index: 2;
+      transition: width 0.5s ease-in-out;
+    }
+    .ada-step {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      cursor: default;
+    }
+    .ada-step-circle {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 0.85rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      position: relative;
+      z-index: 5;
+    }
+    .ada-step-num {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      background: var(--bg-surface-light);
+      border: 2px solid var(--bg-surface);
+      border-radius: 50%;
+      font-size: 0.55rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    .ada-step:hover .ada-step-circle {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 8px 24px var(--primary-glow);
+    }
+    .ada-step:hover .ada-step-num {
+      background: var(--primary);
+      color: white;
+    }
+    .ada-step.active .ada-step-circle {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: scale(1.1);
+    }
+    .ada-step.active .ada-step-num {
+      background: var(--secondary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .ada-step.active .ada-step-title {
+      color: var(--primary);
+    }
+    .ada-step-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+      transition: color 0.3s;
+    }
+    .ada-step-desc {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      max-width: 110px;
+    }
+    @media (max-width: 768px) {
+      .ada-workflow-steps {
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+      .ada-workflow-line-bg, .ada-workflow-line-fill {
+        display: none;
+      }
+      .ada-step {
+        flex-direction: row;
+        text-align: left;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+      }
+      .ada-step-circle {
+        margin-bottom: 0;
+      }
+      .ada-step-desc {
+        max-width: none;
+      }
+    }
+
+    /* Live Telemetry Section */
+    .telemetry-container {
+      display: flex;
+      gap: 3rem;
+      padding: 2rem;
+      background: linear-gradient(160deg, var(--bg-surface) 0%, var(--bg-surface-light) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      margin-bottom: 2.5rem;
+      box-shadow: var(--card-shadow);
+      align-items: center;
+    }
+    .telemetry-rings {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      min-width: 180px;
+    }
+    .ring-box {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+    .ring-svg {
+      width: 56px;
+      height: 56px;
+      transform: rotate(-90deg);
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.05));
+    }
+    .ring-bg {
+      fill: none;
+      stroke: var(--border-color);
+      stroke-width: 5;
+    }
+    .ring-progress {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 145;
+      stroke-dashoffset: 145;
+      animation: fillRing 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .ring-purple { stroke: var(--purple); stroke-dashoffset: 29; }
+    .ring-cyan { stroke: var(--secondary); stroke-dashoffset: 14; }
+    .ring-blue { stroke: var(--primary); stroke-dashoffset: 20; }
+    
+    @keyframes fillRing {
+      0% { stroke-dashoffset: 145; }
+    }
+    
+    .ring-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .ring-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1;
+    }
+    .ring-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+    
+    .telemetry-stream {
+      flex: 1;
+      background: #0B1120;
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 2px 20px rgba(0,0,0,0.5), 0 10px 30px -10px rgba(11,17,32,0.4);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .stream-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 0.75rem;
+    }
+    .stream-header span {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: #38BDF8;
+    }
+    .stream-content {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #94A3B8;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      height: 160px;
+    }
+    .stream-content::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(to bottom, transparent, #0B1120);
+      pointer-events: none;
+    }
+    .stream-line {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: streamFadeIn 0.3s ease forwards;
+    }
+    @keyframes streamFadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .stream-prefix-sys { color: #A78BFA; font-weight: 700; margin-right: 0.4rem; }
+    .stream-prefix-mem { color: #38BDF8; font-weight: 700; margin-right: 0.4rem; }
+    .stream-prefix-eval { color: #818CF8; font-weight: 700; margin-right: 0.4rem; }
+    .stream-prefix-ok { color: #34D399; font-weight: 700; margin-right: 0.4rem; }
+    
+    @media (max-width: 900px) {
+      .telemetry-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .telemetry-rings {
+        flex-direction: row;
+        justify-content: space-around;
+        flex-wrap: wrap;
+      }
+    }
   </style>
 </head>
 
@@ -1272,6 +1577,55 @@
 
         <!-- OVERVIEW VIEW -->
         <div id="view-overview" class="view-section active">
+          
+          <!-- How Ada Works Section -->
+          <div class="ada-works-container">
+            <div class="ada-works-bg"></div>
+            <div class="ada-works-header">
+              <h3 class="ada-works-title">How <span>Ada</span> Works</h3>
+            </div>
+            <div class="ada-workflow-steps">
+              <div class="ada-workflow-line-bg"></div>
+              <div class="ada-workflow-line-fill" id="adaWorkflowProgress"></div>
+              
+              <div class="ada-step" id="ada-st-1">
+                <div class="ada-step-circle">🔎<div class="ada-step-num">01</div></div>
+                <div class="ada-step-title">RESEARCH</div>
+                <div class="ada-step-desc">Scans multi-source data streams.</div>
+              </div>
+              
+              <div class="ada-step" id="ada-st-2">
+                <div class="ada-step-circle">🧩<div class="ada-step-num">02</div></div>
+                <div class="ada-step-title">CONNECT</div>
+                <div class="ada-step-desc">Synthesizes emerging patterns.</div>
+              </div>
+              
+              <div class="ada-step" id="ada-st-3">
+                <div class="ada-step-circle">🧠<div class="ada-step-num">03</div></div>
+                <div class="ada-step-title">EVALUATE</div>
+                <div class="ada-step-desc">Scores novelty and relevance.</div>
+              </div>
+              
+              <div class="ada-step" id="ada-st-4">
+                <div class="ada-step-circle">✍️<div class="ada-step-num">04</div></div>
+                <div class="ada-step-title">CREATE</div>
+                <div class="ada-step-desc">Drafts high-quality briefs.</div>
+              </div>
+              
+              <div class="ada-step" id="ada-st-5">
+                <div class="ada-step-circle">🛡️<div class="ada-step-num">05</div></div>
+                <div class="ada-step-title">DECIDE</div>
+                <div class="ada-step-desc">Self-critiques against policies.</div>
+              </div>
+              
+              <div class="ada-step" id="ada-st-6">
+                <div class="ada-step-circle">📢<div class="ada-step-num">06</div></div>
+                <div class="ada-step-title">PUBLISH</div>
+                <div class="ada-step-desc">Distributes approved content.</div>
+              </div>
+            </div>
+          </div>
+
           <div class="hero-section">
             <div>
               <h2 class="hero-title">Autonomous AI Creator</h2>
@@ -1340,42 +1694,59 @@
             </div>
           </div>
 
-          <h3 class="font-bold text-lg mb-4">Autonomous 7-Stage Workflow Architecture</h3>
-          <div class="workflow-container">
-            <div class="workflow-node" id="wf-discovery">
-              <div class="workflow-node-icon">🔍</div>
-              <div class="workflow-node-label">1. Discovery</div>
+          <h3 class="font-bold text-lg mb-4">Live Semantic Telemetry</h3>
+          <div class="telemetry-container">
+            
+            <!-- Radial Metrics -->
+            <div class="telemetry-rings">
+              <div class="ring-box">
+                <svg class="ring-svg" viewBox="0 0 56 56">
+                  <circle class="ring-bg" cx="28" cy="28" r="23" />
+                  <circle class="ring-progress ring-purple" cx="28" cy="28" r="23" />
+                </svg>
+                <div class="ring-info">
+                  <div class="ring-val">98%</div>
+                  <div class="ring-label">Policy Adherence</div>
+                </div>
+              </div>
+              <div class="ring-box">
+                <svg class="ring-svg" viewBox="0 0 56 56">
+                  <circle class="ring-bg" cx="28" cy="28" r="23" />
+                  <circle class="ring-progress ring-cyan" cx="28" cy="28" r="23" />
+                </svg>
+                <div class="ring-info">
+                  <div class="ring-val">92%</div>
+                  <div class="ring-label">Context Recall</div>
+                </div>
+              </div>
+              <div class="ring-box">
+                <svg class="ring-svg" viewBox="0 0 56 56">
+                  <circle class="ring-bg" cx="28" cy="28" r="23" />
+                  <circle class="ring-progress ring-blue" cx="28" cy="28" r="23" />
+                </svg>
+                <div class="ring-info">
+                  <div class="ring-val">87%</div>
+                  <div class="ring-label">Novelty Score</div>
+                </div>
+              </div>
             </div>
-            <div class="workflow-line"></div>
-            <div class="workflow-node" id="wf-research">
-              <div class="workflow-node-icon">📚</div>
-              <div class="workflow-node-label">2. Research</div>
+
+            <!-- Terminal Stream -->
+            <div class="telemetry-stream">
+              <div class="stream-header">
+                <span>LIVE PROCESSING STREAM</span>
+                <span style="color: var(--success); display:flex; align-items:center; gap:0.4rem;">
+                  <div class="dot pulse" style="background: var(--success); width:6px; height:6px; box-shadow:0 0 0 0 rgba(52,211,153,0.7);"></div> STREAMING
+                </span>
+              </div>
+              <div class="stream-content" id="semanticStream">
+                <div class="stream-line"><span class="stream-prefix-sys">[SYS]</span> Initializing autonomous discovery loop...</div>
+                <div class="stream-line" style="animation-delay: 0.15s"><span class="stream-prefix-mem">[MEM]</span> Loading cross-agent memory space (v2.4)</div>
+                <div class="stream-line" style="animation-delay: 0.3s"><span class="stream-prefix-eval">[EVAL]</span> Scanning 45 active data sources</div>
+                <div class="stream-line" style="animation-delay: 0.45s"><span class="stream-prefix-sys">[SYS]</span> Awaiting new telemetry packets...</div>
+              </div>
             </div>
-            <div class="workflow-line"></div>
-            <div class="workflow-node" id="wf-writer">
-              <div class="workflow-node-icon">✍️</div>
-              <div class="workflow-node-label">3. Drafting</div>
-            </div>
-            <div class="workflow-line"></div>
-            <div class="workflow-node" id="wf-factcheck">
-              <div class="workflow-node-icon">✓</div>
-              <div class="workflow-node-label">4. Fact Check</div>
-            </div>
-            <div class="workflow-line"></div>
-            <div class="workflow-node" id="wf-critic">
-              <div class="workflow-node-icon">⚖️</div>
-              <div class="workflow-node-label">5. Critic Review</div>
-            </div>
-            <div class="workflow-line"></div>
-            <div class="workflow-node" id="wf-improve">
-              <div class="workflow-node-icon">🔄</div>
-              <div class="workflow-node-label">6. Self Improvement</div>
-            </div>
-            <div class="workflow-line"></div>
-            <div class="workflow-node" id="wf-publish">
-              <div class="workflow-node-icon">🚀</div>
-              <div class="workflow-node-label">7. Publishing</div>
-            </div>
+            
           </div>
         </div>
 
@@ -2064,14 +2435,21 @@
 
     async function animateWorkflow() {
       const nodes = ['wf-discovery', 'wf-research', 'wf-writer', 'wf-factcheck', 'wf-critic', 'wf-improve', 'wf-publish'];
+      const adaMap = [1, 2, 4, 5, 5, 5, 6];
+      let stepIdx = 0;
       for (const id of nodes) {
         document.querySelectorAll('.workflow-node').forEach(n => n.classList.remove('active'));
         const el = document.getElementById(id);
         if (el) el.classList.add('active');
+        if (typeof setAdaWorksActiveStep === 'function') setAdaWorksActiveStep(adaMap[stepIdx]);
+        stepIdx++;
         await new Promise(r => setTimeout(r, 600));
       }
       const pubEl = document.getElementById('wf-publish');
       if (pubEl) pubEl.classList.remove('active');
+      if (typeof setAdaWorksActiveStep === 'function') {
+        setTimeout(() => setAdaWorksActiveStep(0), 1000);
+      }
     }
 
     async function loadAgents() {
@@ -2409,6 +2787,9 @@
             statusEl.innerText = latestLog.message;
             updateBrainVisualizationState(latestLog.message, latestLog.level, latestLog.details);
           }
+          if (typeof updateAdaWorksState === 'function') {
+            updateAdaWorksState(latestLog.message, latestLog.level);
+          }
         }
 
         // Fetch and update mission / trend info
@@ -2649,6 +3030,71 @@
         initBrainVisualization();
       }
     });
+
+    function updateAdaWorksState(msg, level) {
+      const lmsg = msg.toLowerCase();
+      let activeIdx = 0;
+      
+      if (lmsg.includes('research') || lmsg.includes('scanning') || lmsg.includes('discover')) activeIdx = 1;
+      else if (lmsg.includes('connect') || lmsg.includes('group') || lmsg.includes('trend') || lmsg.includes('signal')) activeIdx = 2;
+      else if (lmsg.includes('evaluat') || lmsg.includes('score') || lmsg.includes('memory')) activeIdx = 3;
+      else if (lmsg.includes('create') || lmsg.includes('writing') || lmsg.includes('generate') || lmsg.includes('draft')) activeIdx = 4;
+      else if (lmsg.includes('critique') || lmsg.includes('fact check') || lmsg.includes('decision') || level === 'ERROR' || lmsg.includes('reject')) activeIdx = 5;
+      else if (lmsg.includes('publish') || lmsg.includes('success') || lmsg.includes('completed')) activeIdx = 6;
+      
+      if (activeIdx > 0) {
+        setAdaWorksActiveStep(activeIdx);
+      }
+    }
+
+    function setAdaWorksActiveStep(stepNum) {
+      for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById('ada-st-' + i);
+        if (el) {
+          if (i === stepNum) el.classList.add('active');
+          else el.classList.remove('active');
+        }
+      }
+      
+      const progressEl = document.getElementById('adaWorkflowProgress');
+      if (progressEl) {
+        const percentages = [0, 0, 20, 40, 60, 80, 100];
+        progressEl.style.width = percentages[stepNum || 0] + '%';
+      }
+    }
+
+    const aiPhrases = [
+      "[SYS] Re-calibrating neural weights...",
+      "[MEM] Optimizing context window embeddings...",
+      "[EVAL] Cross-referencing threat database...",
+      "[OK] Policy guardrails validated.",
+      "[SYS] Synthesizing output tokens...",
+      "[MEM] Injecting relevant historical context...",
+      "[EVAL] Semantic similarity score: 0.94",
+      "[OK] Autonomous threshold met.",
+      "[SYS] Refreshing proxy routing table...",
+      "[EVAL] Analyzing multi-stage execution paths..."
+    ];
+    
+    setInterval(() => {
+      const stream = document.getElementById('semanticStream');
+      if (stream) {
+        const line = document.createElement('div');
+        line.className = 'stream-line';
+        const phrase = aiPhrases[Math.floor(Math.random() * aiPhrases.length)];
+        
+        if (phrase.startsWith('[SYS]')) line.innerHTML = `<span class="stream-prefix-sys">[SYS]</span> ${phrase.substring(5)}`;
+        else if (phrase.startsWith('[MEM]')) line.innerHTML = `<span class="stream-prefix-mem">[MEM]</span> ${phrase.substring(5)}`;
+        else if (phrase.startsWith('[EVAL]')) line.innerHTML = `<span class="stream-prefix-eval">[EVAL]</span> ${phrase.substring(6)}`;
+        else if (phrase.startsWith('[OK]')) line.innerHTML = `<span class="stream-prefix-ok">[OK]</span> ${phrase.substring(4)}`;
+        else line.innerText = phrase;
+        
+        stream.appendChild(line);
+        if (stream.children.length > 5) {
+          stream.removeChild(stream.firstChild);
+        }
+      }
+    }, 2500);
 
   </script>
 </body>
