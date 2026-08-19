@@ -23,24 +23,24 @@ export function getWriterPrompt(
   const isMisconception = contentAngle.toLowerCase().includes('misconception');
   let angleInstruction = `Assigned Content Angle: ${contentAngle}`;
   let structureInstruction = `1. HOOK (20–40 words): Specific opening about "${topic.title}". Avoid questions like "Did you know?" or "What if?".
-2. WHAT IS IT / WHAT HAPPENED? (40–60 words): Factual explanation of ${topic.title}.
-3. TECHNICAL EXPLANATION (50–80 words): Explain technical mechanics of ${topic.title} using simple, professional English.
+2. WHAT HAPPENED? (40–60 words): Extract concrete facts: what happened, what's new, and evidence/benchmarks.
+3. TECHNICAL INSIGHT (50–80 words): Explain how it works using simple, professional English. Prefer one genuine technical insight over several generic statements.
 4. WHY IT MATTERS (40–60 words): Practical technical impact on developers, systems, or architecture.
-5. KEY TAKEAWAY (20–40 words): Meaningful concluding insight on ${topic.title}. Avoid generic conclusions like "stay vigilant".`;
+5. TAKEAWAY (20–40 words): Meaningful concluding insight on ${topic.title}. Avoid generic conclusions like "stay vigilant".`;
 
   if (isMisconception) {
     angleInstruction = `Assigned Content Angle: Common Misconception (Identify a genuine misconception about "${topic.title}", explain why it is wrong, provide verified factual evidence, and clarify the key takeaway).`;
-    structureInstruction = `1. MISCONCEPTION (20–40 words): Clearly state the common misconception about "${topic.title}".
-2. WHAT IS ACTUALLY TRUE (40–60 words): Provide verified factual evidence correcting the misconception.
-3. TECHNICAL EXPLANATION (50–80 words): Explain why the misconception exists and the real technical mechanics.
-4. WHY THE CONFUSION EXISTS / PRACTICAL IMPACT (40–60 words): Practical relevance for developers or technical teams.
-5. KEY TAKEAWAY (20–40 words): Clear, memorable takeaway correcting the misconception.`;
+    structureInstruction = `1. HOOK / MISCONCEPTION (20–40 words): Clearly state the common misconception about "${topic.title}".
+2. WHAT HAPPENED? / WHAT IS ACTUALLY TRUE (40–60 words): Extract concrete facts and evidence/benchmarks correcting the misconception.
+3. TECHNICAL INSIGHT (50–80 words): Explain how it works and why the misconception exists. Prefer one genuine technical insight over several generic statements.
+4. WHY IT MATTERS (40–60 words): Practical relevance for developers or technical teams.
+5. TAKEAWAY (20–40 words): Clear, memorable takeaway correcting the misconception.`;
   }
 
   return `${personaContext}
 
 MANDATORY WRITER INSTRUCTION:
-Do not write a generic social media post about the topic. First understand the topic, identify the most important information, determine what the reader needs to know, and then explain it clearly in your own words. The structure must be chosen based on the topic rather than copied from previous posts. Every paragraph must add meaningful information. Prefer specific verified facts and useful technical explanations over generic statements. Use simple English without removing important technical meaning. The final result should teach the reader something concrete and should feel substantially different from previous posts.
+Make every post specific, factual, technical, and human-sounding, not generic AI-generated filler. Never invent research, statistics, companies, findings, or technical claims. Do not write a generic social media post about the topic. First understand the topic, identify the most important information, determine what the reader needs to know, and then explain it clearly in your own words. The structure must be chosen based on the topic rather than copied from previous posts. Every paragraph must add meaningful information. Prefer specific verified facts and useful technical explanations over generic statements. Use simple English without removing important technical meaning. The final result should teach the reader something concrete and should feel substantially different from previous posts.
 
 UNIVERSAL TOPIC-GROUNDING MANDATE (CRITICAL RULE):
 - Requested Topic: "${topic.title}"
@@ -55,8 +55,8 @@ The requested topic "${topic.title}" MUST be the PRIMARY SUBJECT of the entire p
 - Do NOT generate generic placeholder sentences ("recent disclosures regarding...", "as technology systems evolve across..."). Provide at least 3 verified topic-specific facts.
 
 NO FORMULAIC AI CLICHÉS MANDATE:
-NEVER use generic AI clichés or filler phrases:
-- DO NOT USE: "In today's rapidly evolving world", "This marks a significant milestone", "The future of AI is here", "As AI continues to transform", "This is a game changer", "The possibilities are endless", "It is important to note that", "In conclusion", "This highlights the importance of".
+NEVER use generic AI clichés, repetitive buzzwords, or filler phrases:
+- DO NOT USE: "In today's rapidly evolving world", "This marks a significant milestone", "The future of AI is here", "As AI continues to transform", "This is a game changer", "The possibilities are endless", "It is important to note that", "In conclusion", "This highlights the importance of", "recent technical analysis", "significant progress", "emerging technology systems".
 - DO NOT USE dramatic question hooks ("Did you know?", "What if?", "Imagine?", "Here's why").
 
 NO INTERNAL SYSTEM TEXT MANDATE:
@@ -85,8 +85,8 @@ ${previousHooksStr}
 
 LOGICAL FLOW STRUCTURE:
 ${structureInstruction}
-6. SOURCE: Include the source link (${topic.url}).
-7. HASHTAGS: Strictly 3–5 relevant hashtags matching ${topicCategory}.
+6. ORIGINAL SOURCE: Include the original verified source link (${topic.url}), not an agent's own generated URL.
+7. HASHTAGS: Strictly 3–5 relevant hashtags matching ${topicCategory}. Match the content and hashtags to the actual topic. Don't add unrelated hashtags like #AISecurity if the topic isn't about AI security.
 
 Output MUST be strictly valid JSON:
 {

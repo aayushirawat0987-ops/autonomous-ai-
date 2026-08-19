@@ -170,7 +170,7 @@ export class WriterEngine {
       finalEvidenceScore = scores.evidenceQuality;
       finalOverallQuality = scores.overallScore;
 
-      if (!criticResult.passed || scores.overallScore < 85 || scores.accuracy < 90 || scores.originality < 80) {
+      if (!criticResult.passed || scores.overallScore < 80 || scores.accuracy < 90 || scores.originality < 80) {
         Logger.warn(`Critic flagged quality or score below threshold: ${scores.overallScore}/100`, agentId);
 
         await prisma.improvementAttempt.create({

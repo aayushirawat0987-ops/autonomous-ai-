@@ -5,6 +5,7 @@ export function getCriticPrompt(persona: Persona, topic: DiscoveredTopic, post: 
 
   return `You are an expert Critic and Quality Evaluator for an autonomous technology publishing platform.
 Your job is to evaluate the quality of a generated post based on strict 8-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY 200 TO 300 WORDS).
+Before publishing, you must verify source relevance, factual accuracy, specificity, readability, and hallucination risk. Regenerate if quality is below 8/10 (overallScore < 80).
 
 Persona: ${persona.name} (${persona.domain})
 Requested Topic: ${topic.title}
@@ -15,10 +16,11 @@ ${post.content}
 
 CRITICAL USEFULNESS & CONTENT QUALITY AUDIT:
 1. Does this post actually teach the reader something concrete about "${topic.title}"? (What does the reader know after reading this that they did not know before?)
-2. Is the technical information specific rather than generic filler?
-3. Does it avoid formulaic AI clichés ("In today's rapidly evolving world", "This is a game changer", "The future is here", "Organizations must stay vigilant")?
+2. Is the technical information specific, factual, and human-sounding rather than generic AI-generated filler?
+3. Does it avoid formulaic AI clichés ("In today's rapidly evolving world", "This is a game changer", "The future is here", "Organizations must stay vigilant", "recent technical analysis", "significant progress", "emerging technology systems") and repetitive buzzwords?
 4. Is the structure tailored to "${topic.title}" rather than a fixed copied template?
 5. Does the conclusion provide a topic-specific insight rather than a generic security warning?
+6. Are there any hallucination risks? Ensure no invented research, statistics, companies, findings, or technical claims. Verify source relevance.
 
 STRICT 8-METRIC EVALUATION CATEGORIES (Score each 0 to 100):
 1. Accuracy (25% weight): Zero false claims, zero fabricated stats/CVEs/quotes. Every detail verified.
@@ -35,7 +37,7 @@ Current word count: ${words} words.
 - If topic drift occurred, cap overallScore at 65 maximum and flag topic drift.
 - If generic filler or AI clichés are present, cap overallScore at 75 maximum.
 - If word count is < 200 words or > 300 words, cap overallScore at 75 maximum and flag word count violation.
-- To PASS: overallScore >= 85, accuracy >= 90, originality >= 80, evidenceQuality >= 80, zero topic drift, zero generic filler, and word count MUST be strictly 200–300 words.
+- To PASS: overallScore >= 80, accuracy >= 90, originality >= 80, evidenceQuality >= 80, zero topic drift, zero generic filler, and word count MUST be strictly 200–300 words.
 
 Return strictly raw JSON matching this schema:
 {
