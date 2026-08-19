@@ -2,6 +2,31 @@ import { prisma } from '../database/prisma';
 import { DiscoveredTopic } from '../models/types';
 import { Logger } from '../utils/logger';
 
+export const AVAILABLE_CONTENT_ANGLES = [
+  'Breaking Development',
+  'Technical Explanation',
+  'Security Analysis',
+  'Developer Perspective',
+  'Business Impact',
+  'Practical Implementation',
+  'Research Summary',
+  'Case Study',
+  'Threat Analysis',
+  'Common Misconception',
+  'Beginner Explanation',
+  'Comparison',
+  'Lessons Learned',
+  'Risk Analysis',
+  'Defensive Recommendations'
+];
+
+export interface AntiRepetitionContext {
+  recentTitles: string[];
+  recentAngles: string[];
+  recentHooks: string[];
+  recentSources: string[];
+}
+
 export class MemoryEngine {
   async getRecentMemories(agentId: string, limit: number = 30): Promise<string[]> {
     const memories = await prisma.memory.findMany({
@@ -10,7 +35,67 @@ export class MemoryEngine {
       take: limit,
     });
 
-    return memories.map((m: { topicTitle: any; topicUrl: any; summary: any; }) => `${m.topicTitle} (${m.topicUrl}) - ${m.summary}`);
+    return memories.map((m: { topicTitle: string; topicUrl: string; summary: string; }) => `${m.topicTitle} (${m.topicUrl}) - ${m.summary}`);
+  }
+
+  async selectContentAngle(agentId: string, topicTitle: string): Promise<string> {
+    try {
+      const recentPosts = await prisma.post.findMany({
+        where: { agentId },
+        select: { contentAngle: true },
+        orderBy: { publishedAt: 'desc' },
+        take: 10,
+      });
+
+      const usedAngles = new Set(recentPosts.map((p: { contentAngle?: string }) => p.contentAngle).filter(Boolean));
+      const unusedAngles = AVAILABLE_CONTENT_ANGLES.filter(angle => !usedAngles.has(angle));
+
+      if (unusedAngles.length > 0) {
+        // Pick deterministically or semi-randomly from unused angles
+        const selected = unusedAngles[Math.floor(Math.random() * unusedAngles.length)];
+        Logger.info(`Selected novel Content Angle: "${selected}" for agent ${agentId}`, agentId);
+        return selected;
+      }
+
+      // Fallback: pick any random angle from available
+      const fallback = AVAILABLE_CONTENT_ANGLES[Math.floor(Math.random() * AVAILABLE_CONTENT_ANGLES.length)];
+      return fallback;
+    } catch {
+      return 'Technical Explanation';
+    }
+  }
+
+  async getAntiRepetitionContext(agentId: string): Promise<AntiRepetitionContext> {
+    try {
+      const recentPosts = await prisma.post.findMany({
+        where: { agentId },
+        select: { title: true, contentAngle: true, content: true, topicSource: true },
+        orderBy: { publishedAt: 'desc' },
+        take: 10,
+      });
+
+      const recentTitles = recentPosts.map((p: { title: string }) => p.title);
+      const recentAngles = recentPosts.map((p: { contentAngle?: string }) => p.contentAngle || 'Technical Explanation');
+      const recentSources = recentPosts.map((p: { topicSource?: string }) => p.topicSource || '').filter(Boolean);
+      const recentHooks = recentPosts.map((p: { content: string }) => {
+        const lines = p.content.split('\n').filter((l: string) => l.trim().length > 0);
+        return lines[0] || '';
+      }).filter(Boolean);
+
+      return {
+        recentTitles,
+        recentAngles,
+        recentHooks,
+        recentSources,
+      };
+    } catch {
+      return {
+        recentTitles: [],
+        recentAngles: [],
+        recentHooks: [],
+        recentSources: [],
+      };
+    }
   }
 
   async isDuplicate(agentId: string, topic: DiscoveredTopic): Promise<boolean> {
@@ -40,7 +125,7 @@ export class MemoryEngine {
 
       if (memTitleClean === topicTitleClean) return true;
 
-      const memWords = memTitleClean.split(/\s+/).filter((w: string | any[]) => w.length > 3);
+      const memWords = memTitleClean.split(/\s+/).filter((w: string) => w.length > 3);
       const topicWords = topicTitleClean.split(/\s+/).filter(w => w.length > 3);
 
       if (memWords.length > 0 && topicWords.length > 0) {

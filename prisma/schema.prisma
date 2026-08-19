@@ -27,20 +27,32 @@ model Agent {
 }
 
 model Post {
-  id             String   @id @default(uuid())
-  agentId        String
-  title          String
-  content        String
-  rationale      String   @default("")
-  whySelected    String   @default("")
-  whyRelevantNow String   @default("")
-  sources        String   @default("[]")
-  topicUrl       String?
-  topicSource    String?
-  platform       String   @default("LinkedIn / X")
-  status         String   @default("Published")
-  publishedAt    DateTime @default(now())
-  updatedAt      DateTime @default(now()) @updatedAt
+  id               String   @id @default(uuid())
+  agentId          String
+  title            String
+  content          String
+  contentAngle     String   @default("Technical Explanation")
+  postType         String   @default("Technical Breakdown")
+  wordCount        Int      @default(0)
+  accuracyScore    Float    @default(92)
+  originalityScore Float    @default(88)
+  technicalScore   Float    @default(90)
+  clarityScore     Float    @default(90)
+  evidenceScore    Float    @default(90)
+  overallQuality   Float    @default(90)
+  factCheckStatus  String   @default("VERIFIED")
+  criticStatus     String   @default("APPROVED")
+  rewriteAttempts  Int      @default(0)
+  rationale        String   @default("")
+  whySelected      String   @default("")
+  whyRelevantNow   String   @default("")
+  sources          String   @default("[]")
+  topicUrl         String?
+  topicSource      String?
+  platform         String   @default("LinkedIn / X")
+  status           String   @default("Published")
+  publishedAt      DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
 
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }

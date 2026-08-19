@@ -3,8 +3,8 @@ import { DiscoveredTopic, GeneratedPost, Persona } from '../models/types';
 export function getFactCheckerPrompt(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): string {
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
-  return `You are a strict AI Security Fact-Checker and Content Auditor.
-Your job is to check the generated post for factual correctness, supported claims, zero hallucinations, technical accuracy, and word count compliance (STRICTLY 150 TO 220 WORDS).
+  return `You are an expert AI Security Fact-Checker and Content Auditor.
+Your job is to rigorously verify the generated post for factual correctness, technical accuracy, source credibility, zero hallucinations, and word count compliance (STRICTLY 200 TO 300 WORDS).
 
 Original Topic: ${topic.title}
 Topic Source/URL: ${topic.source} - ${topic.url}
@@ -14,17 +14,36 @@ Generated Post Title: ${post.title}
 Generated Post Content (Current Word Count: ${words} words):
 ${post.content}
 
-STRICT VERIFICATION CRITERIA:
-1. Fact Check & Zero Hallucinations: Are all claims, stats, and disclosures supported by the topic summary? FAIL if the writer invented fake CVEs, fake dates, fake quotes, or unverified claims.
-2. Technical Accuracy: Is the security mechanism explanation technically accurate?
-3. Word Count Check: Is the post strictly between 150 and 220 words? (Current count: ${words} words. FAIL if < 150 or > 220 words).
-4. Structure Check: Does the post follow the 7 sections (Hook, What Happened, Why It Matters, Technical Breakdown, 3 Security Takeaways starting with '•', Conclusion, Hashtags)?
+STRICT VERIFICATION CHECKLIST (CHECK ALL 10 ITEMS):
+1. Main claim verification
+2. Technical details accuracy
+3. Dates and timeline
+4. Company & vendor names
+5. Product & tool names
+6. Statistics and metrics (FAIL if fabricated)
+7. Security claims & attack vectors
+8. Research findings
+9. Conclusions & takeaways
+10. Source credibility (Source: ${topic.source})
 
-Return a JSON object with:
-- "passed" (boolean): true ONLY if factually supported, technically correct, AND word count is between 150 and 220 words.
-- "confidence" (number): 0.0 to 1.0 confidence in assessment.
-- "issues" (string[]): array of factual issues, hallucinations, or word count violations found.
-- "corrections" (string[]): array of suggested corrections (e.g. "Expand technical breakdown to reach 150 words" or "Shorten text to stay under 220 words").
+WORD COUNT MANDATE:
+Current main content word count: ${words} words.
+- MUST be strictly between 200 and 300 words.
+- FAIL if < 200 words (issue: "Word count is ${words} words, below 200-word minimum").
+- FAIL if > 300 words (issue: "Word count is ${words} words, above 300-word maximum").
 
-Output strictly raw JSON.`;
+Return strictly raw JSON matching this schema:
+{
+  "verified": boolean,
+  "confidence": number (0 to 100 score),
+  "claimsChecked": ["string array of verified claims"],
+  "unsupportedClaims": ["string array of unsupported claims"],
+  "incorrectClaims": ["string array of incorrect or false claims"],
+  "missingContext": ["string array of missing important context"],
+  "sourceQuality": number (0 to 100 score),
+  "recommendations": ["string array of specific factual or length corrections"],
+  "passed": boolean (true ONLY if verified, zero major unsupported/incorrect claims, AND word count is between 200 and 300 words),
+  "issues": ["string array of all flagged issues"],
+  "corrections": ["string array of actionable fixes"]
+}`;
 }

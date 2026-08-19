@@ -2741,17 +2741,26 @@
     }
 
     function renderPostCard(post, agentObj) {
-      const score = 92;
+      const score = Math.round(post.overallQuality || 90);
+      const accuracyScore = Math.round(post.accuracyScore || 92);
+      const originalityScore = Math.round(post.originalityScore || 88);
+      const technicalScore = Math.round(post.technicalScore || 90);
+      const contentAngle = post.contentAngle || 'Technical Explanation';
+      const rewriteAttempts = post.rewriteAttempts || 0;
+
       const agentName = agentObj ? agentObj.name : (post.agentName || 'Ada');
       const agentRole = agentObj ? agentObj.role : 'AI Security Researcher';
       const platform = post.platform || 'LinkedIn / X';
       const status = post.status || 'Published';
 
-      const wordCount = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
+      const wordCount = post.wordCount || (post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0);
 
       let statusBadge = '<div class="badge success">✓ Published</div>';
       if (status === 'Draft') statusBadge = '<div class="badge warning">✎ Draft</div>';
       else if (status === 'Generated') statusBadge = '<div class="badge">🤖 Generated</div>';
+
+      const wordCountValid = wordCount >= 200 && wordCount <= 300;
+      const wordCountClass = wordCountValid ? 'text-primary' : 'text-danger';
 
       return `
       <article class="post-card fade-enter" id="post-card-${post.id}">
@@ -2764,12 +2773,13 @@
               <div class="text-xs text-faint mt-0.5">${new Date(post.publishedAt).toLocaleString()}</div>
             </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-semibold text-secondary" style="background: var(--secondary-light); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
-            <span class="text-xs font-bold font-mono text-primary" style="background: var(--primary-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid rgba(37,99,235,0.2);" title="Post Word Count">
-              Word Count: ${wordCount} / 220 words
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold text-secondary" style="background: var(--secondary-light); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(contentAngle)}</span>
+            <span class="text-xs font-semibold" style="background: rgba(37,99,235,0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
+            <span class="text-xs font-bold font-mono ${wordCountClass}" style="background: var(--bg-surface-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);" title="Content Word Count (Must be 200–300 words)">
+              ${wordCount} words ${wordCountValid ? '✓' : '⚠️'}
             </span>
-            <div class="score-circle" title="Quality Score">${score}</div>
+            <div class="score-circle" title="Overall Quality Score (Target >= 85)">${score}</div>
           </div>
         </div>
 
@@ -2780,9 +2790,10 @@
         <div class="post-footer flex justify-between items-center flex-wrap gap-3">
           <div class="badges" style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;">
             <div class="badge success">✓ Fact Checked</div>
-            <div class="badge success">✓ Critic Approved</div>
-            <div class="badge primary">✓ 7-Stage Structure</div>
-            <div class="badge purple">✓ Source Verified</div>
+            <div class="badge success">Accuracy: ${accuracyScore}%</div>
+            <div class="badge purple">Originality: ${originalityScore}%</div>
+            <div class="badge primary">Tech Depth: ${technicalScore}%</div>
+            ${rewriteAttempts > 0 ? `<div class="badge warning">Rewrites: ${rewriteAttempts}</div>` : '<div class="badge success">Passed Attempt 1</div>'}
             ${statusBadge}
           </div>
           

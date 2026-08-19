@@ -3,36 +3,49 @@ import { DiscoveredTopic, GeneratedPost, Persona } from '../models/types';
 export function getCriticPrompt(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): string {
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
-  return `You are a critical Content Evaluator for an AI Security publishing agent.
-Your job is to evaluate the quality of a generated post based on strict criteria.
+  return `You are an expert Critic and Quality Evaluator for an AI Security publishing system.
+Your job is to evaluate the quality of a generated post based on strict 8-metric criteria, professional structure, and word count compliance (STRICTLY 200 TO 300 WORDS).
 
 Persona: ${persona.name} (${persona.domain})
 Style: ${persona.style}
 
 Original Topic: ${topic.title}
 Original Summary: ${topic.summary}
+Assigned Content Angle: ${post.contentAngle || 'Technical Explanation'}
 
 Generated Post Content (Current Word Count: ${words} words):
 ${post.content}
 
-EVALUATION WEIGHTINGS & CATEGORIES (Score each 0-100):
-1. Accuracy (25% weight): Is all information supported by verified sources? Zero fake CVEs, dates, or statements?
-2. Technical Knowledge (20% weight): Does it explain the security mechanism accurately in clear, natural language?
-3. Relevance (20% weight): Does it directly focus on AI Security / LLM threat vectors?
-4. Readability (15% weight): Are sentences concise (10-25 words), paragraphs short, and flow engaging?
-5. Professionalism (10% weight): Does it sound like a senior AI Security researcher explaining a complex topic clearly? No clickbait, no generic chatbot language.
-6. Structure (10% weight): Does it follow the 7 sections (Hook, What Happened, Why It Matters, Technical Breakdown, 3 Security Takeaways starting with '•', Conclusion, Hashtags) AND fall strictly between 150 and 220 words?
+STRICT 8-METRIC EVALUATION CATEGORIES (Score each 0 to 100):
+1. Accuracy (25% weight): Zero false claims, zero fabricated stats/CVEs/quotes. Every detail verified.
+2. Clarity (15% weight): Simple, clear, professional English. Easy for a interested beginner to read.
+3. Technical Knowledge (15% weight): Concrete technical mechanism explanation. High knowledge density.
+4. Originality (15% weight): Unique hook, distinct perspective, non-repetitive phrasing, novel angle.
+5. Usefulness (10% weight): Teaches the reader something practical and actionable.
+6. Evidence Quality (10% weight): Supported by trustworthy sources and clear attribution.
+7. Structure (5% weight): Clear logical flow (Hook -> What Happened -> Tech Explanation -> Why It Matters -> Takeaway -> Source -> 3-5 Hashtags).
+8. Readability (5% weight): Engaging sentence flow, concise paragraphs.
 
-OVERALL SCORE RULE:
-Calculate overallScore using the weighted percentage formula above.
-The overall score MUST be >= 80 to pass.
-NOTE: If word count is < 150 or > 220 words (current count: ${words}), cap overallScore at 75 maximum.
+WORD COUNT & PASSING RULES:
+Current word count: ${words} words.
+- If word count is < 200 words or > 300 words, cap overallScore at 75 maximum and flag word count violation.
+- To PASS: overallScore >= 85, accuracy >= 90, originality >= 80, evidenceQuality >= 80, and word count MUST be strictly 200–300 words.
 
-Return a JSON object with:
-- "passed" (boolean): true ONLY if overallScore >= 80.
-- "scores" (object): containing relevance, originality, clarity, engagement, factualQuality, safety, overallScore (all numbers 0-100).
-- "weaknesses" (string[]): array of specific weaknesses or areas for improvement.
-- "improvementSuggestions" (string[]): actionable guidance to fix issues and reach score >= 80.
-
-Output strictly raw JSON.`;
+Return strictly raw JSON matching this schema:
+{
+  "passed": boolean,
+  "scores": {
+    "accuracy": number (0-100),
+    "clarity": number (0-100),
+    "technicalKnowledge": number (0-100),
+    "originality": number (0-100),
+    "usefulness": number (0-100),
+    "evidenceQuality": number (0-100),
+    "structure": number (0-100),
+    "readability": number (0-100),
+    "overallScore": number (weighted average 0-100)
+  },
+  "weaknesses": ["string array of specific weaknesses found"],
+  "improvementSuggestions": ["string array of concrete actionable recommendations to fix problems"]
+}`;
 }

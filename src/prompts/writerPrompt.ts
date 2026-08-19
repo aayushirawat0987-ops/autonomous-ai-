@@ -1,63 +1,76 @@
 import { DiscoveredTopic, EditorialEvaluation, Persona } from '../models/types';
 import { getPersonaSystemPrompt } from './personaPrompt';
+import { AntiRepetitionContext } from '../agent/memory';
 
-export function getWriterPrompt(persona: Persona, topic: DiscoveredTopic, evaluation: EditorialEvaluation): string {
+export function getWriterPrompt(
+  persona: Persona,
+  topic: DiscoveredTopic,
+  evaluation: EditorialEvaluation,
+  contentAngle: string = 'Technical Explanation',
+  antiRepetition?: AntiRepetitionContext
+): string {
   const personaContext = getPersonaSystemPrompt(persona);
+
+  const previousHooksStr = antiRepetition?.recentHooks?.length 
+    ? antiRepetition.recentHooks.slice(0, 3).map(h => `  - "${h}"`).join('\n')
+    : '  - None';
+
+  const previousAnglesStr = antiRepetition?.recentAngles?.length
+    ? antiRepetition.recentAngles.slice(0, 5).join(', ')
+    : 'None';
 
   return `${personaContext}
 
-ARTICLE WRITING TASK:
-Write a highly specific, technically accurate, professional LinkedIn / X style post for the approved topic below.
+WRITING TASK:
+You are an expert technology and AI security writer.
+Write ONE original, evidence-based, professional social media post for the topic below.
+
 Primary Domain Focus: ${persona.domain}
+Assigned Content Angle: ${contentAngle}
 
 STRICT WORD COUNT MANDATE:
-- MINIMUM: 150 words
-- MAXIMUM: 220 words
-- TARGET: 180 to 200 words
-(Your final generated 'content' MUST be strictly between 150 and 220 words total.)
+- MINIMUM: 200 words
+- MAXIMUM: 300 words
+- RECOMMENDED TARGET: 230 to 260 words
+(Your final post body content MUST be strictly between 200 and 300 words total. Do not count source URL or hashtags in the word count.)
 
-Topic Details:
+TOPIC DETAILS:
 - Title: ${topic.title}
 - Source: ${topic.source}
 - URL: ${topic.url}
 - Summary: ${topic.summary}
 - Editorial Score: ${evaluation.totalScore}/100
 
-STRICT 7-SECTION CONTENT STRUCTURE (EVERY POST MUST INVOLVE ALL 7 SECTIONS IN ORDER):
+ANTI-REPETITION MANDATE:
+Do not repeat the wording, structure, perspective, examples, hooks, or conclusions of recent posts. Produce genuinely new information or a substantially different analytical angle.
+- Recently used angles: ${previousAnglesStr}
+- Avoid hooks similar to:
+${previousHooksStr}
 
-SECTION 1 — HOOK (1–2 sentences):
-Factual, engaging opening explaining the critical ${persona.domain} topic without clickbait.
+STRUCTURE MANDATE (FOLLOW THIS LOGICAL FLOW):
+1. HOOK (20–40 words): Specific and informative opening establishing why this topic matters. Avoid generic hooks like "AI is changing the world".
+2. WHAT HAPPENED / WHAT IS IT? (40–60 words): Clearly explain what was discovered, technologies involved, research findings, or vulnerability.
+3. TECHNICAL EXPLANATION (50–80 words): Explain the core technical mechanism using clear, simple, professional English. Preserve technical accuracy while making it accessible to interested developers.
+4. WHY IT MATTERS (40–60 words): Practical impact on security, developers, privacy, or infrastructure.
+5. KEY TAKEAWAY (20–40 words): Meaningful conclusion providing actionable insight.
+6. SOURCE: Include the source link (${topic.url}).
+7. HASHTAGS: Strictly 3–5 relevant hashtags (e.g., #AISecurity #LLMSecurity #AISafety).
 
-SECTION 2 — WHAT HAPPENED? (2–3 sentences):
-Clearly explain what occurred, technologies involved, source/researcher, and new findings using verified facts.
+KNOWLEDGE DENSITY & FACTUAL ACCURACY RULES:
+- PRIORITIZE: Accuracy > Knowledge > Originality > Clarity > Engagement.
+- Include at least 1 verified technical fact, 1 clear technical mechanism explanation, and 1 practical takeaway.
+- DO NOT invent CVE numbers, fake dates, company statements, fake statistics, or exaggerated claims.
+- Do NOT claim personal testing ("I tested this...") unless specified; use attribution ("Researchers found...", "According to the disclosure...").
+- Simple language + strong technical knowledge.
 
-SECTION 3 — WHY IT MATTERS (2–4 sentences):
-Real-world operational impact, affected systems, risk, and consequences specific to ${persona.domain}.
-
-SECTION 4 — TECHNICAL BREAKDOWN (3–5 sentences):
-Explain the underlying technical mechanism with concrete details. Avoid vague fluff; explain the exact technical vectors and mechanisms in clear, human-readable English.
-
-SECTION 5 — SECURITY TAKEAWAYS (3 concise bullet points starting with '•'):
-Practical, actionable defensive recommendations for developers and teams in ${persona.domain}.
-
-SECTION 6 — CONCLUSION (1–2 sentences):
-Strong professional concluding insight for engineers and domain specialists.
-
-SECTION 7 — HASHTAGS (4–6 relevant hashtags):
-e.g. hashtags relevant to ${persona.domain} (e.g. #AISecurity #LLMSecurity #AISafety)
-
-WRITING GUIDELINES:
-- DO NOT invent CVE numbers, fake dates, company statements, or fake statistics.
-- Use ONLY facts supported by the topic details above.
-- Content MUST be strictly focused on ${persona.domain} and highly specific.
-
-Output MUST be strictly valid JSON matching this schema:
+Output MUST be strictly valid JSON:
 {
-  "title": "string (Short punchy headline)",
-  "content": "string (The complete post containing all 7 sections, STRICTLY 150–220 words)",
+  "title": "string (Punchy informative headline)",
+  "content": "string (The complete post text following the 7-part structure, STRICTLY 200–300 words)",
+  "contentAngle": "${contentAngle}",
   "rationale": "string (Why selected for ${persona.domain} persona)",
   "whySelected": "string (Technical selection justification)",
   "whyRelevantNow": "string (Timeliness and domain impact)",
-  "sources": ["string"]
+  "sources": ["${topic.url}"]
 }`;
 }

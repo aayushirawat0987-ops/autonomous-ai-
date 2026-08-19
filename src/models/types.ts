@@ -32,7 +32,15 @@ export interface EditorialEvaluation {
 
 export interface GeneratedPost {
   title: string;
-  content: string;         // LinkedIn/X style post (100–250 words)
+  content: string;         // LinkedIn/X style post (200–300 words)
+  contentAngle?: string;
+  wordCount?: number;
+  accuracyScore?: number;
+  originalityScore?: number;
+  technicalScore?: number;
+  clarityScore?: number;
+  evidenceScore?: number;
+  overallQuality?: number;
   rationale: string;
   whySelected: string;
   whyRelevantNow: string;
@@ -41,19 +49,32 @@ export interface GeneratedPost {
 
 export interface FactCheckResult {
   passed: boolean;
-  confidence: number;
+  verified: boolean;
+  confidence: number;       // 0-100
+  claimsChecked: string[];
+  unsupportedClaims: string[];
+  incorrectClaims: string[];
+  missingContext: string[];
+  sourceQuality: number;   // 0-100
+  recommendations: string[];
   issues: string[];
   corrections: string[];
 }
 
 export interface CriticScores {
-  relevance: number;
-  originality: number;
-  clarity: number;
-  engagement: number;
-  factualQuality: number;
-  safety: number;
-  overallScore: number;
+  accuracy: number;         // 25% weight
+  clarity: number;          // 15% weight
+  technicalKnowledge: number;// 15% weight
+  originality: number;      // 15% weight
+  usefulness: number;       // 10% weight
+  evidenceQuality: number;  // 10% weight
+  structure: number;        // 5% weight
+  readability: number;      // 5% weight
+  overallScore: number;     // 0-100 weighted
+  relevance?: number;
+  safety?: number;
+  factualQuality?: number;
+  engagement?: number;
 }
 
 export interface CriticResult {
@@ -62,3 +83,4 @@ export interface CriticResult {
   weaknesses: string[];
   improvementSuggestions: string[];
 }
+
