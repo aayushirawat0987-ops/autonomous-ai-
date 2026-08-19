@@ -1,29 +1,34 @@
-const { classifyTopicCategory } = require('../dist/services/openai');
+const { classifyTopicCategory, countMainContentWords } = require('../dist/services/openai');
 const { createTopicProfile, validateStructureAndSanitize } = require('../dist/utils/sanitizer');
 
-const testTopics = [
-  'Supercomputer',
-  'Quantum Computing',
-  'Generative AI',
-  'Robotics',
-  'Cloud Computing',
-  'Cybersecurity',
-  'Python',
-  'Databases',
-  'Edge Computing',
-  'Computer Vision',
-  'AI Agents',
-  'LLM Security',
-  'Semiconductor Technology',
+const masterTopics = [
+  'SUPERCOMPUTER',
+  'BLOCKCHAIN TECHNOLOGY',
+  'QUANTUM COMPUTING',
+  'ROBOTICS',
+  'CLOUD COMPUTING',
+  'GENERATIVE AI',
+  'CYBERSECURITY',
+  'PYTHON',
+  'DATABASE MANAGEMENT',
+  'COMPUTER VISION',
+  'AI AGENTS',
+  'LLM SECURITY',
   'IoT',
-  'Web Development'
+  'EDGE COMPUTING',
+  'SEMICONDUCTORS',
+  'WEB DEVELOPMENT',
+  'OPERATING SYSTEMS',
+  'MACHINE LEARNING',
+  'NATURAL LANGUAGE PROCESSING',
+  '5G TECHNOLOGY'
 ];
 
 console.log('====================================================');
-console.log('15-TOPIC CLASSIFICATION & PROFILING AUDIT');
+console.log('MASTER 20-TOPIC CLASSIFICATION & PROFILING AUDIT');
 console.log('====================================================');
 
-testTopics.forEach((topic, idx) => {
+masterTopics.forEach((topic, idx) => {
   const profile = createTopicProfile(topic);
   console.log(`[${idx + 1}] Topic: "${topic}"`);
   console.log(`    Category: ${profile.topicCategory}`);
@@ -38,16 +43,16 @@ console.log('====================================================');
 
 const badDraft = `
 User Manual Request
-Title: Supercomputer Analysis
+Title: Blockchain Technology Analysis
 
 WHAT HAPPENED
-Supercomputers utilize massive parallel arrays.
+Blockchain provides decentralized consensus.
 
 WHAT HAPPENED
-Supercomputers utilize massive parallel arrays.
+Blockchain provides decentralized consensus.
 
 TECHNICAL EXPLANATION
-According to the prompt, supercomputers calculate FLOPS across nodes.
+According to the prompt, transactions are validated by nodes.
 `;
 
 const result = validateStructureAndSanitize(badDraft, "User Manual Request");
