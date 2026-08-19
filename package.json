@@ -4,6 +4,7 @@
   "description": "Autonomous AI Publishing Agent System",
   "main": "dist/server.js",
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "npx prisma generate && npx tsc",
     "render-build": "npm install && npx prisma generate && npx prisma db push && npm run build",
     "start": "node dist/server.js",
