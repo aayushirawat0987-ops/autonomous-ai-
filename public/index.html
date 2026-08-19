@@ -2097,8 +2097,7 @@
 
           </div>
         </div>
-      </div>
-
+        
   </div>
   </main>
   </div>
@@ -2873,7 +2872,7 @@
       
       const agentId = activeAgentId || '';
       try {
-        const url = agentId ? \`\${API_BASE}/api/agent/opportunities?agentId=\${agentId}\` : \`\${API_BASE}/api/agent/opportunities\`;
+        const url = agentId ? `${API_BASE}/api/agent/opportunities?agentId=${agentId}` : `${API_BASE}/api/agent/opportunities`;
         const res = await fetch(url);
         const data = await res.json();
         
@@ -2884,7 +2883,7 @@
 
         container.innerHTML = data.opportunities.map(opp => renderRadarCard(opp)).join('');
       } catch (err) {
-        container.innerHTML = \`<div class="text-danger text-center py-8">Failed to load radar: \${err.message}</div>\`;
+        container.innerHTML = `<div class="text-danger text-center py-8">Failed to load radar: ${err.message}</div>`;
       }
     }
 
@@ -2893,38 +2892,38 @@
       const gradient = isHighOpp ? 'linear-gradient(135deg, rgba(37,99,235,0.1), rgba(167,139,250,0.15))' : 'var(--bg-surface)';
       const border = isHighOpp ? '1px solid rgba(37,99,235,0.4)' : '1px solid var(--border-color)';
       
-      return \`
-      <div class="glass-card radar-card fade-enter flex-col justify-between" style="background: \${gradient}; border: \${border}; position: relative; overflow: hidden; height: 100%;">
+      return `
+      <div class="glass-card radar-card fade-enter flex-col justify-between" style="background: ${gradient}; border: ${border}; position: relative; overflow: hidden; height: 100%;">
         <div>
           <div class="flex justify-between items-start mb-3">
-            <h4 class="font-bold text-lg" style="color: var(--text-main); margin-right: 60px;">\${escapeHtml(opp.topic)}</h4>
+            <h4 class="font-bold text-lg" style="color: var(--text-main); margin-right: 60px;">${escapeHtml(opp.topic)}</h4>
             <div class="score-ring-container" style="position: absolute; right: 1.25rem; top: 1.25rem; display: flex; align-items: center; justify-content: center;">
                <svg viewBox="0 0 46 46" style="width: 46px; height: 46px; transform: rotate(-90deg);">
                  <circle cx="23" cy="23" r="18" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"></circle>
-                 <circle cx="23" cy="23" r="18" fill="none" stroke="\${isHighOpp ? 'var(--primary)' : 'var(--warning)'}" stroke-width="4" stroke-dasharray="113.1" stroke-dashoffset="\${113.1 - (113.1 * opp.opportunityScore / 100)}" style="transition: stroke-dashoffset 1s ease-out;"></circle>
+                 <circle cx="23" cy="23" r="18" fill="none" stroke="${isHighOpp ? 'var(--primary)' : 'var(--warning)'}" stroke-width="4" stroke-dasharray="113.1" stroke-dashoffset="${113.1 - (113.1 * opp.opportunityScore / 100)}" style="transition: stroke-dashoffset 1s ease-out;"></circle>
                </svg>
-               <span style="position: absolute; font-weight: 800; font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-main);">\${opp.opportunityScore}</span>
+               <span style="position: absolute; font-weight: 800; font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-main);">${opp.opportunityScore}</span>
             </div>
           </div>
           
           <div class="flex flex-wrap gap-2 mb-3">
-            <span class="badge" style="background: rgba(37,99,235,0.15); color: var(--primary);">📈 \${opp.trendState}</span>
-            <span class="badge" style="background: rgba(167,139,250,0.15); color: var(--purple);">Momentum: \${opp.momentum}</span>
-            <span class="badge">Sources: \${opp.sourcesCount} (\${opp.coverageLevel})</span>
+            <span class="badge" style="background: rgba(37,99,235,0.15); color: var(--primary);">📈 ${opp.trendState}</span>
+            <span class="badge" style="background: rgba(167,139,250,0.15); color: var(--purple);">Momentum: ${opp.momentum}</span>
+            <span class="badge">Sources: ${opp.sourcesCount} (${opp.coverageLevel})</span>
           </div>
           
           <details class="radar-explanation mb-4">
             <summary style="font-size: 0.75rem; font-weight: 600; color: var(--primary); cursor: pointer; user-select: none;">Why Ada chose this</summary>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">\${escapeHtml(opp.explanation)}</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.5; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 4px;">${escapeHtml(opp.explanation)}</p>
           </details>
         </div>
         
         <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-          <div class="text-xs font-semibold text-muted">Action: <span style="color: \${isHighOpp ? 'var(--primary)' : 'var(--text-main)'}">\${escapeHtml(opp.recommendation)}</span></div>
-          \${isHighOpp ? \`<button class="btn btn-primary text-xs" style="padding: 0.35rem 0.75rem;" onclick="openGenerateModal()">Draft Content</button>\` : ''}
+          <div class="text-xs font-semibold text-muted">Action: <span style="color: ${isHighOpp ? 'var(--primary)' : 'var(--text-main)'}">${escapeHtml(opp.recommendation)}</span></div>
+          ${isHighOpp ? `<button class="btn btn-primary text-xs" style="padding: 0.35rem 0.75rem;" onclick="openGenerateModal()">Draft Content</button>` : ''}
         </div>
       </div>
-      \`;
+      `;
     }
 
     async function loadLogs() {
