@@ -40,24 +40,21 @@ export class MemoryEngine {
 
   async selectContentAngle(agentId: string, topicTitle: string): Promise<string> {
     try {
-      const recentPosts = await prisma.post.findMany({
+      const recentPosts: any[] = await prisma.post.findMany({
         where: { agentId },
-        select: { contentAngle: true },
         orderBy: { publishedAt: 'desc' },
         take: 10,
       });
 
-      const usedAngles = new Set(recentPosts.map((p: { contentAngle?: string }) => p.contentAngle).filter(Boolean));
+      const usedAngles = new Set(recentPosts.map((p: any) => p.contentAngle).filter(Boolean));
       const unusedAngles = AVAILABLE_CONTENT_ANGLES.filter(angle => !usedAngles.has(angle));
 
       if (unusedAngles.length > 0) {
-        // Pick deterministically or semi-randomly from unused angles
         const selected = unusedAngles[Math.floor(Math.random() * unusedAngles.length)];
         Logger.info(`Selected novel Content Angle: "${selected}" for agent ${agentId}`, agentId);
         return selected;
       }
 
-      // Fallback: pick any random angle from available
       const fallback = AVAILABLE_CONTENT_ANGLES[Math.floor(Math.random() * AVAILABLE_CONTENT_ANGLES.length)];
       return fallback;
     } catch {
@@ -67,18 +64,17 @@ export class MemoryEngine {
 
   async getAntiRepetitionContext(agentId: string): Promise<AntiRepetitionContext> {
     try {
-      const recentPosts = await prisma.post.findMany({
+      const recentPosts: any[] = await prisma.post.findMany({
         where: { agentId },
-        select: { title: true, contentAngle: true, content: true, topicSource: true },
         orderBy: { publishedAt: 'desc' },
         take: 10,
       });
 
-      const recentTitles = recentPosts.map((p: { title: string }) => p.title);
-      const recentAngles = recentPosts.map((p: { contentAngle?: string }) => p.contentAngle || 'Technical Explanation');
-      const recentSources = recentPosts.map((p: { topicSource?: string }) => p.topicSource || '').filter(Boolean);
-      const recentHooks = recentPosts.map((p: { content: string }) => {
-        const lines = p.content.split('\n').filter((l: string) => l.trim().length > 0);
+      const recentTitles = recentPosts.map((p: any) => p.title || '');
+      const recentAngles = recentPosts.map((p: any) => p.contentAngle || 'Technical Explanation');
+      const recentSources = recentPosts.map((p: any) => p.topicSource || '').filter(Boolean);
+      const recentHooks = recentPosts.map((p: any) => {
+        const lines = (p.content || '').split('\n').filter((l: string) => l.trim().length > 0);
         return lines[0] || '';
       }).filter(Boolean);
 
