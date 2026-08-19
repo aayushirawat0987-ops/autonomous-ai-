@@ -336,3 +336,26 @@ export async function handleAgentTrends(req: Request, res: Response) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export async function handleAgentOpportunities(req: Request, res: Response) {
+  try {
+    const { agentId } = req.query;
+    const whereClause = agentId && typeof agentId === 'string' ? { agentId } : {};
+
+    const opportunities = await prisma.opportunity.findMany({
+      where: whereClause,
+      include: {
+        snapshots: {
+          orderBy: { createdAt: 'asc' }
+        }
+      },
+      orderBy: { opportunityScore: 'desc' },
+      take: 10
+    });
+
+    return res.status(200).json({ opportunities });
+  } catch (error) {
+    Logger.error('Failed to fetch opportunities', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}

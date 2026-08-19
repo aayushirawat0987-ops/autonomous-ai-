@@ -15,7 +15,8 @@ import {
   handlePostRegenerate,
   handlePostPublish,
   handleAgentMission,
-  handleAgentTrends
+  handleAgentTrends,
+  handleAgentOpportunities
 } from './api/agent';
 import { schedulerEngine } from './agent/scheduler';
 import { Logger } from './utils/logger';
@@ -45,6 +46,7 @@ app.post('/api/agent/trigger', handleAgentTrigger);
 app.get('/api/agent/logs', handleAgentLogs);
 app.get('/api/agent/mission/latest', handleAgentMission);
 app.get('/api/agent/trends', handleAgentTrends);
+app.get('/api/agent/opportunities', handleAgentOpportunities);
 
 // Post Management & Manual Generation APIs
 app.post('/api/agent/post/generate', handleAgentPostGenerate);

@@ -91,8 +91,12 @@ export class SchedulerEngine {
       Logger.info('MISSION STAGE: COLLECT SIGNALS & CONNECT SIGNALS', agentId);
       const emergingTrend = await this.threatEngine.detectEmergingTrend(agentId, candidateTopics);
       
-      if (!emergingTrend) {
-        Logger.warn('Failed to detect any emerging trends.', agentId);
+      // OP OPPORTUNITY RADAR
+      Logger.info('MISSION STAGE: ANALYZE OPPORTUNITY & PREDICT TREND', agentId);
+      const opportunity = await this.threatEngine.detectOpportunity(agentId, candidateTopics);
+      
+      if (!emergingTrend || !opportunity) {
+        Logger.warn('Failed to detect any emerging trends or opportunities.', agentId);
         await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "No trends detected" } });
         return { publishedCount: 0 };
       }
@@ -113,12 +117,71 @@ export class SchedulerEngine {
         }
       });
       
+      let dbOpportunity = await prisma.opportunity.findFirst({
+        where: { agentId, topic: opportunity.topic }
+      });
+      if (dbOpportunity) {
+        dbOpportunity = await prisma.opportunity.update({
+          where: { id: dbOpportunity.id },
+          data: {
+            opportunityScore: opportunity.opportunityScore,
+            momentum: opportunity.momentum,
+            aiSecurityRelevance: opportunity.aiSecurityRelevance,
+            novelty: opportunity.novelty,
+            coverageLevel: opportunity.coverageLevel,
+            trendPotential: opportunity.trendPotential,
+            trendState: opportunity.trendState,
+            workflowState: opportunity.workflowState,
+            recommendation: opportunity.recommendation,
+            explanation: opportunity.explanation,
+            sourcesCount: opportunity.sourcesCount,
+            signals: JSON.stringify(opportunity.signals.map(s => s.topic.title)),
+          }
+        });
+      } else {
+        dbOpportunity = await prisma.opportunity.create({
+          data: {
+            agentId,
+            topic: opportunity.topic,
+            opportunityScore: opportunity.opportunityScore,
+            momentum: opportunity.momentum,
+            aiSecurityRelevance: opportunity.aiSecurityRelevance,
+            novelty: opportunity.novelty,
+            coverageLevel: opportunity.coverageLevel,
+            trendPotential: opportunity.trendPotential,
+            trendState: opportunity.trendState,
+            workflowState: opportunity.workflowState,
+            recommendation: opportunity.recommendation,
+            explanation: opportunity.explanation,
+            sourcesCount: opportunity.sourcesCount,
+            signals: JSON.stringify(opportunity.signals.map(s => s.topic.title)),
+          }
+        });
+      }
+
+      await prisma.trendSnapshot.create({
+        data: {
+          opportunityId: dbOpportunity.id,
+          opportunityScore: opportunity.opportunityScore,
+          momentum: opportunity.momentum,
+          sourcesCount: opportunity.sourcesCount,
+          trendState: opportunity.trendState
+        }
+      });
+
       Logger.info('MISSION STAGE: DETECT TREND', agentId);
       Logger.info(`Emerging Threat Score: ${emergingTrend.confidence}/100. Supporting sources: ${emergingTrend.supportingSources}`, agentId);
+      Logger.info(`Opportunity Score: ${opportunity.opportunityScore}/100 (${opportunity.recommendation})`, agentId);
+
+      if (opportunity.recommendation !== "CREATE CONTENT" && opportunity.recommendation !== "PREPARE DRAFT") {
+         Logger.info(`Opportunity recommendation is ${opportunity.recommendation}. Skipping content creation.`, agentId);
+         await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Opportunity Monitored" } });
+         return { publishedCount: 0 };
+      }
 
       // STEP 3: Memory Check & Security Evaluation
       Logger.info('MISSION STAGE: MEMORY CHECK & EVALUATE', agentId);
-      const signalTopics = emergingTrend.signals.map(s => s.topic);
+      const signalTopics = opportunity.signals.map(s => s.topic);
       const evaluation = await this.editorialEngine.evaluateTopics(agentId, persona, signalTopics);
       const approvedEvaluations = evaluation.filter(e => e.passed);
 

@@ -17,11 +17,13 @@ model Agent {
   updatedAt DateTime @updatedAt
 
   posts    Post[]
-  memories Memory[]
-  logs     AgentLog[]
-  attempts ImprovementAttempt[]
-  missions Mission[]
-  trends   EmergingTrend[]
+  memories    Memory[]
+  
+  logs        AgentLog[]
+  attempts    ImprovementAttempt[]
+  missions    Mission[]
+  trends      EmergingTrend[]
+  opportunities Opportunity[]
 }
 
 model Post {
@@ -109,4 +111,39 @@ model EmergingTrend {
   signals           String   @default("[]") // JSON string of connected topics
   
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model Opportunity {
+  id                  String   @id @default(uuid())
+  agentId             String
+  topic               String
+  opportunityScore    Float
+  momentum            Float
+  aiSecurityRelevance Float
+  novelty             Float
+  coverageLevel       String   // "Low", "Medium", "High"
+  trendPotential      Float
+  trendState          String   // Declining, Stable, Growing, Rapidly Growing, Emerging
+  workflowState       String   // Discovered, Monitoring, Emerging, High Opportunity, Content Creation
+  recommendation      String
+  explanation         String
+  sourcesCount        Int
+  signals             String   @default("[]")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  snapshots           TrendSnapshot[]
+  agent               Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model TrendSnapshot {
+  id               String   @id @default(uuid())
+  opportunityId    String
+  opportunityScore Float
+  momentum         Float
+  sourcesCount     Int
+  trendState       String
+  createdAt        DateTime @default(now())
+  
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
 }

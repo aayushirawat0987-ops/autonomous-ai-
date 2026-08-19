@@ -23,7 +23,7 @@ export class OpenAIService {
   async evaluateEditorial(persona: Persona, topic: DiscoveredTopic, memorySummaries: string[]): Promise<EditorialEvaluation> {
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using heuristic AI Security evaluation engine.');
-      return this.fallbackEditorialEvaluation(topic, memorySummaries);
+      return this.fallbackEditorialEvaluation(persona, topic, memorySummaries);
     }
 
     const prompt = getEditorialEvaluationPrompt(persona, topic, memorySummaries);
