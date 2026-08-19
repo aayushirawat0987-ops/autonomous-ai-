@@ -1,5 +1,5 @@
 const { classifyTopicCategory, countMainContentWords } = require('../dist/services/openai');
-const { createTopicProfile, validateStructureAndSanitize } = require('../dist/utils/sanitizer');
+const { createTopicProfile, validateStructureAndSanitize, detectGenericFiller } = require('../dist/utils/sanitizer');
 
 const masterTopics = [
   'SUPERCOMPUTER',
@@ -38,8 +38,17 @@ masterTopics.forEach((topic, idx) => {
 });
 
 console.log('\n====================================================');
-console.log('STRUCTURAL SANITIZER & INTERNAL TEXT LEAKAGE TEST');
+console.log('STRUCTURAL SANITIZER & AI CLICHÉ DETECTOR TEST');
 console.log('====================================================');
+
+const ClicheDraft = `
+In today's rapidly evolving world, artificial intelligence is transforming everything.
+This marks a significant milestone in technology.
+This is a game changer for modern developers.
+`;
+
+const clicheIssues = detectGenericFiller(ClicheDraft);
+console.log("Cliche Detection Flagged Issues:", clicheIssues);
 
 const badDraft = `
 User Manual Request
@@ -57,7 +66,7 @@ According to the prompt, transactions are validated by nodes.
 
 const result = validateStructureAndSanitize(badDraft, "User Manual Request");
 
-console.log("Sanitizer Output Passed?", result.valid);
+console.log("\nSanitizer Output Passed?", result.valid);
 console.log("Issues Flagged:", result.issues);
 console.log("\nSanitized Title:", result.sanitizedTitle);
 console.log("Sanitized Content:\n", result.sanitizedContent);

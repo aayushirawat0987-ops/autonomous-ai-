@@ -71,7 +71,15 @@ const FORBIDDEN_GENERIC_TEMPLATES = [
   'as technology systems evolve across',
   'modern compiler optimizations',
   'continuous application maintainability',
-  'optimized execution pathways'
+  'optimized execution pathways',
+  "in today's rapidly evolving",
+  'this marks a significant milestone',
+  'the future of ai is here',
+  'as ai continues to transform',
+  'this is a game changer',
+  'the possibilities are endless',
+  'it is important to note that',
+  'this highlights the importance of'
 ];
 
 export function detectGenericFiller(content: string): string[] {
