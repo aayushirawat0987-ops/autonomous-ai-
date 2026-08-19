@@ -1,7 +1,7 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
 import { OpenAIService, countMainContentWords, classifyTopicCategory } from '../services/openai';
-import { validateStructureAndSanitize } from '../utils/sanitizer';
+import { createTopicProfile, validateStructureAndSanitize, normalizeAndParseTopicInput } from '../utils/sanitizer';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
@@ -21,6 +21,9 @@ export class WriterEngine {
     evaluation: EditorialEvaluation
   ) {
     Logger.info(`Writing technical post for approved topic: "${topic.title}"`, agentId);
+
+    const parsedInput = normalizeAndParseTopicInput(topic.title);
+    topic.title = parsedInput.normalizedTopic;
 
     // 1. Select Content Angle and Anti-Repetition context
     const contentAngle = await this.memoryEngine.selectContentAngle(agentId, topic.title);
@@ -299,6 +302,10 @@ export class WriterEngine {
     const agent = await prisma.agent.findUnique({ where: { id: agentId } });
     if (!agent) throw new Error(`Agent with ID '${agentId}' not found.`);
 
+    const parsedInput = normalizeAndParseTopicInput(topicTitle, postType, instructions);
+    const cleanTopicTitle = parsedInput.normalizedTopic;
+    const cleanPostType = parsedInput.postType;
+
     const persona: Persona = {
       name: agent.name,
       domain: agent.domain,
@@ -307,10 +314,10 @@ export class WriterEngine {
     };
 
     const topic: DiscoveredTopic = {
-      title: topicTitle,
+      title: cleanTopicTitle,
       url: `https://autonomous.agent/topic-${Date.now()}`,
-      source: 'Technical Topic Request',
-      summary: `Technical overview and analysis of ${topicTitle}. ${instructions}`.trim(),
+      source: 'Technical Reference',
+      summary: `Technical analysis of ${cleanTopicTitle}. ${instructions}`.trim(),
       publishedAt: new Date().toISOString(),
     };
 

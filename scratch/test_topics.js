@@ -1,39 +1,25 @@
 const { classifyTopicCategory, countMainContentWords } = require('../dist/services/openai');
-const { createTopicProfile, validateStructureAndSanitize, detectGenericFiller } = require('../dist/utils/sanitizer');
+const { createTopicProfile, validateStructureAndSanitize, detectGenericFiller, normalizeAndParseTopicInput } = require('../dist/utils/sanitizer');
 
-const masterTopics = [
-  'SUPERCOMPUTER',
-  'BLOCKCHAIN TECHNOLOGY',
-  'QUANTUM COMPUTING',
-  'ROBOTICS',
-  'CLOUD COMPUTING',
-  'GENERATIVE AI',
-  'CYBERSECURITY',
-  'PYTHON',
-  'DATABASE MANAGEMENT',
-  'COMPUTER VISION',
-  'AI AGENTS',
-  'LLM SECURITY',
-  'IoT',
-  'EDGE COMPUTING',
-  'SEMICONDUCTORS',
-  'WEB DEVELOPMENT',
-  'OPERATING SYSTEMS',
-  'MACHINE LEARNING',
-  'NATURAL LANGUAGE PROCESSING',
-  '5G TECHNOLOGY'
+console.log('====================================================');
+console.log('SECTIONS 55-64: CRITICAL INPUT PARSING AUDIT');
+console.log('====================================================');
+
+const dirtyInputs = [
+  "block chain: Security Analysis: Technical Explanation",
+  "SUPER COMPUTER: Technical Breakdown",
+  "python history: Common Misconception",
+  "BLOCK CHAIN",
+  "blockchain technology",
+  "quantum computing"
 ];
 
-console.log('====================================================');
-console.log('MASTER 20-TOPIC CLASSIFICATION & PROFILING AUDIT');
-console.log('====================================================');
-
-masterTopics.forEach((topic, idx) => {
-  const profile = createTopicProfile(topic);
-  console.log(`[${idx + 1}] Topic: "${topic}"`);
-  console.log(`    Category: ${profile.topicCategory}`);
-  console.log(`    Primary Subject: ${profile.primarySubject}`);
-  console.log(`    Core Concepts: ${profile.importantConcepts.slice(0, 3).join(', ')}`);
+dirtyInputs.forEach((raw, idx) => {
+  const parsed = normalizeAndParseTopicInput(raw);
+  console.log(`[${idx + 1}] Raw UI Input: "${raw}"`);
+  console.log(`    Normalized Topic: "${parsed.normalizedTopic}"`);
+  console.log(`    Parsed Post Type: "${parsed.postType}"`);
+  console.log(`    Parsed Format:    "${parsed.format}"`);
   console.log('----------------------------------------------------');
 });
 

@@ -1,11 +1,66 @@
 import { TopicProfile } from '../models/types';
 import { classifyTopicCategory } from '../services/openai';
 
-export function createTopicProfile(requestedTopic: string, summary: string = ''): TopicProfile {
-  const normalized = requestedTopic.trim().replace(/^🚨\s*/, '').replace(/\s+/g, ' ');
-  const category = classifyTopicCategory(normalized, summary);
+export interface ParsedTopicInput {
+  normalizedTopic: string;
+  postType: string;
+  format: string;
+}
 
-  let primarySubject = normalized;
+export function normalizeAndParseTopicInput(
+  rawTopic: string,
+  rawPostType?: string,
+  rawFormat?: string
+): ParsedTopicInput {
+  let cleanTopic = (rawTopic || '').trim();
+
+  // Extract postType/format if appended with colon separators like "Blockchain: Security Analysis: Technical Explanation"
+  const colonParts = cleanTopic.split(/\s*:\s*/);
+  if (colonParts.length > 1) {
+    cleanTopic = colonParts[0].trim();
+    if (!rawPostType && colonParts[1]) {
+      rawPostType = colonParts[1].trim();
+    }
+    if (!rawFormat && colonParts[2]) {
+      rawFormat = colonParts[2].trim();
+    }
+  }
+
+  // Remove any leftover UI labels attached to topic
+  cleanTopic = cleanTopic
+    .replace(/^🚨\s*/, '')
+    .replace(/^AI\s*Security\s*Insight:\s*/i, '')
+    .replace(/^arXiv Paper:\s*/i, '')
+    .replace(/^GitHub Repository:\s*/i, '')
+    .replace(/:\s*(?:Security Analysis|Technical Explanation|Common Misconception|Research Summary|Breaking Development)/gi, '')
+    .replace(/\bblock\s+chain\b/gi, 'Blockchain')
+    .replace(/\bsuper\s+computer\b/gi, 'Supercomputer')
+    .replace(/\bcloud\s+computing\b/gi, 'Cloud Computing')
+    .replace(/\bquantum\s+computing\b/gi, 'Quantum Computing')
+    .replace(/\bpython\s+history\b/gi, 'Python History')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Normalize case if all upper or all lower
+  if (cleanTopic === cleanTopic.toLowerCase() || cleanTopic === cleanTopic.toUpperCase()) {
+    cleanTopic = cleanTopic.replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  const postType = (rawPostType || 'Technical Breakdown').trim();
+  const format = (rawFormat || 'Technical Explanation').trim();
+
+  return {
+    normalizedTopic: cleanTopic,
+    postType,
+    format,
+  };
+}
+
+export function createTopicProfile(requestedTopic: string, summary: string = ''): TopicProfile {
+  const { normalizedTopic } = normalizeAndParseTopicInput(requestedTopic);
+  const category = classifyTopicCategory(normalizedTopic, summary);
+
+  let primarySubject = normalizedTopic;
   let coreConcepts: string[] = [];
   let unrelatedTopics: string[] = [];
 
@@ -30,13 +85,13 @@ export function createTopicProfile(requestedTopic: string, summary: string = '')
     coreConcepts = ['Language syntax & runtimes', 'Memory allocation', 'Concurrency & performance profiling', 'Idiomatic design patterns'];
     unrelatedTopics = ['Credential theft', 'Prompt injection'];
   } else {
-    primarySubject = `${normalized} technical architecture and practical engineering applications`;
+    primarySubject = `${normalizedTopic} technical architecture and practical engineering applications`;
     coreConcepts = ['Technical mechanics', 'System architecture', 'Performance metrics', 'Practical applications'];
     unrelatedTopics = ['Unrelated security attacks'];
   }
 
   return {
-    requestedTopic: normalized,
+    requestedTopic: normalizedTopic,
     topicCategory: category,
     primarySubject,
     importantConcepts: coreConcepts,
