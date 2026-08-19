@@ -362,12 +362,12 @@ export class WriterEngine {
 
     const basePostPayload: any = {
       agentId,
-      title: structCheck.sanitizedTitle || topicTitle,
+      title: structCheck.sanitizedTitle || cleanTopicTitle,
       content: cleanContent,
       topicCategory,
       topicRelevanceScore: topicRel.relevanceScore,
       contentAngle,
-      postType,
+      postType: cleanPostType,
       wordCount,
       accuracyScore: 92,
       originalityScore: 90,
@@ -378,8 +378,8 @@ export class WriterEngine {
       factCheckStatus: 'VERIFIED',
       criticStatus: 'APPROVED',
       rewriteAttempts: attempt,
-      rationale: postData.rationale || `Manually requested post for ${topicTitle}`,
-      whySelected: postData.whySelected || `User requested ${postType} post for ${topicTitle}`,
+      rationale: postData.rationale || `Manually requested post for ${cleanTopicTitle}`,
+      whySelected: postData.whySelected || `User requested ${cleanPostType} post for ${cleanTopicTitle}`,
       whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
       sources: JSON.stringify(postData.sources || [topic.url]),
       topicUrl: topic.url,
@@ -398,10 +398,10 @@ export class WriterEngine {
       createdPost = await prisma.post.create({
         data: {
           agentId,
-          title: structCheck.sanitizedTitle || topicTitle,
+          title: structCheck.sanitizedTitle || cleanTopicTitle,
           content: cleanContent,
-          rationale: postData.rationale || `Manually requested post for ${topicTitle}`,
-          whySelected: postData.whySelected || `User requested ${postType} post for ${topicTitle}`,
+          rationale: postData.rationale || `Manually requested post for ${cleanTopicTitle}`,
+          whySelected: postData.whySelected || `User requested ${cleanPostType} post for ${cleanTopicTitle}`,
           whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
           sources: JSON.stringify(postData.sources || [topic.url]),
           topicUrl: topic.url,
@@ -412,7 +412,7 @@ export class WriterEngine {
     }
 
     await this.memoryEngine.saveMemory(agentId, topic, postData.rationale);
-    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name} (${wordCount} words, Topic: ${topicTitle}, Category: ${topicCategory})`, agentId);
+    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name} (${wordCount} words, Topic: ${cleanTopicTitle}, Category: ${topicCategory})`, agentId);
 
     return createdPost;
   }
