@@ -3,10 +3,10 @@ import { DiscoveredTopic, GeneratedPost, Persona } from '../models/types';
 export function getFactCheckerPrompt(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): string {
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
-  return `You are an expert AI Security Fact-Checker and Content Auditor.
-Your job is to rigorously verify the generated post for factual correctness, technical accuracy, source credibility, zero hallucinations, and word count compliance (STRICTLY 200 TO 300 WORDS).
+  return `You are an expert Fact-Checker and Technical Content Auditor.
+Your job is to rigorously verify the generated post for factual correctness, technical accuracy, source credibility, zero hallucinations, zero internal system text, and word count compliance (STRICTLY 200 TO 300 WORDS).
 
-Original Topic: ${topic.title}
+Requested Topic: ${topic.title}
 Topic Source/URL: ${topic.source} - ${topic.url}
 Topic Summary: ${topic.summary}
 
@@ -14,23 +14,15 @@ Generated Post Title: ${post.title}
 Generated Post Content (Current Word Count: ${words} words):
 ${post.content}
 
-STRICT VERIFICATION CHECKLIST (CHECK ALL 10 ITEMS):
-1. Main claim verification
-2. Technical details accuracy
-3. Dates and timeline
-4. Company & vendor names
-5. Product & tool names
-6. Statistics and metrics (FAIL if fabricated)
-7. Security claims & attack vectors
-8. Research findings
-9. Conclusions & takeaways
-10. Source credibility (Source: ${topic.source})
-
-WORD COUNT MANDATE:
-Current main content word count: ${words} words.
-- MUST be strictly between 200 and 300 words.
-- FAIL if < 200 words (issue: "Word count is ${words} words, below 200-word minimum").
-- FAIL if > 300 words (issue: "Word count is ${words} words, above 300-word maximum").
+STRICT VERIFICATION CHECKLIST:
+1. Main Claim Verification: Are claims supported by technical facts about "${topic.title}"?
+2. Zero Internal System Artifacts: FAIL if content contains "User Manual Request", "Manual post generation request", "The user asked...", "As requested by prompt...", or developer metadata.
+3. Technical Accuracy: Is the technical explanation accurate for "${topic.title}"?
+4. Dates and Timeline Accuracy
+5. Company, Vendor, and Product Names
+6. Zero Fabricated Stats or Invented Quotes
+7. Source Credibility (Source: ${topic.source})
+8. Word Count Check: Is main content strictly between 200 and 300 words? (Current count: ${words} words).
 
 Return strictly raw JSON matching this schema:
 {
@@ -42,7 +34,7 @@ Return strictly raw JSON matching this schema:
   "missingContext": ["string array of missing important context"],
   "sourceQuality": number (0 to 100 score),
   "recommendations": ["string array of specific factual or length corrections"],
-  "passed": boolean (true ONLY if verified, zero major unsupported/incorrect claims, AND word count is between 200 and 300 words),
+  "passed": boolean (true ONLY if verified, zero unsupported claims, zero internal system artifacts, AND word count is between 200 and 300 words),
   "issues": ["string array of all flagged issues"],
   "corrections": ["string array of actionable fixes"]
 }`;

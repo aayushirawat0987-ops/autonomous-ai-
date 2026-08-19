@@ -30,9 +30,32 @@ export interface EditorialEvaluation {
   rejectionReason?: string;
 }
 
+export interface TopicProfile {
+  requestedTopic: string;
+  topicCategory: string;
+  primarySubject: string;
+  importantConcepts: string[];
+  unrelatedConcepts: string[];
+}
+
+export interface TopicRelevanceResult {
+  requestedTopic: string;
+  actualMainTopic: string;
+  topicCategory: string;
+  relevanceScore: number;     // 0-100 (must be >= 85 to pass)
+  topicCovered: boolean;
+  topicDrift: boolean;
+  unrelatedConcepts: string[];
+  topicSpecificFacts: string[];
+  approved: boolean;
+  rejectionReason?: string;
+}
+
 export interface GeneratedPost {
   title: string;
   content: string;         // LinkedIn/X style post (200–300 words)
+  topicCategory?: string;
+  topicRelevanceScore?: number;
   contentAngle?: string;
   wordCount?: number;
   accuracyScore?: number;

@@ -7,7 +7,8 @@ export function getWriterPrompt(
   topic: DiscoveredTopic,
   evaluation: EditorialEvaluation,
   contentAngle: string = 'Technical Explanation',
-  antiRepetition?: AntiRepetitionContext
+  antiRepetition?: AntiRepetitionContext,
+  topicCategory: string = 'General Technology'
 ): string {
   const personaContext = getPersonaSystemPrompt(persona);
 
@@ -21,12 +22,24 @@ export function getWriterPrompt(
 
   return `${personaContext}
 
-WRITING TASK:
-You are an expert technology and AI security writer.
-Write ONE original, evidence-based, professional social media post for the topic below.
+UNIVERSAL TOPIC-GROUNDING MANDATE (CRITICAL RULE):
+- Requested Topic: "${topic.title}"
+- Topic Category: "${topicCategory}"
+- Primary Subject: "${topic.title}"
 
-Primary Domain Focus: ${persona.domain}
-Assigned Content Angle: ${contentAngle}
+CRITICAL INSTRUCTION ON SUBJECT VS PERSONALITY:
+The requested topic "${topic.title}" MUST be the PRIMARY SUBJECT of the entire post.
+- If the topic is "SUPERCOMPUTER", write strictly about supercomputers, HPC, parallel processing, GPUs/CPUs, nodes, and computational workloads.
+- If the topic is "QUANTUM COMPUTING", write strictly about qubits, quantum gates, superposition, error correction, and quantum hardware.
+- If the topic is "ROBOTICS", write strictly about sensors, perception, actuators, kinematics, control systems, and automation.
+- If the topic is "PYTHON", write strictly about Python language features, memory management, syntax, libraries, and runtime.
+- Do NOT force "${topic.title}" into AI Security, prompt injection, LLM jailbreaks, or generic cybersecurity UNLESS the topic itself is specifically about AI Security.
+- The agent's persona (${persona.role}) dictates HOW the content is written (analytical style, clear technical depth), NOT WHAT the topic is about.
+
+NO INTERNAL SYSTEM TEXT MANDATE:
+NEVER expose internal system text or generation metadata in your response or content body.
+- NEVER write: "User Manual Request", "Manual post generation request", "The user asked...", "According to the prompt...", or "As requested...".
+- The final text must read strictly as a published professional technical post.
 
 STRICT WORD COUNT MANDATE:
 - MINIMUM: 200 words
@@ -35,11 +48,13 @@ STRICT WORD COUNT MANDATE:
 (Your final post body content MUST be strictly between 200 and 300 words total. Do not count source URL or hashtags in the word count.)
 
 TOPIC DETAILS:
-- Title: ${topic.title}
+- Requested Topic: ${topic.title}
+- Category: ${topicCategory}
 - Source: ${topic.source}
 - URL: ${topic.url}
 - Summary: ${topic.summary}
 - Editorial Score: ${evaluation.totalScore}/100
+- Assigned Content Angle: ${contentAngle}
 
 ANTI-REPETITION MANDATE:
 Do not repeat the wording, structure, perspective, examples, hooks, or conclusions of recent posts. Produce genuinely new information or a substantially different analytical angle.
@@ -47,30 +62,24 @@ Do not repeat the wording, structure, perspective, examples, hooks, or conclusio
 - Avoid hooks similar to:
 ${previousHooksStr}
 
-STRUCTURE MANDATE (FOLLOW THIS LOGICAL FLOW):
-1. HOOK (20–40 words): Specific and informative opening establishing why this topic matters. Avoid generic hooks like "AI is changing the world".
-2. WHAT HAPPENED / WHAT IS IT? (40–60 words): Clearly explain what was discovered, technologies involved, research findings, or vulnerability.
-3. TECHNICAL EXPLANATION (50–80 words): Explain the core technical mechanism using clear, simple, professional English. Preserve technical accuracy while making it accessible to interested developers.
-4. WHY IT MATTERS (40–60 words): Practical impact on security, developers, privacy, or infrastructure.
-5. KEY TAKEAWAY (20–40 words): Meaningful conclusion providing actionable insight.
+LOGICAL FLOW STRUCTURE:
+1. HOOK (20–40 words): Specific and informative opening establishing why "${topic.title}" matters. Avoid generic hooks like "Technology is changing the world".
+2. WHAT IS IT / WHAT HAPPENED? (40–60 words): Clearly explain what ${topic.title} is, recent developments, or specific findings.
+3. TECHNICAL EXPLANATION (50–80 words): Explain the underlying technical mechanism of ${topic.title} in simple, professional, human-readable English.
+4. WHY IT MATTERS (40–60 words): Practical impact on systems, developers, performance, or infrastructure.
+5. KEY TAKEAWAY (20–40 words): Meaningful conclusion providing actionable insight on ${topic.title}.
 6. SOURCE: Include the source link (${topic.url}).
-7. HASHTAGS: Strictly 3–5 relevant hashtags (e.g., #AISecurity #LLMSecurity #AISafety).
-
-KNOWLEDGE DENSITY & FACTUAL ACCURACY RULES:
-- PRIORITIZE: Accuracy > Knowledge > Originality > Clarity > Engagement.
-- Include at least 1 verified technical fact, 1 clear technical mechanism explanation, and 1 practical takeaway.
-- DO NOT invent CVE numbers, fake dates, company statements, fake statistics, or exaggerated claims.
-- Do NOT claim personal testing ("I tested this...") unless specified; use attribution ("Researchers found...", "According to the disclosure...").
-- Simple language + strong technical knowledge.
+7. HASHTAGS: Strictly 3–5 relevant hashtags matching ${topicCategory}.
 
 Output MUST be strictly valid JSON:
 {
-  "title": "string (Punchy informative headline)",
-  "content": "string (The complete post text following the 7-part structure, STRICTLY 200–300 words)",
+  "title": "string (Punchy headline about ${topic.title})",
+  "content": "string (The complete post text focused strictly on ${topic.title}, STRICTLY 200–300 words)",
+  "topicCategory": "${topicCategory}",
   "contentAngle": "${contentAngle}",
-  "rationale": "string (Why selected for ${persona.domain} persona)",
-  "whySelected": "string (Technical selection justification)",
-  "whyRelevantNow": "string (Timeliness and domain impact)",
+  "rationale": "string (Analysis of ${topic.title})",
+  "whySelected": "string (Selection justification)",
+  "whyRelevantNow": "string (Timeliness and technical impact)",
   "sources": ["${topic.url}"]
 }`;
 }

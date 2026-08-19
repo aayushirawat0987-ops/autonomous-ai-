@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../database/prisma';
 import { Logger } from '../utils/logger';
-import { countMainContentWords } from '../services/openai';
+import { countMainContentWords, classifyTopicCategory, cleanPostContent } from '../services/openai';
 
 export async function handleAgentFeed(req: Request, res: Response) {
   try {
@@ -37,13 +37,17 @@ export async function handleAgentFeed(req: Request, res: Response) {
         parsedSources = [p.sources];
       }
 
-      const wordCount = p.wordCount || countMainContentWords(p.content);
+      const cleanContentText = cleanPostContent(p.content);
+      const wordCount = p.wordCount || countMainContentWords(cleanContentText);
+      const topicCategory = p.topicCategory || classifyTopicCategory(p.title, p.rationale);
 
       return {
         id: p.id,
         agentId: p.agentId,
         title: p.title,
-        content: p.content,
+        content: cleanContentText,
+        topicCategory,
+        topicRelevanceScore: p.topicRelevanceScore ?? 92,
         contentAngle: p.contentAngle || 'Technical Explanation',
         postType: p.postType || 'Technical Breakdown',
         wordCount,

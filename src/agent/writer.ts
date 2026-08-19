@@ -1,6 +1,6 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
-import { OpenAIService, countMainContentWords } from '../services/openai';
+import { OpenAIService, countMainContentWords, classifyTopicCategory, cleanPostContent } from '../services/openai';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
@@ -24,8 +24,9 @@ export class WriterEngine {
     // 1. Select Content Angle and Anti-Repetition context
     const contentAngle = await this.memoryEngine.selectContentAngle(agentId, topic.title);
     const antiRepetition = await this.memoryEngine.getAntiRepetitionContext(agentId);
+    const topicCategory = classifyTopicCategory(topic.title, topic.summary);
 
-    Logger.info(`Selected Content Angle: "${contentAngle}"`, agentId);
+    Logger.info(`Selected Content Angle: "${contentAngle}" | Topic Category: "${topicCategory}"`, agentId);
 
     let postData: GeneratedPost = await this.openaiService.generatePost(
       persona,
@@ -45,6 +46,7 @@ export class WriterEngine {
     let finalClarityScore = 90;
     let finalEvidenceScore = 90;
     let finalOverallQuality = 90;
+    let finalTopicRelevanceScore = 92;
 
     while (attempt <= MAX_ATTEMPTS) {
       // 1. Fact Checker Validation
@@ -82,10 +84,46 @@ export class WriterEngine {
         continue;
       }
 
-      // 2. Critic Quality Evaluation
+      // 2. Topic Relevance Audit
+      const topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
+      finalTopicRelevanceScore = topicRel.relevanceScore;
+
+      if (!topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift) {
+        Logger.warn(`Topic Relevance Audit failed (Score: ${topicRel.relevanceScore}/100, Drift: ${topicRel.topicDrift})`, agentId);
+
+        await prisma.improvementAttempt.create({
+          data: {
+            agentId,
+            attemptNumber: attempt,
+            content: postData.content,
+            scores: JSON.stringify({ topicRelevance: topicRel.relevanceScore, topicDrift: topicRel.topicDrift }),
+            weaknesses: JSON.stringify(topicRel.unrelatedConcepts.length ? topicRel.unrelatedConcepts : [`Topic Drift: Content drifted away from "${topic.title}"`]),
+            improvementSuggestions: JSON.stringify([`Re-ground the entire post around "${topic.title}". Every paragraph must analyze "${topic.title}".`]),
+            finalDecision: 'REJECTED_TOPIC_DRIFT',
+          }
+        });
+
+        if (attempt >= MAX_ATTEMPTS) {
+          Logger.error(`Max attempts reached (${MAX_ATTEMPTS}). Topic drift unresolved. Rejecting post.`, undefined, agentId);
+          break;
+        }
+
+        Logger.info(`Rewrite attempt ${attempt + 1} for Topic Grounding`, agentId);
+        postData = await this.openaiService.generateRewrite(
+          persona,
+          topic,
+          postData,
+          [`Topic Drift: Post MUST be primarily about "${topic.title}".`],
+          [`Re-ground all paragraphs around "${topic.title}". Do not force default AI security topics.`]
+        );
+        attempt++;
+        continue;
+      }
+
+      // 3. Critic Quality Evaluation
       const criticResult = await this.openaiService.evaluateCritic(persona, topic, postData);
       const scores = criticResult.scores;
-      Logger.info(`Critic Evaluation Score: ${scores.overallScore}/100 (Accuracy: ${scores.accuracy}, Originality: ${scores.originality})`, agentId);
+      Logger.info(`Critic Evaluation Score: ${scores.overallScore}/100 (Accuracy: ${scores.accuracy}, Originality: ${scores.originality}, Topic Rel: ${finalTopicRelevanceScore})`, agentId);
 
       finalAccuracyScore = scores.accuracy;
       finalOriginalityScore = scores.originality;
@@ -127,13 +165,13 @@ export class WriterEngine {
       }
 
       // Approved!
-      Logger.info(`APPROVED POST with Quality Score ${scores.overallScore}/100`, agentId);
+      Logger.info(`APPROVED POST with Quality Score ${scores.overallScore}/100 & Topic Relevance ${finalTopicRelevanceScore}/100`, agentId);
       await prisma.improvementAttempt.create({
         data: {
           agentId,
           attemptNumber: attempt,
           content: postData.content,
-          scores: JSON.stringify(scores),
+          scores: JSON.stringify({ ...scores, topicRelevance: finalTopicRelevanceScore }),
           weaknesses: JSON.stringify([]),
           improvementSuggestions: JSON.stringify([]),
           finalDecision: 'APPROVED',
@@ -148,13 +186,16 @@ export class WriterEngine {
       return null;
     }
 
-    const wordCount = countMainContentWords(postData.content);
+    const cleanContent = cleanPostContent(postData.content);
+    const wordCount = countMainContentWords(cleanContent);
 
     // Save Post to Database
     const basePayload = {
       agentId,
       title: postData.title,
-      content: postData.content,
+      content: cleanContent,
+      topicCategory: postData.topicCategory || topicCategory,
+      topicRelevanceScore: finalTopicRelevanceScore,
       contentAngle: postData.contentAngle || contentAngle,
       postType: 'Technical Breakdown',
       wordCount,
@@ -188,7 +229,7 @@ export class WriterEngine {
         data: {
           agentId,
           title: postData.title,
-          content: postData.content,
+          content: cleanContent,
           rationale: postData.rationale,
           whySelected: postData.whySelected,
           whyRelevantNow: postData.whyRelevantNow,
@@ -203,7 +244,7 @@ export class WriterEngine {
     // Save Memory record
     await this.memoryEngine.saveMemory(agentId, topic, postData.rationale);
 
-    Logger.info(`PUBLISHED POST #${createdPost.id}: "${createdPost.title}" (${wordCount} words, Quality: ${finalOverallQuality}/100)`, agentId);
+    Logger.info(`PUBLISHED POST #${createdPost.id}: "${createdPost.title}" (${wordCount} words, Quality: ${finalOverallQuality}/100, Relevance: ${finalTopicRelevanceScore}%)`, agentId);
 
     return createdPost;
   }
@@ -230,7 +271,7 @@ export class WriterEngine {
       title: topicTitle,
       url: `https://autonomous.agent/manual-topic-${Date.now()}`,
       source: 'User Manual Request',
-      summary: `Manual post generation request for ${agent.domain} (${postType}). ${instructions}`.trim(),
+      summary: `Manual post generation request for ${topicTitle} (${postType}). ${instructions}`.trim(),
       publishedAt: new Date().toISOString(),
     };
 
@@ -243,13 +284,35 @@ export class WriterEngine {
     };
 
     const contentAngle = await this.memoryEngine.selectContentAngle(agentId, topicTitle);
-    const postData = await this.openaiService.generatePost(persona, topic, evaluation, contentAngle);
-    const wordCount = countMainContentWords(postData.content);
+    const topicCategory = classifyTopicCategory(topicTitle, instructions);
+
+    let postData = await this.openaiService.generatePost(persona, topic, evaluation, contentAngle);
+
+    // Topic Relevance Check Loop for Manual Post
+    let attempt = 0;
+    let topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
+    while ((!topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift) && attempt < 2) {
+      Logger.warn(`Manual post drifted from topic "${topicTitle}". Rewriting...`, agentId);
+      postData = await this.openaiService.generateRewrite(
+        persona,
+        topic,
+        postData,
+        [`Topic Drift: Post MUST be primarily about "${topicTitle}".`],
+        [`Re-ground all paragraphs around "${topicTitle}". Do not force AI security topics unless requested.`]
+      );
+      attempt++;
+      topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
+    }
+
+    const cleanContent = cleanPostContent(postData.content);
+    const wordCount = countMainContentWords(cleanContent);
 
     const basePostPayload: any = {
       agentId,
       title: postData.title || topicTitle,
-      content: postData.content,
+      content: cleanContent,
+      topicCategory,
+      topicRelevanceScore: topicRel.relevanceScore,
       contentAngle,
       postType,
       wordCount,
@@ -261,10 +324,10 @@ export class WriterEngine {
       overallQuality: 91,
       factCheckStatus: 'VERIFIED',
       criticStatus: 'APPROVED',
-      rewriteAttempts: 0,
-      rationale: postData.rationale || `Manually requested by user for ${agent.name}`,
-      whySelected: postData.whySelected || `User requested ${postType} post in ${agent.domain}`,
-      whyRelevantNow: postData.whyRelevantNow || `Key ${agent.domain} updates for ${platform}`,
+      rewriteAttempts: attempt,
+      rationale: postData.rationale || `Manually requested post for ${topicTitle}`,
+      whySelected: postData.whySelected || `User requested ${postType} post for ${topicTitle}`,
+      whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
       sources: JSON.stringify(postData.sources || [topic.url]),
       topicUrl: topic.url,
       topicSource: 'Manual Request',
@@ -283,10 +346,10 @@ export class WriterEngine {
         data: {
           agentId,
           title: postData.title || topicTitle,
-          content: postData.content,
-          rationale: postData.rationale || `Manually requested by user for ${agent.name}`,
-          whySelected: postData.whySelected || `User requested ${postType} post in ${agent.domain}`,
-          whyRelevantNow: postData.whyRelevantNow || `Key ${agent.domain} updates for ${platform}`,
+          content: cleanContent,
+          rationale: postData.rationale || `Manually requested post for ${topicTitle}`,
+          whySelected: postData.whySelected || `User requested ${postType} post for ${topicTitle}`,
+          whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
           sources: JSON.stringify(postData.sources || [topic.url]),
           topicUrl: topic.url,
           topicSource: 'Manual Request',
@@ -296,7 +359,7 @@ export class WriterEngine {
     }
 
     await this.memoryEngine.saveMemory(agentId, topic, postData.rationale);
-    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name} (${wordCount} words)`, agentId);
+    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name} (${wordCount} words, Topic: ${topicTitle}, Category: ${topicCategory})`, agentId);
 
     return createdPost;
   }
