@@ -4,7 +4,7 @@
   "description": "Autonomous AI Publishing Agent System",
   "main": "dist/server.js",
   "scripts": {
-    "build": "npx prisma generate && tsc",
+    "build": "npx prisma generate && npx tsc",
     "render-build": "npm install && npx prisma generate && npx prisma db push && npm run build",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -32,7 +32,8 @@
     "node-cron": "^3.0.3",
     "nodemon": "^3.1.14",
     "openai": "^4.28.0",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -42,7 +43,6 @@
     "jsdom": "^30.0.1",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
+    "ts-node-dev": "^2.0.0"
   }
 }
