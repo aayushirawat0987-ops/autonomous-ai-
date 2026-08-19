@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 export type ExtendedPrismaClient = PrismaClient & {
-  mission: any;
-  emergingTrend: any;
+  [key: string]: any;
 };
 
 export const prisma = new PrismaClient() as ExtendedPrismaClient;

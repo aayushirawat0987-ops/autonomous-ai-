@@ -10,7 +10,7 @@ export class MemoryEngine {
       take: limit,
     });
 
-    return memories.map(m => `${m.topicTitle} (${m.topicUrl}) - ${m.summary}`);
+    return memories.map((m: { topicTitle: any; topicUrl: any; summary: any; }) => `${m.topicTitle} (${m.topicUrl}) - ${m.summary}`);
   }
 
   async isDuplicate(agentId: string, topic: DiscoveredTopic): Promise<boolean> {
@@ -40,7 +40,7 @@ export class MemoryEngine {
 
       if (memTitleClean === topicTitleClean) return true;
 
-      const memWords = memTitleClean.split(/\s+/).filter(w => w.length > 3);
+      const memWords = memTitleClean.split(/\s+/).filter((w: string | any[]) => w.length > 3);
       const topicWords = topicTitleClean.split(/\s+/).filter(w => w.length > 3);
 
       if (memWords.length > 0 && topicWords.length > 0) {

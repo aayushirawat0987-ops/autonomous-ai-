@@ -1,6 +1,6 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
-import { OpenAIService } from '../config';
+import { OpenAIService } from '../services/openai';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
