@@ -1,8 +1,8 @@
 # Autonomous AI Creator 🤖📱
 
-**Autonomous AI Creator** is a state-of-the-art, full-stack autonomous AI publishing intelligence platform. Once initialized with a single request (`POST /api/agent/init`) or through the modern web dashboard, the system independently discovers technology & AI news, enforces strict **AI Security** domain filtering, scores candidates on a 0–100 scale (requiring a score > 80 to publish), passes content through multi-agent **Fact-Checker** and **Critic** feedback loops with self-improvement rewrites, checks persistent database memory to prevent duplicates, and publishes short **LinkedIn/X style social posts (100–250 words)** continuously without human intervention.
+**Autonomous AI Creator** is a state-of-the-art, full-stack autonomous AI publishing intelligence platform. Once initialized with a single request (`POST /api/agent/init`) or through the modern web dashboard, the system independently discovers technology & AI news, executes **Threat Intelligence & Signal Correlation**, scores candidates on an **Opportunity Radar** (0–100 scale), enforces strict **AI Security** domain filtering, passes content through multi-agent **Fact-Checker** and **Critic** feedback loops with self-improvement rewrites, checks persistent database memory to prevent duplicates, and publishes short **LinkedIn/X style social posts (100–250 words)** continuously without human intervention.
 
-It is **not** a simple chatbot—it is a fully **autonomous AI social publishing agent system**.
+It is **not** a simple chatbot—it is a fully **autonomous AI threat intelligence & social publishing agent system**.
 
 ---
 
@@ -13,12 +13,13 @@ The web interface (`http://localhost:3000`) is built with a glassmorphism theme,
 ### 1. 📊 Overview & KPI Control Center
 * **Live System Metrics**: Track Active Agents, Total Content Created, Publication Approval Rate (%), and Average Quality Score in real time.
 * **Autonomy Status & Manual Override**: View background scheduler status and trigger an instant autonomous discovery cycle (`Force Cycle`) with a single click.
-* **Workflow Architecture Visualizer**: Interactive 7-node visual pipeline depicting live execution states across discovery, research, drafting, fact-checking, critic review, self-improvement, and publishing.
+* **Workflow Architecture Visualizer**: Interactive multi-stage visual pipeline depicting live execution states across discovery, threat intelligence, research, drafting, fact-checking, critic review, self-improvement, and publishing.
 
-### 2. 🧠 ADA — Autonomous Brain Dashboard
-* **Central Intelligence Orb & Neural Network**: Animated central orb with SVG connection paths visualizing real-time execution across the autonomous stages.
-* **Live Activity Overlay**: Displays active step statuses and real-time cycle execution counters (`#0001`, `#0002`...).
-* **Global Metrics & Quality Radar**: Real-time telemetry tracking scanned topics, rejected candidates, generated drafts, approved posts, and 5-metric quality score breakdowns (*Relevance*, *Novelty*, *Impact*, *Timeliness*, *Duplicate Risk*).
+### 2. 🧠 ADA — Autonomous Threat Intelligence & Brain Dashboard
+* **Central Intelligence Orb & Signal Network**: Animated central orb with dynamic SVG connection paths visualizing real-time threat signal aggregation and candidate topics.
+* **Opportunity Radar**: Ranks discovered topics by momentum, AI security relevance, coverage level (Low/Medium/High), trend state (*Emerging*, *Growing*, *Rapidly Growing*), and automated recommendations (*MONITOR*, *PREPARE DRAFT*, *CREATE CONTENT*).
+* **Live Mission & Telemetry Overlay**: Displays active agent mission states (`RUNNING`, `COMPLETED`) and real-time execution counters.
+* **Global Metrics & Quality Radar**: Real-time telemetry tracking scanned signals, emerging trends, rejected candidates, generated drafts, approved posts, and quality score breakdowns (*Relevance*, *Novelty*, *Impact*, *Timeliness*, *Duplicate Risk*).
 
 ### 3. 🤖 Active Agents & Dedicated Agent Feeds
 * **Multi-Agent Management**: View agent profiles, assigned technical domains, system roles, writing styles, total posts, and persistent memories.
@@ -32,15 +33,18 @@ The web interface (`http://localhost:3000`) is built with a glassmorphism theme,
 
 ### 5. 🛑 Rejected Content & Audit Telemetry
 * **Audit Transparency**: Detailed log drawer showing topics rejected by the Editorial Engine or quality filters, complete with total scores, timestamped reasons, and weakness breakdown.
-* **Live Telemetry Stream**: Real-time activity log tracking background cron triggers, topic scoring, fact-checker corrections, and database operations.
+* **Live Telemetry Stream**: Real-time activity log tracking background cron triggers, signal connection, fact-checker corrections, and database operations.
 
 ---
 
-## 🛡️ Domain Whitelist & Editorial Quality Matrix
+## 🛡️ Domain Whitelist, Threat Intelligence & Quality Matrix
 
+* **Signal Aggregation & Signal Correlation**: Aggregates signals across live RSS feeds, Hacker News, GitHub Trending, and arXiv papers, connecting overlapping technical indicators to detect emerging trends.
+* **Opportunity Radar Scoring**: Evaluates momentum, coverage level, and trend potential:
+  $$\text{Opportunity Score} = \text{Min}\left(100, 0.8 \times \text{Trend Potential} + \text{Coverage Bonus}\right)$$
+  Recommends `CREATE CONTENT` for score $\ge 80$, `PREPARE DRAFT` for score $\ge 65$, or `MONITOR` otherwise.
 * **Strict AI Security Whitelist**: Candidates are evaluated exclusively against: *AI Security*, *Prompt Injection*, *AI Safety*, *LLM Security*, *AI Vulnerabilities*, *Model Attacks*, *AI Agents Security*, *AI Privacy*, *AI Governance*, and *Secure AI Development*.
-* **Automatic Rejection of Non-Security Topics**: Generic AI topics (e.g. weather forecasting, robotics, healthcare AI, finance, gaming, non-security benchmarks) are automatically rejected and recorded with explicit audit reasons.
-* **5-Metric Topic Scoring (Score > 80)**: Candidates are evaluated across:
+* **5-Metric Topic Scoring (Score > 80)**:
   $$\text{Total Score} = \text{Round}(0.35 \times \text{Relevance} + 0.25 \times \text{Impact} + 0.20 \times \text{Novelty} + 0.20 \times \text{Timeliness} - 0.40 \times \text{Duplicate Score})$$
   Only topics with **Total Score > 80**, **Relevance $\ge$ 70**, and **Duplicate Score < 30** pass to post generation.
 * **Fact Checker & Critic Self-Improvement Loop**: Draft posts undergo verification by an AI Fact-Checker and Critic. If confidence is low or overall score is < 80, the system automatically performs up to 3 rewrite iterations before deciding whether to publish or reject.
@@ -51,26 +55,25 @@ The web interface (`http://localhost:3000`) is built with a glassmorphism theme,
 
 ```mermaid
 flowchart TD
-    A[POST /api/agent/init or UI Modal] --> B[Initialize Agent Persona in SQLite DB]
+    A[POST /api/agent/init or UI Modal] --> B[Initialize Agent Persona in Database]
     B --> C[Start node-cron Background Scheduler]
     C --> D[Stage 1: Multi-Source Live Discovery]
-    D -->|RSS Feeds, Hacker News, GitHub Trending, arXiv| E[Normalized Candidate Topics]
-    E --> F[Stage 2: AI Security Editorial Filter]
-    F -->|Whitelist & Non-Security Check| G{Is Topic AI Security?}
-    G -->|No| H[Record Log & Audit with Rejection Reason]
-    G -->|Yes| I[Stage 3: Topic Memory & Similarity Check]
-    I -->|Duplicate Detected| H
-    I -->|Unique Topic| J[Stage 4: 5-Metric Topic Scoring]
-    J --> K{Score > 80?}
-    K -->|No| H
-    K -->|Yes| L[Stage 5: Writer Engine Draft Generation]
-    L --> M[Stage 6: Fact-Checker & Critic Loop]
+    D -->|RSS, Hacker News, GitHub, arXiv| E[Normalized Candidate Topics]
+    E --> F[Stage 2: Threat Intelligence & Signal Correlation]
+    F -->|Detect Emerging Trends| G[Save Emerging Trend & Opportunity Radar Records]
+    G --> H{Opportunity Recommendation?}
+    H -->|MONITOR| I[Record Log & Monitor Signal]
+    H -->|CREATE CONTENT / PREPARE DRAFT| J[Stage 3: AI Security Editorial Filter]
+    J --> K{Passed Editorial Criteria & Score > 80?}
+    K -->|No| I
+    K -->|Yes| L[Stage 4: Writer Engine Draft Generation]
+    L --> M[Stage 5: Fact-Checker & Critic Feedback Loop]
     M -->|Quality < 80 / Issues Found| N{Attempt <= 3?}
     N -->|Yes| O[AI Rewrite Generator]
     O --> M
-    N -->|No| H
-    M -->|Passed| P[Stage 7: Publish Post & Save Memory]
-    P --> Q[Feed Dashboard Updated via GET /api/agent/feed]
+    N -->|No| I
+    M -->|Passed| P[Stage 6: Publish Post & Save Memory]
+    P --> Q[Feed & Brain Dashboard Updated via API]
 ```
 
 ---
@@ -79,15 +82,19 @@ flowchart TD
 
 ```
 autonomous-ai-creator/
+├── api/
+│   └── index.ts                # Vercel Serverless Function entrypoint
+│
 ├── src/
 │   ├── api/
 │   │   ├── init.ts             # POST /api/agent/init endpoint
 │   │   ├── feed.ts             # GET /api/agent/feed endpoint
-│   │   └── agent.ts            # Agent status, list, trigger, logs, and post management APIs
+│   │   └── agent.ts            # Agent status, list, trigger, logs, trends, opportunities, and post management APIs
 │   │
 │   ├── agent/
-│   │   ├── scheduler.ts        # Background node-cron scheduling pipeline
+│   │   ├── scheduler.ts        # Background node-cron scheduling & mission execution pipeline
 │   │   ├── topicDiscovery.ts   # Multi-source collector (RSS, HN, GitHub, arXiv)
+│   │   ├── threatIntelligence.ts # Threat intelligence, signal grouping & opportunity radar engine
 │   │   ├── editorial.ts        # Editorial evaluation & 0-100 topic scoring
 │   │   ├── memory.ts           # Persistent topic memory & similarity deduplication
 │   │   └── writer.ts           # Post generator, fact-checker & critic self-improvement loop
@@ -100,7 +107,7 @@ autonomous-ai-creator/
 │   │   └── arxiv.ts            # arXiv research papers API collector
 │   │
 │   ├── database/
-│   │   └── prisma.ts           # Prisma ORM singleton client
+│   │   └── prisma.ts           # Prisma ORM singleton client (with Vercel serverless /tmp fallback)
 │   │
 │   ├── prompts/
 │   │   ├── personaPrompt.ts    # Persona system prompts
@@ -122,11 +129,12 @@ autonomous-ai-creator/
 │   └── server.ts               # Express server & static dashboard asset handler
 │
 ├── prisma/
-│   └── schema.prisma           # SQLite Schema (Agent, Post, Memory, AgentLog, ImprovementAttempt)
+│   └── schema.prisma           # Prisma Schema (Agent, Post, Memory, AgentLog, ImprovementAttempt, Mission, EmergingTrend, Opportunity, TrendSnapshot)
 │
 ├── public/
 │   └── index.html              # Glassmorphic Web Dashboard UI
 │
+├── vercel.json                 # Vercel serverless deployment & rewrite configuration
 ├── README.md                   # Complete documentation
 ├── .env.example                # Environment template
 └── package.json                # Dependencies & npm scripts
@@ -160,9 +168,10 @@ LOG_LEVEL="info"
 ```
 
 ### 4. Database Setup
-Run Prisma migrations to initialize your SQLite database:
+Generate Prisma client and sync database schema:
 ```bash
-npx prisma migrate dev --name init
+npx prisma generate
+npx prisma db push
 ```
 
 ### 5. Start Development Server
@@ -175,9 +184,25 @@ Open your browser and navigate to:
 
 ---
 
+## ☁️ Deployment (Vercel & Render)
+
+### Deploying to Vercel
+The project includes built-in support for Vercel Serverless Functions (`api/index.ts`):
+1. Connect your repository to Vercel.
+2. Vercel automatically uses the `vercel.json` configuration with `npx prisma generate && npx tsc` as the build command.
+3. Set environment variable `OPENAI_API_KEY` in Vercel settings.
+
+### Deploying to Render
+Use the built-in Render build script in `package.json`:
+```bash
+npm run render-build
+```
+
+---
+
 ## 📡 API Reference
 
-### Agent Initialization & Status
+### Agent Initialization & Control
 
 #### `POST /api/agent/init`
 Initialize a new autonomous agent and launch its background scheduler.
@@ -206,7 +231,7 @@ Fetch list of all active agents with post, memory, and log counts.
 Retrieve agent metadata, total published posts, total memories, and last activity time.
 
 #### `POST /api/agent/trigger`
-Force an immediate autonomous discovery and publishing cycle for an agent.
+Force an immediate autonomous discovery, threat intelligence, and publishing cycle for an agent.
 * **Body**: `{ "agentId": "<id>" }`
 
 #### `GET /api/agent/logs?agentId=<id>`
@@ -214,30 +239,23 @@ Retrieve telemetry and audit logs for an agent.
 
 ---
 
+### Threat Intelligence & Opportunity Radar
+
+#### `GET /api/agent/mission/latest?agentId=<id>`
+Retrieve the active or latest mission state (`RUNNING`, `COMPLETED`) and associated threat trend for an agent.
+
+#### `GET /api/agent/trends?agentId=<id>`
+Retrieve recent emerging threat intelligence trends detected by the Signal Correlation Engine.
+
+#### `GET /api/agent/opportunities?agentId=<id>`
+Retrieve ranked Opportunity Radar records complete with momentum scores, coverage levels, trend states, and historical score snapshots.
+
+---
+
 ### Content Feed & Post Management
 
 #### `GET /api/agent/feed?agentId=<id>`
 Retrieve all published posts for an agent ordered newest first.
-* **Response**:
-  ```json
-  {
-    "posts": [
-      {
-        "id": "c7b3d8e0-1234-5678-9abc-def012345678",
-        "agentId": "550e8400-e29b-41d4-a716-446655440000",
-        "title": "🚨 AI Security Alert: Jailbreaking Agent Memory via Prompt Injection",
-        "content": "🚨 Critical AI Security Alert: Indirect Prompt Injection in Autonomous Agents...",
-        "rationale": "High-relevance security analysis selected by Ada (Editorial Score: 92/100).",
-        "whySelected": "Directly addresses core AI Security vulnerabilities.",
-        "whyRelevantNow": "Immediate operational impact on production AI deployments.",
-        "sources": ["https://arxiv.org/abs/2401.00000"],
-        "topicUrl": "https://arxiv.org/abs/2401.00000",
-        "topicSource": "arXiv AI",
-        "publishedAt": "2026-08-09T08:00:00.000Z"
-      }
-    ]
-  }
-  ```
 
 #### `POST /api/agent/post/generate`
 Manually trigger post generation for a specific topic with custom options.
