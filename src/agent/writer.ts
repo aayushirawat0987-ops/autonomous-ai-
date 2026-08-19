@@ -1,6 +1,7 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
-import { OpenAIService, countMainContentWords, classifyTopicCategory, cleanPostContent } from '../services/openai';
+import { OpenAIService, countMainContentWords, classifyTopicCategory } from '../services/openai';
+import { validateStructureAndSanitize } from '../utils/sanitizer';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
@@ -49,6 +50,43 @@ export class WriterEngine {
     let finalTopicRelevanceScore = 92;
 
     while (attempt <= MAX_ATTEMPTS) {
+      // 0. Structural Validation & Internal System Text Check
+      const structCheck = validateStructureAndSanitize(postData.content, postData.title);
+      if (!structCheck.valid) {
+        Logger.warn(`Structural validation / internal text check failed: ${structCheck.issues.join(', ')}`, agentId);
+
+        await prisma.improvementAttempt.create({
+          data: {
+            agentId,
+            attemptNumber: attempt,
+            content: postData.content,
+            scores: JSON.stringify({ structuralValidation: 'FAILED' }),
+            weaknesses: JSON.stringify(structCheck.issues),
+            improvementSuggestions: JSON.stringify(['Remove internal system text and duplicate section headings completely. Write clean Markdown.']),
+            finalDecision: 'REJECTED_STRUCTURE',
+          }
+        });
+
+        if (attempt >= MAX_ATTEMPTS) {
+          Logger.error(`Max attempts reached (${MAX_ATTEMPTS}). Structural check failed. Rejecting post.`, undefined, agentId);
+          break;
+        }
+
+        Logger.info(`Rewrite attempt ${attempt + 1} for Structural/Internal Text fixes`, agentId);
+        postData = await this.openaiService.generateRewrite(
+          persona,
+          topic,
+          postData,
+          structCheck.issues,
+          ['Do not include internal system text ("User Manual Request", etc.) or duplicate section headings. Write clean technical content.']
+        );
+        attempt++;
+        continue;
+      }
+
+      postData.content = structCheck.sanitizedContent;
+      postData.title = structCheck.sanitizedTitle;
+
       // 1. Fact Checker Validation
       const factCheckResult = await this.openaiService.factCheckPost(persona, topic, postData);
 
@@ -114,7 +152,7 @@ export class WriterEngine {
           topic,
           postData,
           [`Topic Drift: Post MUST be primarily about "${topic.title}".`],
-          [`Re-ground all paragraphs around "${topic.title}". Do not force default AI security topics.`]
+          [`Re-ground all paragraphs around "${topic.title}". Do not force default security topics.`]
         );
         attempt++;
         continue;
@@ -186,13 +224,14 @@ export class WriterEngine {
       return null;
     }
 
-    const cleanContent = cleanPostContent(postData.content);
+    const structCheckFinal = validateStructureAndSanitize(postData.content, postData.title);
+    const cleanContent = structCheckFinal.sanitizedContent;
     const wordCount = countMainContentWords(cleanContent);
 
     // Save Post to Database
     const basePayload = {
       agentId,
-      title: postData.title,
+      title: structCheckFinal.sanitizedTitle,
       content: cleanContent,
       topicCategory: postData.topicCategory || topicCategory,
       topicRelevanceScore: finalTopicRelevanceScore,
@@ -228,7 +267,7 @@ export class WriterEngine {
       createdPost = await prisma.post.create({
         data: {
           agentId,
-          title: postData.title,
+          title: structCheckFinal.sanitizedTitle,
           content: cleanContent,
           rationale: postData.rationale,
           whySelected: postData.whySelected,
@@ -269,9 +308,9 @@ export class WriterEngine {
 
     const topic: DiscoveredTopic = {
       title: topicTitle,
-      url: `https://autonomous.agent/manual-topic-${Date.now()}`,
-      source: 'User Manual Request',
-      summary: `Manual post generation request for ${topicTitle} (${postType}). ${instructions}`.trim(),
+      url: `https://autonomous.agent/topic-${Date.now()}`,
+      source: 'Technical Topic Request',
+      summary: `Technical overview and analysis of ${topicTitle}. ${instructions}`.trim(),
       publishedAt: new Date().toISOString(),
     };
 
@@ -288,28 +327,35 @@ export class WriterEngine {
 
     let postData = await this.openaiService.generatePost(persona, topic, evaluation, contentAngle);
 
-    // Topic Relevance Check Loop for Manual Post
+    // Topic Relevance & Structural Check Loop for Manual Post
     let attempt = 0;
+    let structCheck = validateStructureAndSanitize(postData.content, postData.title);
     let topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
-    while ((!topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift) && attempt < 2) {
-      Logger.warn(`Manual post drifted from topic "${topicTitle}". Rewriting...`, agentId);
+
+    while ((!structCheck.valid || !topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift) && attempt < 3) {
+      Logger.warn(`Manual post failed validation (StructValid: ${structCheck.valid}, TopicRelScore: ${topicRel.relevanceScore}). Rewriting...`, agentId);
+      const issues = [...structCheck.issues];
+      if (!topicRel.approved || topicRel.topicDrift) {
+        issues.push(`Topic Drift: Post MUST be primarily about "${topicTitle}".`);
+      }
       postData = await this.openaiService.generateRewrite(
         persona,
         topic,
         postData,
-        [`Topic Drift: Post MUST be primarily about "${topicTitle}".`],
-        [`Re-ground all paragraphs around "${topicTitle}". Do not force AI security topics unless requested.`]
+        issues,
+        [`Re-ground all paragraphs around "${topicTitle}". Remove internal request text and duplicate headings.`]
       );
       attempt++;
+      structCheck = validateStructureAndSanitize(postData.content, postData.title);
       topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
     }
 
-    const cleanContent = cleanPostContent(postData.content);
+    const cleanContent = structCheck.sanitizedContent;
     const wordCount = countMainContentWords(cleanContent);
 
     const basePostPayload: any = {
       agentId,
-      title: postData.title || topicTitle,
+      title: structCheck.sanitizedTitle || topicTitle,
       content: cleanContent,
       topicCategory,
       topicRelevanceScore: topicRel.relevanceScore,
@@ -330,7 +376,7 @@ export class WriterEngine {
       whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
       sources: JSON.stringify(postData.sources || [topic.url]),
       topicUrl: topic.url,
-      topicSource: 'Manual Request',
+      topicSource: 'Technical Request',
       publishedAt: new Date(),
       platform: platform || 'LinkedIn / X',
       status: 'Published',
@@ -345,14 +391,14 @@ export class WriterEngine {
       createdPost = await prisma.post.create({
         data: {
           agentId,
-          title: postData.title || topicTitle,
+          title: structCheck.sanitizedTitle || topicTitle,
           content: cleanContent,
           rationale: postData.rationale || `Manually requested post for ${topicTitle}`,
           whySelected: postData.whySelected || `User requested ${postType} post for ${topicTitle}`,
           whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
           sources: JSON.stringify(postData.sources || [topic.url]),
           topicUrl: topic.url,
-          topicSource: 'Manual Request',
+          topicSource: 'Technical Request',
           publishedAt: new Date(),
         },
       });

@@ -7,7 +7,7 @@ export function getEditorialEvaluationPrompt(persona: Persona, topic: Discovered
   return `${personaContext}
 
 EDITORIAL SCORING TASK:
-Evaluate the following candidate topic on a scale of 0 to 100 for each metric.
+Evaluate the following candidate topic on a scale of 0 to 100 for overall technical relevance, novelty, impact, timeliness, and duplicate status.
 
 Topic Details:
 - Title: ${topic.title}
@@ -19,24 +19,14 @@ Topic Details:
 Recent Memory (Topics already covered):
 ${memorySummaries.length > 0 ? memorySummaries.map(s => `- ${s}`).join('\n') : 'None yet.'}
 
-PRIMARY DOMAIN FOCUS MANDATE:
-- Required Focus Domain: ${persona.domain}
+SCORING DIRECTIVES:
+1. Technical Relevance (relevance): How meaningful is this topic for engineers, developers, researchers, or technical leaders? (0-100)
+2. Novelty (novelty): Is this a fresh technical disclosure, research finding, release, tool, or breakthrough? (0-100)
+3. Impact (impact): Does this topic have practical technical value or architectural consequences? (0-100)
+4. Timeliness (timeliness): Is this fresh and active? (0-100)
+5. Duplicate Score (duplicateScore): 0 = unique, 100 = duplicate (0-100). REJECT if duplicateScore >= 30.
 
-CRITICAL REJECTION DIRECTIVES:
-1. REJECT (relevance < 50) if the topic is NOT directly focused on ${persona.domain} or its core technical security vectors.
-   - Example off-topic items to REJECT: general non-domain software updates, generic non-security AI news, robotics, weather, healthcare, finance, gaming, or generic benchmarks.
-2. REJECT if duplicateScore >= 30 (already covered in memory).
-3. Aggregate totalScore MUST BE STRICTLY GREATER THAN 80 to pass (totalScore > 80).
-
-SCORING METRICS (0 to 100):
-- relevance: How directly does this focus strictly on ${persona.domain}? (0-100)
-- novelty: Is this a new finding, vulnerability, paper, tool, or disclosure in ${persona.domain}? (0-100)
-- impact: Does this have major technical, security, or operational consequences? (0-100)
-- timeliness: Is this fresh and active? (0-100)
-- duplicateScore: 0 = unique, 100 = duplicate (0-100)
-
-Total Score Calculation:
-totalScore = Math.round((relevance * 0.35) + (impact * 0.25) + (novelty * 0.20) + (timeliness * 0.20) - (duplicateScore * 0.4))
+Aggregate totalScore MUST BE STRICTLY GREATER THAN 80 to pass (totalScore > 80).
 
 Output MUST be strictly valid JSON matching this schema:
 {
