@@ -654,10 +654,10 @@ Return strictly raw JSON matching:
       categoryTakeaway = `Advancing technical capabilities in ${topicCategory} requires continuous performance benchmarking, evidence-based engineering practices, and structured system architecture.`;
     }
 
-    const content = `As technology systems evolve across ${categoryContext}, recent disclosures regarding ${rawTitle} present important insights for engineering teams and researchers.
+    const content = `Understanding ${rawTitle} requires examining its core architecture and implementation.
 
 WHAT IT IS
-Recent technical analysis published by ${topic.source} details significant progress regarding ${rawTitle}. Specifically, ${topic.summary.slice(0, 180)}...
+Technical analysis details significant progress regarding ${rawTitle}. Specifically, ${topic.summary.slice(0, 180)}...
 
 TECHNICAL EXPLANATION
 ${categoryExplanation}

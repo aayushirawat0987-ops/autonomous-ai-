@@ -62,6 +62,31 @@ const FORBIDDEN_INTERNAL_TEXT = [
   'as requested by prompt'
 ];
 
+const FORBIDDEN_GENERIC_TEMPLATES = [
+  'recent disclosures regarding',
+  'recent empirical findings regarding',
+  'technical topic request',
+  'technical overview and analysis of',
+  'recent technical analysis published by',
+  'as technology systems evolve across',
+  'modern compiler optimizations',
+  'continuous application maintainability',
+  'optimized execution pathways'
+];
+
+export function detectGenericFiller(content: string): string[] {
+  const issues: string[] = [];
+  const lower = (content || '').toLowerCase();
+
+  for (const template of FORBIDDEN_GENERIC_TEMPLATES) {
+    if (lower.includes(template)) {
+      issues.push(`Generic template phrase detected: "${template}". Content must be 100% topic-specific.`);
+    }
+  }
+
+  return issues;
+}
+
 export interface StructureValidationResult {
   valid: boolean;
   sanitizedContent: string;
@@ -108,7 +133,13 @@ export function validateStructureAndSanitize(content: string, title: string): St
     seenParas.add(pClean);
   }
 
-  // 5. Clean up any remaining prompt leakage sentences
+  // 5. Generic Template Filler Check
+  const genericIssues = detectGenericFiller(sanitizedContent);
+  if (genericIssues.length > 0) {
+    issues.push(...genericIssues);
+  }
+
+  // 6. Clean up any remaining prompt leakage sentences
   sanitizedContent = sanitizedContent
     .replace(/^.*(?:User Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt).*\n?/gmi, '')
     .trim();
