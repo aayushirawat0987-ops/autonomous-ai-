@@ -15,14 +15,14 @@ export function countMainContentWords(text: string): number {
   // Remove hashtags
   cleaned = cleaned.replace(/#\w+/g, '');
   // Remove section header labels if present
-  cleaned = cleaned.replace(/^(HOOK|WHAT HAPPENED\??|WHAT IS IT\??|TECHNICAL BREAKDOWN|TECHNICAL EXPLANATION|WHY IT MATTERS|REAL-WORLD APPLICATION|KEY TAKEAWAY|CONCLUSION|SOURCE|HASHTAGS):?/gmi, '');
+  cleaned = cleaned.replace(/^(HOOK|WHAT HAPPENED\??|WHAT IS IT\??|MISCONCEPTION|WHAT IS ACTUALLY TRUE|TECHNICAL BREAKDOWN|TECHNICAL EXPLANATION|WHY IT MATTERS|REAL-WORLD APPLICATION|KEY TAKEAWAY|CONCLUSION|SOURCE|HASHTAGS):?/gmi, '');
   return cleaned.trim().split(/\s+/).filter(w => w.length > 0).length;
 }
 
 export function cleanPostContent(content: string): string {
   if (!content) return '';
   return content
-    .replace(/^.*(?:User Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt).*\n?/gmi, '')
+    .replace(/^.*(?:User Manual Request|Technical Topic Request|Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt|technical overview and analysis of|recent technical analysis published by).*\n?/gmi, '')
     .trim();
 }
 
@@ -607,57 +607,46 @@ Return strictly raw JSON matching:
 
     const topicCategory = classifyTopicCategory(rawTitle, topic.summary);
 
-    let categoryContext = '';
     let categoryExplanation = '';
     let categoryImpact = '';
     let categoryTakeaway = '';
 
-    if (topicCategory === 'Blockchain & Distributed Systems') {
-      categoryContext = 'distributed ledger technology, smart contract ecosystems, and decentralized consensus mechanisms';
-      categoryExplanation = `At its core, ${rawTitle} utilizes cryptographic hashing and peer-to-peer network nodes to maintain an immutable, append-only ledger of transactions. Rather than relying on a centralized financial or data authority, participating nodes execute automated consensus algorithms—such as Proof-of-Stake or Byzantine Fault Tolerance—to independently validate every block before committing it to the global state tree. Smart contracts deployed on these networks execute code deterministically across distributed virtual machines.`;
-      categoryImpact = 'For enterprise architects and financial engineers, blockchain technology enables transparent audit trails, automated multi-party settlement, and tamper-resistant data sharing across untrusted enterprise boundaries.';
-      categoryTakeaway = 'Decentralized blockchain systems substitute central administrative trust with cryptographic proof, distributed consensus validation, and deterministic smart contract execution.';
-    } else if (topicCategory === 'High-Performance Computing') {
-      categoryContext = 'exascale supercomputing, parallel interconnects, and high-performance computational workloads';
-      categoryExplanation = `The architecture behind ${rawTitle} optimizes node-to-node memory bandwidth and GPU cluster utilization across massive parallel arrays. Supercomputing systems divide complex mathematical problems into millions of concurrent sub-tasks executed simultaneously across thousands of processing cores. By minimizing Message Passing Interface (MPI) latency and maximizing FLOPS per watt, high-performance clusters achieve unprecedented throughput for massive data models.`;
-      categoryImpact = 'For research institutions and enterprise HPC engineering teams, these hardware and software advancements dramatically reduce execution times for global climate modeling, complex molecular dynamics, and large-scale physics simulations.';
-      categoryTakeaway = 'Modern supercomputing performance relies on balanced interconnect bandwidth, energy-efficient heterogeneous hardware clusters, and highly optimized parallel execution pipelines.';
+    if (/python/i.test(rawTitle)) {
+      categoryExplanation = `Python was created by Dutch programmer Guido van Rossum in the late 1980s as a successor to the ABC programming language, with its first public release appearing in February 1991. Van Rossum designed Python with a core philosophy emphasizing code readability, minimalist syntax, and indentation-based block structuring. A major milestone occurred with Python 2.0 in 2000 and Python 3.0 in 2008, which introduced backwards-incompatible cleanup of Unicode handling and core language syntax.`;
+      categoryImpact = `Understanding Python's evolution clarifies why its readable syntax and rich ecosystem of open-source libraries positioned it as the dominant language for modern data science, web backend engineering, and machine learning research.`;
+      categoryTakeaway = `Python's success stems from its foundational commitment to developer readability, clean syntax design, and community-driven evolution.`;
+    } else if (/blockchain/i.test(rawTitle)) {
+      categoryExplanation = `Blockchain technology operates as an append-only distributed ledger maintained across a peer-to-peer network of independent nodes. Transactions are grouped into cryptographic blocks, hashed, and linked sequentially using SHA-256 or similar cryptographic functions. Decentralized consensus mechanisms, such as Proof-of-Work or Proof-of-Stake, ensure that all participating nodes agree on the global state tree without requiring a central authority. Smart contracts execute self-enforcing code deterministically across distributed virtual machine nodes.`;
+      categoryImpact = `For software architects and financial systems engineers, blockchain delivers tamper-resistant audit trails, automated multi-party settlement, and secure decentralized data verification across untrusted organizational boundaries.`;
+      categoryTakeaway = `Decentralized blockchain networks replace central administrative trust with cryptographic hashing, distributed consensus algorithms, and deterministic smart contract execution.`;
+    } else if (/supercomput|hpc/i.test(rawTitle)) {
+      categoryExplanation = `High-Performance Computing (HPC) and supercomputers partition massive mathematical workloads across thousands of compute nodes linked by ultra-low-latency high-bandwidth interconnects like InfiniBand. Utilizing heterogeneous hardware clusters combining high-density CPUs and GPU accelerators, supercomputers execute millions of concurrent parallel processes via Message Passing Interface (MPI). Performance is benchmarked in FLOPS (Floating-Point Operations Per Second), reaching exascale thresholds.`;
+      categoryImpact = `Supercomputing breakthroughs enable scientific research teams to execute high-fidelity climate simulations, complex molecular dynamics, and astrophysics models that are computationally impossible on standard enterprise server infrastructure.`;
+      categoryTakeaway = `Exascale supercomputing performance relies on balanced interconnect memory bandwidth, high-density heterogeneous acceleration, and optimized parallel execution algorithms.`;
     } else if (topicCategory === 'Quantum Computing') {
-      categoryContext = 'quantum hardware architectures, qubit coherence, and fault-tolerant quantum error correction';
       categoryExplanation = `The engineering underlying ${rawTitle} addresses core qubit fidelity and logical gate operations. Unlike classical binary bits representing zeros or ones, quantum processors leverage superposition and entanglement to evaluate complex multidimensional state spaces simultaneously. Implementing fault-tolerant quantum error correction and optimized pulse sequences mitigates decoherence and environmental noise across multi-qubit physical arrays.`;
       categoryImpact = 'Advancements in quantum circuit stability accelerate practical breakthroughs in complex quantum chemistry, advanced materials discovery, combinatorial optimization algorithms, and modern cryptographic resilience.';
       categoryTakeaway = 'Building scalable quantum computing systems requires continuous advancements in physical qubit coherence, low-noise gate control, and fault-tolerant quantum error mitigation.';
     } else if (topicCategory === 'Robotics') {
-      categoryContext = 'robotic perception algorithms, spatial AI, and closed-loop hardware control systems';
       categoryExplanation = `The engineering implementation of ${rawTitle} integrates real-time sensor fusion—combining LiDAR arrays, depth cameras, and inertial measurement units—with low-latency motor control loops. Spatial perception models transform raw sensor streams into dynamic environment maps, allowing onboard kinematics engines to compute precise actuator movements and collision-free trajectories in unpredictable physical spaces.`;
       categoryImpact = 'In industrial automation, logistics facilities, and field robotics, reducing spatial perception latency directly improves operational safety, environmental awareness, and complex physical task execution speed.';
       categoryTakeaway = 'Reliable robotic automation requires tight, low-latency integration between spatial perception algorithms, real-time sensor telemetry, and hardware motor control.';
     } else if (topicCategory === 'Cloud Computing') {
-      categoryContext = 'distributed cloud infrastructure, microservice orchestration, and containerized deployment pipelines';
       categoryExplanation = `The cloud architecture supporting ${rawTitle} leverages containerized microservices and dynamic infrastructure provisioning engines. By isolating application components into lightweight containers and managing state through automated orchestrators like Kubernetes, cloud platforms ensure fault tolerance, declarative resource scaling, and zero-downtime rolling updates across global data center regions.`;
       categoryImpact = 'For DevOps engineers and enterprise cloud architects, modern cloud design patterns significantly reduce infrastructure overhead, optimize resource usage, and improve continuous deployment velocity.';
       categoryTakeaway = 'Building resilient cloud platforms requires modular service isolation, automated health monitoring, and declarative infrastructure orchestration.';
-    } else if (topicCategory === 'Software Development') {
-      categoryContext = 'software architecture, programming language runtimes, memory management, and code optimization';
-      categoryExplanation = `The technical implementation details of ${rawTitle} showcase refined memory management, type safety, and idiomatic software design patterns. By streamlining execution pathways, eliminating unnecessary object allocations, and leveraging modern compiler optimizations, developers reduce runtime latency and prevent subtle concurrency bugs across application codebases.`;
-      categoryImpact = 'For engineering teams, adhering to modern software development standards accelerates automated build pipelines, decreases technical debt, and enhances continuous application maintainability.';
-      categoryTakeaway = 'Sustained software quality depends on clean architectural boundaries, robust error handling, and continuous automated performance profiling.';
-    } else if (topicCategory === 'Databases') {
-      categoryContext = 'database storage engines, index optimization, query execution plans, and transaction consistency';
-      categoryExplanation = `Analyzing ${rawTitle} reveals key optimizations in database storage layouts and concurrency control. Modern database management systems utilize Write-Ahead Logging (WAL), B-tree or LSM-tree indexing, and multi-version concurrency control (MVCC) to deliver ACID compliance while executing high-throughput concurrent read and write queries under strict latency bounds.`;
-      categoryImpact = 'For database administrators and backend engineers, proper index design and query optimization reduce disk I/O bottlenecks and sustain reliable database performance under high load.';
-      categoryTakeaway = 'High-performance database management relies on efficient indexing strategies, optimized query execution plans, and strict data consistency guarantees.';
     } else {
-      categoryContext = `${topicCategory.toLowerCase()} systems, technical architecture, and practical engineering implementations`;
-      categoryExplanation = `Analyzing ${rawTitle} demonstrates key advancements in ${topicCategory.toLowerCase()} system design. Technical disclosures published by ${topic.source} indicate that optimizing execution pathways and resource management provides measurable performance enhancements, improved operational stability, and streamlined workflow execution across complex technical workloads.`;
+      categoryExplanation = `Analyzing ${rawTitle} demonstrates key technical advancements in ${topicCategory.toLowerCase()} design. Engineering insights indicate that structured execution pathways and optimized resource allocation provide measurable performance enhancements and reliable system stability across complex technical workloads.`;
       categoryImpact = `For technical teams working in ${topicCategory}, adopting these modern architectural patterns enhances operational efficiency, system reliability, and long-term infrastructure scalability.`;
       categoryTakeaway = `Advancing technical capabilities in ${topicCategory} requires continuous performance benchmarking, evidence-based engineering practices, and structured system architecture.`;
     }
 
-    const content = `Understanding ${rawTitle} requires examining its core architecture and implementation.
+    const cleanSource = (topic.source && !/request|manual/i.test(topic.source)) ? topic.source : 'Technical Reference';
 
-WHAT IT IS
-Technical analysis details significant progress regarding ${rawTitle}. Specifically, ${topic.summary.slice(0, 180)}...
+    const content = `Understanding ${rawTitle} requires examining its core architecture and real-world technical implementation.
+
+OVERVIEW
+Technical analysis examines core mechanics and operational considerations regarding ${rawTitle}.
 
 TECHNICAL EXPLANATION
 ${categoryExplanation}
