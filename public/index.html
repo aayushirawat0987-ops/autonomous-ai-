@@ -1594,10 +1594,104 @@
         flex-wrap: wrap;
       }
     }
+
+    /* Authentication Overlay */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    
+    .auth-overlay.hidden-auth {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    
+    .auth-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35), 0 0 40px var(--primary-glow);
+      transform: translateY(0);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: authSlideUp 0.6s ease-out;
+    }
+
+    .auth-overlay.hidden-auth .auth-card {
+      transform: translateY(20px) scale(0.95);
+    }
+    
+    @keyframes authSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .auth-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-align: center;
+      margin-bottom: 0.25rem;
+    }
+    
+    .auth-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .auth-input {
+      background: var(--bg-surface-light);
+      border: 1px solid var(--border-color);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+    }
+    
+    .auth-input:focus {
+      background: #FFFFFF;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow), inset 0 2px 4px rgba(0,0,0,0.02);
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- LOGIN OVERLAY -->
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-logo" style="margin: 0 auto 1.25rem auto; width: 56px; height: 56px; font-size: 1.75rem;">A</div>
+        <h2 class="auth-title">Welcome Back</h2>
+        <p class="auth-subtitle">Sign in to Autonomous AI Creator</p>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Access Token</label>
+          <input type="password" class="form-input auth-input" id="authPasscode" placeholder="Enter your secure token..." required>
+        </div>
+        <button type="submit" class="btn btn-primary w-full" style="padding: 0.85rem; font-size: 1rem; margin-top: 0.5rem;">
+          Authenticate Sequence
+        </button>
+      </form>
+      <div class="auth-footer text-xs text-muted" style="margin-top: 1.75rem; text-align: center;">
+        Secure Intelligence Platform &copy; 2026
+      </div>
+    </div>
+  </div>
 
   <div class="app-layout">
     <!-- SIDEBAR OVERLAY -->
@@ -3300,6 +3394,27 @@
         }
       }
     }, 2500);
+
+    // Authentication Logic
+    function handleLogin(e) {
+      e.preventDefault();
+      const token = document.getElementById('authPasscode').value;
+      if (token.trim() !== '') {
+        sessionStorage.setItem('auth_token', token);
+        const overlay = document.getElementById('authOverlay');
+        overlay.classList.add('hidden-auth');
+        setTimeout(() => overlay.style.display = 'none', 500);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const storedToken = sessionStorage.getItem('auth_token');
+      if (storedToken) {
+        const overlay = document.getElementById('authOverlay');
+        overlay.classList.add('hidden-auth');
+        overlay.style.display = 'none';
+      }
+    });
 
   </script>
 </body>
