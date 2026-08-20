@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up - Autonomous AI Creator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+      --primary-glow: rgba(37, 99, 235, 0.15);
+      --secondary: #0891B2;
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --bg-surface: #FFFFFF;
+      --bg-surface-light: #F1F5F9;
+      --border-color: #E2E8F0;
+      --radius-md: 12px;
+      --radius-xl: 24px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Outfit', 'Inter', sans-serif;
+      background-color: #F8FAFC;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-image: 
+        radial-gradient(circle at 12% 18%, rgba(59, 130, 246, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 88% 12%, rgba(139, 92, 246, 0.07) 0%, transparent 45%);
+    }
+    
+    .auth-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius-xl);
+      padding: 3rem;
+      width: 90%;
+      max-width: 440px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.1), 0 0 40px var(--primary-glow);
+      animation: authSlideUp 0.6s ease-out;
+    }
+    
+    @keyframes authSlideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .brand-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.75rem;
+      color: white;
+      box-shadow: 0 4px 12px var(--primary-glow);
+      margin: 0 auto 1.25rem auto;
+    }
+    
+    .auth-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+      text-align: center;
+      margin-bottom: 0.25rem;
+    }
+    
+    .auth-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      background: var(--bg-surface-light);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      background: #FFFFFF;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow), inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.85rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      margin-top: 0.5rem;
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px var(--primary-glow);
+    }
+    
+    .auth-footer {
+      margin-top: 1.75rem;
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    
+    .auth-link {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .auth-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-card">
+    <div class="brand-logo">A</div>
+    <h2 class="auth-title">Create Account</h2>
+    <p class="auth-subtitle">Join the Autonomous Intelligence Platform</p>
+    
+    <form id="signupForm" onsubmit="handleSignup(event)">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" id="authName" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="authEmail" placeholder="name@company.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="authPassword" placeholder="Create a password" required>
+      </div>
+      <button type="submit" class="btn-primary">
+        Create Account
+      </button>
+    </form>
+    
+    <div class="auth-footer">
+      Already have an account? <a href="login.html" class="auth-link">Log in</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('auth_token')) {
+        window.location.href = 'index.html';
+      }
+    });
+
+    function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('authName').value;
+      const email = document.getElementById('authEmail').value;
+      const pass = document.getElementById('authPassword').value;
+      
+      if (name && email && pass) {
+        // Mock authentication
+        sessionStorage.setItem('auth_token', 'mock_token_' + Date.now());
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>
