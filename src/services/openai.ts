@@ -601,14 +601,25 @@ Return strictly raw JSON matching:
     evaluation: EditorialEvaluation,
     contentAngle: string = 'Technical Explanation'
   ): GeneratedPost {
-    const { coreTechnology, contentIntent, contentType, targetAudience } = classifyUserRequest(topic.title);
+    const classification = classifyUserRequest(topic.title);
+    const { coreTechnology, contentIntent, contentType, targetAudience, subjectX, targetY, isRelationshipQuery } = classification;
     const topicCategory = classifyTopicCategory(coreTechnology, topic.summary);
 
     let categoryExplanation = '';
     let categoryImpact = '';
     let categoryTakeaway = '';
 
-    if (/blockchain/i.test(coreTechnology) || topicCategory === 'Blockchain & Distributed Systems') {
+    if (isRelationshipQuery && subjectX && targetY) {
+      if (/python/i.test(subjectX) && /blockchain/i.test(targetY)) {
+        categoryExplanation = `In blockchain engineering, Python serves as an application-level interface and scripting environment rather than the underlying consensus protocol engine. Developers utilize specialized Python libraries such as Web3.py to establish JSON-RPC connections with Ethereum nodes, construct raw transaction payloads, encode Application Binary Interface (ABI) parameters, and sign transactions offline using cryptographic key pairs. Python frameworks like Brownie and Ape Worx provide test harnesses for automated smart contract unit testing, deployment scripting, and gas optimization analysis. Additionally, Python data pipelines power off-chain indexing services and blockchain analytics dashboards.`;
+        categoryImpact = `Using Python for blockchain integration accelerates developer prototyping, automated node interaction, and smart-contract test coverage. However, performance-critical core client infrastructure (node consensus, block propagation, state trie management) is typically implemented in compiled systems languages like Go or Rust due to execution throughput and memory control requirements.`;
+        categoryTakeaway = `Python provides a high-productivity interface for Web3 RPC client interactions, smart contract deployment automation, and blockchain data analysis while relying on compiled node clients for underlying network consensus.`;
+      } else {
+        categoryExplanation = `${subjectX} serves as a specialized programming language and toolset applied within ${targetY} development environments. Technical integrations leverage ${subjectX} APIs and client libraries to interact with ${targetY} infrastructure, automate testing, handle application state, and manage data pipelines. Developers evaluate structural performance trade-offs, network RPC latency, and integration boundaries.`;
+        categoryImpact = `Integrating ${subjectX} with ${targetY} enables development teams to build modular backend services, automate deployment workflows, and establish robust test coverage without modifying low-level protocol engines.`;
+        categoryTakeaway = `Applying ${subjectX} in ${targetY} balances developer productivity and application-level integration with the performance requirements of underlying domain protocols.`;
+      }
+    } else if (/blockchain/i.test(coreTechnology) || topicCategory === 'Blockchain & Distributed Systems') {
       categoryExplanation = `Blockchain operates as a cryptographic append-only distributed ledger maintained across a peer-to-peer network of independent nodes. Transactions are structured into blocks, cryptographically hashed using SHA-256 or Keccak, and linked sequentially to construct an immutable chain. Distributed consensus protocols—such as Proof-of-Work or Proof-of-Stake—ensure that all network participants agree on global state state transitions without reliance on a centralized intermediary authority. Deterministic smart contracts execute code on distributed virtual machines, enabling automated verification. However, trade-offs include transaction latency, block storage growth, and energy or staking governance complexity.`;
       categoryImpact = `For enterprise architects and financial engineers, blockchain delivers tamper-evident transaction logs, automated multi-party reconciliation, and verifiable data provenance. However, suitability must be benchmarked against conventional relational databases, which offer far higher transaction throughput and lower operation costs when multi-party decentralization is unnecessary.`;
       categoryTakeaway = `Decentralized blockchain architectures trade single-node transaction throughput for tamper-evident data verification, cryptographic consensus, and automated smart-contract execution across untrusted network participants.`;

@@ -61,7 +61,8 @@ TARGETED REWRITE RULES:
 4. BUSINESS IMPACT / ADVANTAGES: When intent is advantages/benefits/business value, discuss real benefits AND limitations (e.g. for Blockchain: shared records, auditability, smart contracts vs scalability, transaction costs, governance).
 5. CASE STUDY / CONTENT TYPE RULE: If Content Type is "Case Study", article MUST contain actual case-study analysis of a real source/company. DO NOT use generic introductory filler ("recent disclosures regarding...", "Recent technical analysis published by..."). The opening MUST immediately explain the topic directly. NEVER use placeholders ("Technical Topic Request", "Technical Request", "[topic]", "[source]", "[company]").
 6. REPETITIVE / CANNED CONCLUSION: Replace generic conclusions ("stay vigilant", "prioritize security") with a topic-specific concluding insight. Compare sections to eliminate duplicate ideas.
-7. NO INTERNAL SYSTEM TEXT: Remove any "User Manual Request", "Manual post generation request", "The user asked...", or developer metadata.
+7. SUBTOPIC / USE OF X IN Y: When query is "Use of X in Y" (e.g. Python in Blockchain), DO NOT treat entire phrase as technology name. Distinguish between programming language X (Web3.py, RPC APIs, testing) and protocol Y (consensus, block hashing).
+8. NO INTERNAL SYSTEM TEXT: Remove any "User Manual Request", "Manual post generation request", "The user asked...", or developer metadata.
 
 STRICT WORD COUNT INSTRUCTION:
 ${lengthGuidance}

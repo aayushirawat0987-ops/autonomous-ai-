@@ -22,42 +22,68 @@ export function classifyUserRequest(rawInput: string): RequestClassification {
   let contentType = 'Technical Article';
   let audience = 'Engineering & Technology Professionals';
 
+  let subjectX: string | undefined;
+  let targetY: string | undefined;
+  let isRelationshipQuery = false;
+
   const lower = clean.toLowerCase();
 
-  // 1. Identify Intent & Content Type
-  if (/\b(?:advantages?|benefits?|business impact|business value|why use)\b/i.test(lower)) {
-    intent = 'Business Impact / Advantages';
-    contentType = 'Technical Article';
-    audience = 'Engineering / Business / Technology Professionals';
-    coreTech = clean
-      .replace(/^(?:advantages?|benefits?|business impact|business value|why use)\s+(?:of|for|in)?\s*/gi, '')
-      .replace(/\s+(?:advantages?|benefits?|business impact|business value)\b/gi, '')
-      .trim();
-  } else if (/\b(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\b/i.test(lower)) {
-    intent = 'Security / Defensive Recommendations';
-    contentType = 'Technical Article';
-    audience = 'Engineering / Security Professionals';
-    coreTech = clean
-      .replace(/\s*(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\s*/gi, '')
-      .trim();
-  } else if (/\bcase\s*study\b/i.test(lower)) {
-    intent = 'Case Study Analysis';
-    contentType = 'Case Study';
-    audience = 'Engineering & Research Professionals';
-    coreTech = clean
-      .replace(/\s*(?:case\s*study|case\s*studies)\s*/gi, '')
-      .replace(/^(?:case\s*study|case\s*studies)\s+(?:on|of|for)\s*/gi, '')
-      .trim();
-  } else if (/\bvulnerability\b/i.test(lower)) {
-    intent = 'Vulnerability Breakdown';
-    contentType = 'Vulnerability Alert';
-    audience = 'Security & Systems Engineers';
-    coreTech = clean.replace(/\s*vulnerability(?:\s*alert)?\s*/gi, '').trim();
-  } else if (/\bmisconception/i.test(lower)) {
-    intent = 'Common Misconceptions';
-    contentType = 'Technical Article';
-    audience = 'Developers & Systems Architects';
-    coreTech = clean.replace(/\s*(?:common\s*)?misconception(?:s)?\s*/gi, '').trim();
+  // 0. Check Relationship Pattern ("USE OF X IN Y", "ROLE OF X IN Y", "APPLICATIONS OF X IN Y", "HOW X IS USED IN Y", "X FOR Y DEVELOPMENT", "X IN Y")
+  const relMatch = clean.match(/^(?:use\s+of|role\s+of|applications?\s+of|how\s+)?(.+?)\s+(?:is\s+used\s+in|in|for)\s+(.+?)(?:\s+development)?$/i);
+  if (relMatch && !/\b(?:advantages?|benefits?|business impact|vulnerability|case study|misconception)\b/i.test(clean)) {
+    let rawX = relMatch[1].trim();
+    let rawY = relMatch[2].trim();
+
+    rawX = rawX.replace(/\bblock\s+chain\b/gi, 'Blockchain').replace(/\bllms?\b/gi, 'Large Language Models (LLMs)');
+    rawY = rawY.replace(/\bblock\s+chain\b/gi, 'Blockchain').replace(/\bllms?\b/gi, 'Large Language Models (LLMs)');
+
+    if (rawX && rawY && rawX.toLowerCase() !== rawY.toLowerCase()) {
+      subjectX = rawX.replace(/\b\w/g, c => c.toUpperCase());
+      targetY = rawY.replace(/\b\w/g, c => c.toUpperCase());
+      isRelationshipQuery = true;
+      coreTech = subjectX; // Core technology is X (e.g. Python)
+      intent = `Use and Integration of ${subjectX} in ${targetY} Development`;
+      contentType = 'Technical Article';
+      audience = 'Software Engineers & Application Architects';
+    }
+  }
+
+  // 1. Identify Intent & Content Type (if not already relationship query)
+  if (!isRelationshipQuery) {
+    if (/\b(?:advantages?|benefits?|business impact|business value|why use)\b/i.test(lower)) {
+      intent = 'Business Impact / Advantages';
+      contentType = 'Technical Article';
+      audience = 'Engineering / Business / Technology Professionals';
+      coreTech = clean
+        .replace(/^(?:advantages?|benefits?|business impact|business value|why use)\s+(?:of|for|in)?\s*/gi, '')
+        .replace(/\s+(?:advantages?|benefits?|business impact|business value)\b/gi, '')
+        .trim();
+    } else if (/\b(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\b/i.test(lower)) {
+      intent = 'Security / Defensive Recommendations';
+      contentType = 'Technical Article';
+      audience = 'Engineering / Security Professionals';
+      coreTech = clean
+        .replace(/\s*(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\s*/gi, '')
+        .trim();
+    } else if (/\bcase\s*study\b/i.test(lower)) {
+      intent = 'Case Study Analysis';
+      contentType = 'Case Study';
+      audience = 'Engineering & Research Professionals';
+      coreTech = clean
+        .replace(/\s*(?:case\s*study|case\s*studies)\s*/gi, '')
+        .replace(/^(?:case\s*study|case\s*studies)\s+(?:on|of|for)\s*/gi, '')
+        .trim();
+    } else if (/\bvulnerability\b/i.test(lower)) {
+      intent = 'Vulnerability Breakdown';
+      contentType = 'Vulnerability Alert';
+      audience = 'Security & Systems Engineers';
+      coreTech = clean.replace(/\s*vulnerability(?:\s*alert)?\s*/gi, '').trim();
+    } else if (/\bmisconception/i.test(lower)) {
+      intent = 'Common Misconceptions';
+      contentType = 'Technical Article';
+      audience = 'Developers & Systems Architects';
+      coreTech = clean.replace(/\s*(?:common\s*)?misconception(?:s)?\s*/gi, '').trim();
+    }
   }
 
   // Fallback coreTech if regex stripped everything
@@ -83,6 +109,9 @@ export function classifyUserRequest(rawInput: string): RequestClassification {
     contentIntent: intent,
     contentType,
     targetAudience: audience,
+    subjectX,
+    targetY,
+    isRelationshipQuery,
   };
 }
 
@@ -225,6 +254,11 @@ export function detectGenericFiller(content: string): string[] {
   // Check if raw user search phrase is incorrectly used as technology name (e.g., "Analyzing advantage of block chain...")
   if (/analyzing\s+(?:advantage|advantages|benefits?|why use|defensive recommendations)/i.test(lower)) {
     issues.push(`User search phrase was incorrectly used as technology name (e.g. "Analyzing advantage of..."). Core technology name must be used cleanly.`);
+  }
+
+  // Check if raw relationship query phrase is incorrectly used as technology name (e.g. "Use of Python in Blockchain utilizes...")
+  if (/(?:use|role|applications?)\s+of\s+.+?\s+in\s+.+?\s+(?:utilizes|demonstrates|operates|provides)/i.test(lower)) {
+    issues.push(`Relationship query phrase was incorrectly used as technology name (e.g. "Use of X in Y utilizes..."). Explain X and Y separately.`);
   }
 
   return issues;

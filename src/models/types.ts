@@ -35,6 +35,9 @@ export interface RequestClassification {
   contentIntent: string;
   contentType: string;
   targetAudience: string;
+  subjectX?: string;
+  targetY?: string;
+  isRelationshipQuery?: boolean;
 }
 
 export interface TopicProfile {

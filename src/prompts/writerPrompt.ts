@@ -79,6 +79,24 @@ BUSINESS IMPACT / ADVANTAGES RULE:
   - Limitations: scalability, transaction costs, governance, integration complexity, privacy, regulatory requirements, suitability compared with conventional databases.
   - Do NOT claim that blockchain is automatically better than a centralized database.
 
+SUBTOPIC / "USE OF X IN Y" RULE (CRITICAL MANDATE):
+- When the query is of the form "USE OF X IN Y", "ROLE OF X IN Y", "APPLICATIONS OF X IN Y", "HOW X IS USED IN Y", "X FOR Y DEVELOPMENT", or "X IN Y" (e.g. "USE OF PYTHON IN BLOCKCHAIN"):
+  - DO NOT treat the entire phrase as the technology name! (NEVER write: "USE OF PYTHON IN BLOCKCHAIN utilizes cryptographic hashing...")
+  - Separate it into:
+    * X = Tool / Language / Technology (e.g., Python)
+    * Y = Target Technology / Domain (e.g., Blockchain)
+  - Explain specifically:
+    * What X (e.g. Python) is actually used for in Y (e.g. Blockchain)
+    * Relevant X libraries/frameworks (e.g. Web3.py, Brownie, Ethereum-tester, Eth-utils)
+    * Interaction with Y nodes via RPC/REST APIs
+    * Smart contract interaction, ABI encoding, and transaction building/signing/submission
+    * Testing, deployment automation, blockchain data analytics, and backend microservices
+    * Limitations & security considerations
+  - Clearly distinguish between:
+    1. The underlying domain protocol (Y) (e.g. Blockchain consensus, block propagation)
+    2. The programming language / application (X) (e.g. Python) interacting with it
+  - Do NOT attribute protocol responsibilities (like consensus algorithms or peer-to-peer block hashing) to the language (X) unless technically accurate for a specific client implementation.
+
 TECHNICAL ACCURACY MANDATE:
 - Do NOT treat technically different concepts as equivalent (e.g. Proof-of-Stake is NOT simply another name for Byzantine Fault Tolerance).
 - Explain relationships between technologies accurately with zero invented details.
