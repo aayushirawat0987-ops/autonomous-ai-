@@ -2584,6 +2584,17 @@
 
     async function loadAgents() {
       try {
+        // Fetch active agents count from DB source of truth
+        try {
+          const activeRes = await fetch(`${API_BASE}/api/agent/active`);
+          const activeData = await activeRes.json();
+          if (typeof activeData.count === 'number') {
+            document.getElementById('kpiAgents').innerText = activeData.count;
+          }
+        } catch (activeErr) {
+          console.error('Failed to fetch active count:', activeErr);
+        }
+
         const res = await fetch(`${API_BASE}/api/agent/list`);
         const data = await res.json();
 
@@ -2598,35 +2609,50 @@
 
         if (!activeAgentId) activeAgentId = data.agents[0].id;
 
-        document.getElementById('kpiAgents').innerText = data.agents.length;
-
         let totalPosts = 0;
 
         grid.innerHTML = data.agents.map(a => {
           const count = a._count?.posts || 0;
           totalPosts += count;
           const isSelected = a.id === activeAgentId;
+          const status = a.status || (a.isActive ? 'ACTIVE' : 'STOPPED');
+          const isStopped = status === 'STOPPED' || !a.isActive;
+          const statusColor = isStopped ? 'var(--danger)' : (status === 'ERROR' ? 'var(--warning)' : 'var(--success)');
+          const statusBg = isStopped ? 'var(--danger-light)' : (status === 'ERROR' ? 'var(--warning-light)' : 'var(--success-light)');
+          const currentTask = a.currentTask || (isStopped ? 'Agent Stopped' : 'Waiting for next scheduled cycle');
 
           return `
           <div class="agent-card ${isSelected ? 'active' : ''}" onclick="selectAgent('${a.id}')">
-            <div class="flex justify-between items-start mb-4">
+            <div class="flex justify-between items-start mb-3">
               <div class="flex items-center gap-3">
-                <div class="author-avatar" style="width:40px; height:40px; font-size:1.1rem;">${a.name.charAt(0)}</div>
+                <div class="author-avatar" style="width:40px; height:40px; font-size:1.1rem;">${escapeHtml(a.name.charAt(0))}</div>
                 <div>
                   <div class="font-bold text-base text-main">${escapeHtml(a.name.toUpperCase())}</div>
                   <div class="text-xs text-secondary font-bold tracking-wide">${escapeHtml(a.domain.toUpperCase())}</div>
                 </div>
               </div>
-              <div class="status-indicator" style="font-size:0.65rem; padding: 0.2rem 0.6rem;"><div class="dot pulse"></div> ONLINE</div>
+              <div class="status-indicator" style="font-size:0.65rem; padding: 0.2rem 0.6rem; background:${statusBg}; color:${statusColor}; border-color:${statusColor};">
+                <div class="dot ${isStopped ? '' : 'pulse'}" style="background:${statusColor};"></div> ${escapeHtml(status)}
+              </div>
             </div>
             
-            <div class="text-xs text-muted mb-4">
-              Writing Style: ${escapeHtml(a.style || 'Technical, Concise, Analytical')}
+            <div class="text-xs text-muted mb-2">
+              <strong>Task:</strong> ${escapeHtml(currentTask)}
+            </div>
+
+            <div class="text-xs text-faint mb-3">
+              Style: ${escapeHtml(a.style || 'Technical, Concise, Analytical')}
             </div>
             
             <div class="flex justify-between items-center text-xs pt-3" style="border-top: 1px solid var(--border-color);">
               <span class="font-bold text-main">${count} ${count === 1 ? 'Post' : 'Posts'}</span>
-              <button class="btn btn-primary text-xs" style="padding: 0.35rem 0.85rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">View Feed →</button>
+              <div class="flex gap-2">
+                ${isStopped 
+                  ? `<button class="btn btn-outline text-xs text-success" style="padding: 0.3rem 0.65rem;" onclick="event.stopPropagation(); resumeAgent('${a.id}')">Resume</button>` 
+                  : `<button class="btn btn-outline text-xs text-danger" style="padding: 0.3rem 0.65rem;" onclick="event.stopPropagation(); stopAgent('${a.id}')">Stop</button>`
+                }
+                <button class="btn btn-primary text-xs" style="padding: 0.3rem 0.75rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">Feed →</button>
+              </div>
             </div>
           </div>
         `}).join('');
@@ -2646,6 +2672,42 @@
           `;
         }
         setTimeout(loadAgents, 5000);
+      }
+    }
+
+    async function stopAgent(agentId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/agent/stop`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId })
+        });
+        if (res.ok) {
+          await loadAgents();
+          if (activeAgentId === agentId) {
+            await openAgentDetails(agentId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to stop agent', err);
+      }
+    }
+
+    async function resumeAgent(agentId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/agent/resume`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId })
+        });
+        if (res.ok) {
+          await loadAgents();
+          if (activeAgentId === agentId) {
+            await openAgentDetails(agentId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to resume agent', err);
       }
     }
 

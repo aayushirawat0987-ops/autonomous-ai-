@@ -26,7 +26,10 @@ export async function handleAgentList(req: Request, res: Response) {
             domain: 'AI & LLM Security',
             role: 'Senior AI Threat Intelligence Researcher',
             style: 'technical, concise, analytical, skeptical, evidence-based, educational',
-          },
+            status: 'ACTIVE',
+            isActive: true,
+            currentTask: 'Starting autonomous agent',
+          } as any,
         });
 
         // Trigger scheduler for default agent
@@ -120,6 +123,12 @@ export async function handleAgentStatus(req: Request, res: Response) {
         domain: agent.domain,
         role: agent.role,
         style: agent.style,
+        status: (agent as any).status || 'ACTIVE',
+        isActive: (agent as any).isActive ?? true,
+        currentTask: (agent as any).currentTask || null,
+        lastRunAt: (agent as any).lastRunAt || null,
+        nextRunAt: (agent as any).nextRunAt || null,
+        lastError: (agent as any).lastError || null,
         totalPosts: totalApproved,
         totalGenerated,
         totalApproved,
@@ -407,5 +416,117 @@ export async function handleAgentOpportunities(req: Request, res: Response) {
   } catch (error) {
     Logger.error('Failed to fetch opportunities', error);
     return res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+export async function handleAgentStop(req: Request, res: Response) {
+  try {
+    const { agentId } = req.body;
+    if (!agentId || typeof agentId !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid agentId in request body' });
+    }
+
+    const agent = await prisma.agent.findUnique({ where: { id: agentId } });
+    if (!agent) {
+      return res.status(404).json({ error: `Agent with ID ${agentId} not found` });
+    }
+
+    schedulerEngine.stopAgentScheduler(agentId);
+
+    const updatedAgent = await prisma.agent.update({
+      where: { id: agentId },
+      data: {
+        isActive: false,
+        status: 'STOPPED',
+        currentTask: null,
+      } as any,
+    });
+
+    Logger.info(`Agent ${agent.name} (${agentId}) has been STOPPED`);
+
+    return res.status(200).json({
+      message: 'Agent stopped successfully',
+      agent: updatedAgent,
+    });
+  } catch (error) {
+    Logger.error('Failed to stop agent', error);
+    return res.status(500).json({ error: 'Failed to stop agent' });
+  }
+}
+
+export async function handleAgentResume(req: Request, res: Response) {
+  try {
+    const { agentId } = req.body;
+    if (!agentId || typeof agentId !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid agentId in request body' });
+    }
+
+    const agent = await prisma.agent.findUnique({ where: { id: agentId } });
+    if (!agent) {
+      return res.status(404).json({ error: `Agent with ID ${agentId} not found` });
+    }
+
+    const updatedAgent = await prisma.agent.update({
+      where: { id: agentId },
+      data: {
+        isActive: true,
+        status: 'ACTIVE',
+        lastError: null,
+        currentTask: 'Starting autonomous agent',
+      } as any,
+    });
+
+    await schedulerEngine.startAgentScheduler(agentId);
+
+    Logger.info(`Agent ${agent.name} (${agentId}) has been RESUMED`);
+
+    return res.status(200).json({
+      message: 'Agent resumed successfully',
+      agent: updatedAgent,
+    });
+  } catch (error) {
+    Logger.error('Failed to resume agent', error);
+    return res.status(500).json({ error: 'Failed to resume agent' });
+  }
+}
+
+export async function handleAgentActive(req: Request, res: Response) {
+  try {
+    const activeAgents = await (prisma.agent as any).findMany({
+      where: {
+        isActive: true,
+        status: 'ACTIVE',
+      },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    const agents = activeAgents.map((a: any) => ({
+      id: a.id,
+      name: a.name,
+      domain: a.domain,
+      role: a.role,
+      status: a.status || 'ACTIVE',
+      isActive: a.isActive ?? true,
+      currentTask: a.currentTask || null,
+      postsGenerated: a._count?.posts || 0,
+      lastRunAt: a.lastRunAt || null,
+      nextRunAt: a.nextRunAt || null,
+      lastError: a.lastError || null,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+    }));
+
+    return res.status(200).json({
+      count: agents.length,
+      agents,
+    });
+  } catch (error) {
+    Logger.error('Failed to fetch active agents', error);
+    return res.status(500).json({ count: 0, agents: [], error: 'Failed to fetch active agents' });
   }
 }

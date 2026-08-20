@@ -18,13 +18,17 @@ export async function handleAgentInit(req: Request, res: Response) {
     const role: string = persona.role || `${domain} Researcher`;
     const style: string = persona.style || 'technical, concise, analytical, skeptical, evidence-based, educational';
 
-    // Save agent and persona to SQLite Database
+    // Save agent and persona to Database
     const agent = await prisma.agent.create({
       data: {
         name,
         domain,
         role,
         style,
+        status: 'ACTIVE',
+        isActive: true,
+        currentTask: 'Starting autonomous agent',
+        lastError: null,
       },
     });
 
