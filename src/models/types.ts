@@ -49,6 +49,10 @@ export interface StructuredContentPlan {
   platform: string;
   tone: string;
   additionalInstructions: string;
+  contentLengthOption?: string;
+  minimumWords: number;
+  targetWords: number;
+  maximumWords: number;
 }
 
 export interface TopicProfile {

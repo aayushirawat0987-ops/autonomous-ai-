@@ -1,11 +1,17 @@
 import { DiscoveredTopic, GeneratedPost, Persona } from '../models/types';
 
-export function getCriticPrompt(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): string {
+export function getCriticPrompt(
+  persona: Persona,
+  topic: DiscoveredTopic,
+  post: GeneratedPost,
+  minWords: number = 500,
+  maxWords: number = 700
+): string {
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
   return `You are an expert Critic and Quality Evaluator for an autonomous technology publishing platform.
-Your job is to evaluate the quality of a generated post based on strict 8-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY 250 TO 300 WORDS).
-Before publishing, you must verify source relevance, factual accuracy, specificity, readability, and hallucination risk. Regenerate if quality is below 8/10 (overallScore < 80) or if word count is under 250 words.
+Your job is to evaluate the quality of a generated post based on strict 8-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY ${minWords} TO ${maxWords} WORDS).
+Before publishing, you must verify source relevance, factual accuracy, specificity, readability, and hallucination risk. Regenerate if quality is below 8/10 (overallScore < 80) or if word count is outside ${minWords}-${maxWords} words.
 
 Persona: ${persona.name} (${persona.domain})
 Requested Topic: ${topic.title}
@@ -37,8 +43,8 @@ WORD COUNT & PASSING RULES:
 Current word count: ${words} words.
 - If topic drift occurred, cap overallScore at 65 maximum and flag topic drift.
 - If generic filler or AI clichés are present, cap overallScore at 75 maximum.
-- If word count is < 250 words or > 300 words, cap overallScore at 70 maximum and flag word count violation (PREVIOUS DRAFT WAS TOO SHORT: MUST BE STRICTLY 250-300 WORDS).
-- To PASS: overallScore >= 80, accuracy >= 90, originality >= 80, evidenceQuality >= 80, zero topic drift, zero generic filler, and word count MUST be strictly 250–300 words.
+- If word count is < ${minWords} words or > ${maxWords} words, cap overallScore at 70 maximum and flag word count violation (PREVIOUS DRAFT WAS OUTSIDE WORD COUNT BOUNDS: MUST BE STRICTLY ${minWords}-${maxWords} WORDS).
+- To PASS: overallScore >= 80, accuracy >= 90, originality >= 80, evidenceQuality >= 80, zero topic drift, zero generic filler, and word count MUST be strictly ${minWords}–${maxWords} words.
 
 Return strictly raw JSON matching this schema:
 {

@@ -115,12 +115,62 @@ export function classifyUserRequest(rawInput: string): RequestClassification {
   };
 }
 
+export interface WordCountBounds {
+  minimumWords: number;
+  targetWords: number;
+  maximumWords: number;
+}
+
+export function getWordCountBounds(
+  postType: string = 'Educational',
+  contentLengthOption?: string
+): WordCountBounds {
+  if (contentLengthOption && contentLengthOption !== 'Auto') {
+    const opt = contentLengthOption.toLowerCase();
+    if (opt.includes('short') || opt.includes('500')) {
+      return { minimumWords: 500, targetWords: 550, maximumWords: 600 };
+    }
+    if (opt.includes('medium') || opt.includes('600')) {
+      return { minimumWords: 600, targetWords: 650, maximumWords: 700 };
+    }
+    if (opt.includes('long') || opt.includes('700')) {
+      return { minimumWords: 700, targetWords: 800, maximumWords: 900 };
+    }
+  }
+
+  const lower = (postType || '').toLowerCase();
+  if (lower.includes('case study') || lower.includes('deep-dive')) {
+    return { minimumWords: 700, targetWords: 800, maximumWords: 900 };
+  }
+  if (
+    lower.includes('technical explanation') ||
+    lower.includes('practical implementation') ||
+    lower.includes('defensive') ||
+    lower.includes('vulnerability')
+  ) {
+    return { minimumWords: 600, targetWords: 700, maximumWords: 800 };
+  }
+  if (
+    lower.includes('educational') ||
+    lower.includes('business impact') ||
+    lower.includes('advantages') ||
+    lower.includes('benefits') ||
+    lower.includes('breakthrough') ||
+    lower.includes('applications')
+  ) {
+    return { minimumWords: 500, targetWords: 600, maximumWords: 700 };
+  }
+
+  return { minimumWords: 500, targetWords: 600, maximumWords: 700 };
+}
+
 export function createStructuredContentPlan(
   rawTopic: string,
   postType: string = 'Educational',
   platform: string = 'LinkedIn / X',
   tone: string = 'Professional & Analytical',
-  instructions: string = ''
+  instructions: string = '',
+  contentLengthOption?: string
 ): StructuredContentPlan {
   const classification = classifyUserRequest(rawTopic);
 
@@ -138,15 +188,22 @@ export function createStructuredContentPlan(
     intent = `Explain how ${primarySubject} is used in ${secondarySubject} development`;
   }
 
+  const resolvedPostType = postType || classification.contentType || 'Educational';
+  const bounds = getWordCountBounds(resolvedPostType, contentLengthOption);
+
   return {
     primarySubject,
     secondarySubject,
     relationship,
     intent,
-    postType: postType || classification.contentType || 'Educational',
+    postType: resolvedPostType,
     platform: platform || 'LinkedIn / X',
     tone: tone || 'Professional & Analytical',
     additionalInstructions: instructions || '',
+    contentLengthOption,
+    minimumWords: bounds.minimumWords,
+    targetWords: bounds.targetWords,
+    maximumWords: bounds.maximumWords,
   };
 }
 

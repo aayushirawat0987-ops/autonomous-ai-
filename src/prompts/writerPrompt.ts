@@ -53,6 +53,10 @@ STRUCTURED CONTENT PLAN (MANDATORY EXECUTION TARGET):
 `;
   }
 
+  const minWords = plan?.minimumWords || 500;
+  const targetWords = plan?.targetWords || 600;
+  const maxWords = plan?.maximumWords || 700;
+
   return `${personaContext}
 
 MANDATORY WRITER INSTRUCTION:
@@ -74,18 +78,18 @@ CRITICAL INSTRUCTION ON CORE TECHNOLOGY VS USER QUERY:
 
 SECTION-SPECIFIC RULES:
 1. WHAT IT IS:
-   - Explain the CORE TECHNOLOGY directly and clearly (35-50 words).
+   - Explain the CORE TECHNOLOGY directly and clearly.
    - Do NOT explain the user's search phrase or user wording.
    - Introduce the technology using technically accurate language.
 2. TECHNICAL EXPLANATION:
-   - Explain concepts specifically related to the requested technology AND intent (80-110 words).
+   - Explain concepts specifically related to the requested technology AND intent.
    - Do NOT use generic engineering statements ("optimizing execution pathways", "resource management").
    - Include concrete mechanisms, trade-offs, architecture, or verifiable technical details.
-3. WHY IT MATTERS:
-   - Explain why the topic matters in real-world engineering or business (50-70 words).
+3. PRACTICAL APPLICATIONS / WHY IT MATTERS:
+   - Explain practical relevance for systems engineers, developers, or business decisions.
    - Connect the explanation directly to the requested intent.
 4. KEY TAKEAWAY:
-   - Summarize the actual technical insight (30-40 words).
+   - Summarize the actual technical insight.
    - Do NOT repeat generic statements about "performance", "scalability", "efficiency", or "modern architecture" unless specifically relevant.
 
 BUSINESS IMPACT / ADVANTAGES RULE:
@@ -139,10 +143,14 @@ NEVER expose internal system text or generation metadata in your response or con
 - NEVER write: "User Manual Request", "Manual post generation request", "The user asked...", "According to the prompt...", or "As requested...".
 
 STRICT WORD COUNT MANDATE (CRITICAL):
-- MINIMUM: 250 words (Content MUST NOT be under 250 words under any circumstances)
-- MAXIMUM: 300 words
-- RECOMMENDED TARGET: 260 to 290 words
-(Your final post body content MUST be strictly between 250 and 300 words total. If your draft is below 250 words, expand the TECHNICAL EXPLANATION and BUSINESS IMPACT sections with additional verified technical details until it reaches 250-300 words.)
+- MINIMUM: ${minWords} words
+- TARGET WORD COUNT: ${targetWords} words
+- MAXIMUM: ${maxWords} words
+
+Your final article content MUST be strictly between ${minWords} and ${maxWords} words (Target: ${targetWords} words).
+Aim for the TARGET WORD COUNT (${targetWords} words). Do NOT add generic filler simply to increase length.
+If your draft is under ${minWords} words, expand the TECHNICAL EXPLANATION and PRACTICAL APPLICATIONS sections with detailed architectural mechanics, code patterns, and technical trade-offs.
+If your draft exceeds ${maxWords} words, trim filler phrases and redundant adjectives without cutting core technical facts.
 
 TOPIC DETAILS:
 - Requested Topic: ${topic.title}
@@ -168,7 +176,7 @@ ${structureInstruction}
 Output MUST be strictly valid JSON:
 {
   "title": "string (Headline specific to ${topic.title} and ${contentAngle})",
-  "content": "string (Complete post text focused strictly on ${topic.title}, STRICTLY BETWEEN 250 AND 300 WORDS)",
+  "content": "string (Complete post text focused strictly on ${topic.title}, STRICTLY BETWEEN ${minWords} AND ${maxWords} WORDS)",
   "topicCategory": "${topicCategory}",
   "contentAngle": "${contentAngle}",
   "rationale": "string (Analysis of ${topic.title})",

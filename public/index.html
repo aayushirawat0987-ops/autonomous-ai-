@@ -2187,14 +2187,25 @@
               </select>
             </div>
           </div>
-          <div class="form-group mb-3">
-            <label class="form-label">Tone & Style</label>
-            <select id="genTone" class="form-input">
-              <option value="Professional & Analytical">Professional & Analytical</option>
-              <option value="Technical & Skeptical">Technical & Skeptical</option>
-              <option value="Punchy & Urgent">Punchy & Urgent</option>
-              <option value="Educational & Insightful">Educational & Insightful</option>
-            </select>
+          <div class="flex gap-3 mb-3">
+            <div class="form-group w-full">
+              <label class="form-label">Tone & Style</label>
+              <select id="genTone" class="form-input">
+                <option value="Professional & Analytical">Professional & Analytical</option>
+                <option value="Technical & Skeptical">Technical & Skeptical</option>
+                <option value="Punchy & Urgent">Punchy & Urgent</option>
+                <option value="Educational & Insightful">Educational & Insightful</option>
+              </select>
+            </div>
+            <div class="form-group w-full">
+              <label class="form-label">Content Length</label>
+              <select id="genContentLength" class="form-input">
+                <option value="Auto">Auto (By Post Type)</option>
+                <option value="Short">Short (500–600 words)</option>
+                <option value="Medium">Medium (600–700 words)</option>
+                <option value="Long">Long (700–900 words)</option>
+              </select>
+            </div>
           </div>
           <div class="form-group mb-3">
             <label class="form-label">Additional Instructions</label>
@@ -2438,6 +2449,7 @@
         const postType = document.getElementById('genPostType').value;
         const platform = document.getElementById('genPlatform').value;
         const tone = document.getElementById('genTone').value;
+        const contentLength = document.getElementById('genContentLength').value;
         const instructions = document.getElementById('genInstructions').value.trim();
 
         btn.classList.add('hidden');
@@ -2467,6 +2479,7 @@
               postType,
               platform,
               tone,
+              contentLength,
               instructions
             })
           });

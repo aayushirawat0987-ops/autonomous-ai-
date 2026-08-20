@@ -1,7 +1,7 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
 import { OpenAIService, countMainContentWords, classifyTopicCategory } from '../services/openai';
-import { createTopicProfile, validateStructureAndSanitize, normalizeAndParseTopicInput, createStructuredContentPlan } from '../utils/sanitizer';
+import { createTopicProfile, validateStructureAndSanitize, normalizeAndParseTopicInput, createStructuredContentPlan, getWordCountBounds } from '../utils/sanitizer';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
@@ -90,12 +90,15 @@ export class WriterEngine {
       postData.content = structCheck.sanitizedContent;
       postData.title = structCheck.sanitizedTitle;
 
-      // 0b. Word Count Compliance Check (Must be strictly 250 - 300 words)
+      // 0b. Word Count Compliance Check (Dynamic bounds)
+      const bounds = getWordCountBounds(contentAngle || topicCategory);
+      const { minimumWords, targetWords, maximumWords } = bounds;
+
       const mainWordCount = countMainContentWords(postData.content);
-      if (mainWordCount < 250 || mainWordCount > 300) {
-        const wcIssue = mainWordCount < 250 
-          ? `Word count violation: Draft has ${mainWordCount} words, which is UNDER the 250-word minimum threshold.`
-          : `Word count violation: Draft has ${mainWordCount} words, which is OVER the 300-word maximum threshold.`;
+      if (mainWordCount < minimumWords || mainWordCount > maximumWords) {
+        const wcIssue = mainWordCount < minimumWords 
+          ? `Word count violation: Draft has ${mainWordCount} words, which is UNDER the ${minimumWords}-word minimum threshold.`
+          : `Word count violation: Draft has ${mainWordCount} words, which is OVER the ${maximumWords}-word maximum threshold.`;
         Logger.warn(wcIssue, agentId);
 
         await prisma.improvementAttempt.create({
@@ -105,7 +108,7 @@ export class WriterEngine {
             content: postData.content,
             scores: JSON.stringify({ wordCount: mainWordCount }),
             weaknesses: JSON.stringify([wcIssue]),
-            improvementSuggestions: JSON.stringify([mainWordCount < 250 ? 'Expand technical mechanisms, architectural trade-offs, and practical impact until total word count is strictly between 250 and 300 words.' : 'Trim redundant adjectives and filler while maintaining word count strictly between 250 and 300 words.']),
+            improvementSuggestions: JSON.stringify([mainWordCount < minimumWords ? `Expand technical mechanisms, architectural trade-offs, and practical impact until total word count is strictly between ${minimumWords} and ${maximumWords} words.` : `Trim redundant adjectives and filler while maintaining word count strictly between ${minimumWords} and ${maximumWords} words.`]),
             finalDecision: 'REJECTED_WORD_COUNT',
           }
         });
@@ -115,20 +118,23 @@ export class WriterEngine {
           break;
         }
 
-        Logger.info(`Rewrite attempt ${attempt + 1} for Word Count fix (${mainWordCount} words -> Target: 250-300 words)`, agentId);
+        Logger.info(`Rewrite attempt ${attempt + 1} for Word Count fix (${mainWordCount} words -> Target: ${targetWords} words)`, agentId);
         postData = await this.openaiService.generateRewrite(
           persona,
           topic,
           postData,
           [wcIssue],
-          [mainWordCount < 250 ? `DRAFT IS TOO SHORT (${mainWordCount} words). Expand the technical breakdown, business impact, and architecture sections with verified technical details until the post reaches between 250 and 300 words.` : `DRAFT IS TOO LONG (${mainWordCount} words). Shorten the post to reach between 250 and 300 words.`]
+          [mainWordCount < minimumWords ? `DRAFT IS TOO SHORT (${mainWordCount} words). Expand the technical breakdown, business impact, and architecture sections with verified technical details until the post reaches between ${minimumWords} and ${maximumWords} words.` : `DRAFT IS TOO LONG (${mainWordCount} words). Shorten the post to reach between ${minimumWords} and ${maximumWords} words.`],
+          minimumWords,
+          targetWords,
+          maximumWords
         );
         attempt++;
         continue;
       }
 
       // 1. Fact Checker Validation
-      const factCheckResult = await this.openaiService.factCheckPost(persona, topic, postData);
+      const factCheckResult = await this.openaiService.factCheckPost(persona, topic, postData, minimumWords, maximumWords);
 
       if (!factCheckResult.passed) {
         Logger.warn(`Fact Checker found issues: ${(factCheckResult.issues || []).join(', ')}`, agentId);
@@ -150,13 +156,16 @@ export class WriterEngine {
           break;
         }
 
-        Logger.info(`Rewrite attempt ${attempt + 1} for Fact-Check issues`, agentId);
+        Logger.info(`Rewrite attempt ${attempt + 1} for Fact Check fixes`, agentId);
         postData = await this.openaiService.generateRewrite(
           persona,
           topic,
           postData,
           factCheckResult.issues || [],
-          factCheckResult.corrections || []
+          factCheckResult.corrections || [],
+          minimumWords,
+          targetWords,
+          maximumWords
         );
         attempt++;
         continue;
@@ -192,14 +201,17 @@ export class WriterEngine {
           topic,
           postData,
           [`Topic Drift: Post MUST be primarily about "${topic.title}".`],
-          [`Re-ground all paragraphs around "${topic.title}". Do not force default security topics.`]
+          [`Re-ground all paragraphs around "${topic.title}". Do not force default security topics.`],
+          minimumWords,
+          targetWords,
+          maximumWords
         );
         attempt++;
         continue;
       }
 
       // 3. Critic Quality Evaluation
-      const criticResult = await this.openaiService.evaluateCritic(persona, topic, postData);
+      const criticResult = await this.openaiService.evaluateCritic(persona, topic, postData, minimumWords, maximumWords);
       const scores = criticResult.scores;
       Logger.info(`Critic Evaluation Score: ${scores.overallScore}/100 (Accuracy: ${scores.accuracy}, Originality: ${scores.originality}, Topic Rel: ${finalTopicRelevanceScore})`, agentId);
 
@@ -236,7 +248,10 @@ export class WriterEngine {
           topic,
           postData,
           criticResult.weaknesses || [],
-          criticResult.improvementSuggestions || []
+          criticResult.improvementSuggestions || [],
+          minimumWords,
+          targetWords,
+          maximumWords
         );
         attempt++;
         continue;
@@ -334,7 +349,8 @@ export class WriterEngine {
     postType: string = 'Educational',
     platform: string = 'LinkedIn / X',
     tone: string = 'Professional',
-    instructions: string = ''
+    instructions: string = '',
+    contentLength: string = 'Auto'
   ) {
     const agent = await prisma.agent.findUnique({ where: { id: agentId } });
     if (!agent) throw new Error(`Agent with ID '${agentId}' not found.`);
@@ -345,10 +361,13 @@ export class WriterEngine {
       postType,
       platform,
       tone,
-      instructions
+      instructions,
+      contentLength
     );
 
-    Logger.info(`[Pipeline] Structured Content Plan: SubjectX='${plan.primarySubject}', TargetY='${plan.secondarySubject}', Rel='${plan.relationship}', Intent='${plan.intent}', Type='${plan.postType}', Platform='${plan.platform}'`, agentId);
+    const { minimumWords, targetWords, maximumWords } = plan;
+
+    Logger.info(`[Pipeline] Structured Content Plan: Subject='${plan.primarySubject}', Type='${plan.postType}', Bounds=${minimumWords}-${maximumWords} (Target:${targetWords})`, agentId);
 
     const persona: Persona = {
       name: agent.name,
@@ -359,7 +378,7 @@ export class WriterEngine {
 
     const topic: DiscoveredTopic = {
       title: plan.primarySubject,
-      url: '', // Real source or empty
+      url: '',
       source: 'Technical Reference',
       summary: `${plan.intent}. ${plan.additionalInstructions}`.trim(),
       publishedAt: new Date().toISOString(),
@@ -376,25 +395,26 @@ export class WriterEngine {
     const contentAngle = await this.memoryEngine.selectContentAngle(agentId, topicTitle);
     const topicCategory = classifyTopicCategory(plan.primarySubject, instructions);
 
-    // Pipeline Step 3: Structured Content Plan -> Topic-Specific Generation
+    // Pipeline Step 3: Topic-Specific Generation
     let postData = await this.openaiService.generatePost(persona, topic, evaluation, contentAngle, undefined, plan);
 
-    // Pipeline Step 4 & 5: Quality Validation (Struct, Word count 250-300, Topic relevance check)
+    // Pipeline Step 4 & 5: Quality Validation & Dynamic Word Count Check (max 2 attempts)
     let attempt = 0;
+    const maxAttempts = 2;
     let structCheck = validateStructureAndSanitize(postData.content, postData.title);
     let topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
     let mainWordCount = countMainContentWords(structCheck.sanitizedContent);
 
-    while ((!structCheck.valid || !topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift || mainWordCount < 250 || mainWordCount > 300) && attempt < 3) {
-      Logger.warn(`Manual post failed validation (StructValid: ${structCheck.valid}, TopicRelScore: ${topicRel.relevanceScore}, WordCount: ${mainWordCount}). Rewriting...`, agentId);
+    while ((!structCheck.valid || !topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift || mainWordCount < minimumWords || mainWordCount > maximumWords) && attempt < maxAttempts) {
+      Logger.warn(`Manual post failed validation (WordCount: ${mainWordCount}, TargetBounds: ${minimumWords}-${maximumWords}). Rewriting attempt ${attempt + 1}...`, agentId);
       const issues = [...structCheck.issues];
       if (!topicRel.approved || topicRel.topicDrift) {
         issues.push(`Topic Drift: Post MUST be primarily about "${plan.primarySubject}".`);
       }
-      if (mainWordCount < 250) {
-        issues.push(`Draft is too short (${mainWordCount} words). Expand technical explanation and mechanisms to reach strictly 250-300 words.`);
-      } else if (mainWordCount > 300) {
-        issues.push(`Draft is too long (${mainWordCount} words). Compress filler sentences to reach strictly 250-300 words.`);
+      if (mainWordCount < minimumWords) {
+        issues.push(`Draft is too short (${mainWordCount} words). Expand technical explanation, architectural mechanisms, and practical examples to reach strictly ${minimumWords}-${maximumWords} words (Target: ${targetWords} words). Do NOT add generic filler.`);
+      } else if (mainWordCount > maximumWords) {
+        issues.push(`Draft is too long (${mainWordCount} words). Shorten the content cleanly to reach strictly ${minimumWords}-${maximumWords} words (Target: ${targetWords} words). Do NOT truncate sentences.`);
       }
 
       postData = await this.openaiService.generateRewrite(
@@ -402,7 +422,10 @@ export class WriterEngine {
         topic,
         postData,
         issues,
-        [`Re-ground all paragraphs around "${plan.primarySubject}". Maintain word count strictly between 250 and 300 words. Remove internal request text.`]
+        [`Re-ground all paragraphs around "${plan.primarySubject}". Target word count is ${targetWords} words (Min: ${minimumWords}, Max: ${maximumWords}). Do NOT truncate or cut off sentences.`],
+        minimumWords,
+        targetWords,
+        maximumWords
       );
       attempt++;
       structCheck = validateStructureAndSanitize(postData.content, postData.title);
@@ -413,7 +436,7 @@ export class WriterEngine {
     const cleanContent = structCheck.sanitizedContent;
     const wordCount = mainWordCount;
 
-    // Pipeline Step 6: Source Validation (Filter out fake URLs)
+    // Pipeline Step 6: Source Validation
     const validSources = Array.isArray(postData.sources)
       ? postData.sources.filter(s => s && typeof s === 'string' && !s.includes('autonomous.agent') && !s.includes('Technical Topic Request'))
       : [];
@@ -427,6 +450,9 @@ export class WriterEngine {
       contentAngle,
       postType: plan.postType,
       wordCount,
+      minWordCount: minimumWords,
+      targetWordCount: targetWords,
+      maxWordCount: maximumWords,
       accuracyScore: 92,
       originalityScore: 90,
       technicalScore: 92,

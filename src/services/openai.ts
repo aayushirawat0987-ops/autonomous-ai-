@@ -298,24 +298,30 @@ Return strictly raw JSON matching:
     }
   }
 
-  async factCheckPost(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): Promise<FactCheckResult> {
+  async factCheckPost(
+    persona: Persona,
+    topic: DiscoveredTopic,
+    post: GeneratedPost,
+    minWords: number = 500,
+    maxWords: number = 700
+  ): Promise<FactCheckResult> {
     const words = countMainContentWords(post.content);
 
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback fact-checker.');
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         verified: wordValid,
         confidence: 90,
         claimsChecked: ['Technical claims description', 'Topic facts', 'Source link'],
-        unsupportedClaims: wordValid ? [] : [`Word count is ${words} words (must be strictly 200–300 words).`],
+        unsupportedClaims: wordValid ? [] : [`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`],
         incorrectClaims: [],
         missingContext: [],
         sourceQuality: 90,
-        recommendations: wordValid ? [] : [words < 200 ? 'Expand technical explanation and real-world impact to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.'],
-        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly 200–300 words).`],
-        corrections: wordValid ? [] : [words < 200 ? 'Expand technical explanation to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.']
+        recommendations: wordValid ? [] : [words < minWords ? `Expand technical explanation and real-world impact to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`],
+        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`],
+        corrections: wordValid ? [] : [words < minWords ? `Expand technical explanation to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`]
       };
     }
 
@@ -344,13 +350,13 @@ Return strictly raw JSON matching:
 
       let verified = Boolean(parsed.verified ?? (unsupportedClaims.length === 0 && incorrectClaims.length === 0));
 
-      if (words < 200 || words > 300) {
+      if (words < minWords || words > maxWords) {
         verified = false;
-        issues.push(`Word count is ${words} words (must be strictly 200–300 words).`);
-        corrections.push(words < 200 ? 'Expand technical explanation and developer impact to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.');
+        issues.push(`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`);
+        corrections.push(words < minWords ? `Expand technical explanation and developer impact to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`);
       }
 
-      const passed = verified && unsupportedClaims.length === 0 && incorrectClaims.length === 0 && (words >= 200 && words <= 300);
+      const passed = verified && unsupportedClaims.length === 0 && incorrectClaims.length === 0 && (words >= minWords && words <= maxWords);
 
       return {
         passed,
@@ -367,7 +373,7 @@ Return strictly raw JSON matching:
       };
     } catch (error) {
       Logger.error('OpenAI fact check failed.', error);
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         verified: wordValid,
@@ -378,18 +384,24 @@ Return strictly raw JSON matching:
         missingContext: [],
         sourceQuality: 85,
         recommendations: [],
-        issues: wordValid ? [] : [`Word count is ${words} words (must be 200-300 words).`],
+        issues: wordValid ? [] : [`Word count is ${words} words (must be ${minWords}-${maxWords} words).`],
         corrections: []
       };
     }
   }
 
-  async evaluateCritic(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): Promise<CriticResult> {
+  async evaluateCritic(
+    persona: Persona,
+    topic: DiscoveredTopic,
+    post: GeneratedPost,
+    minWords: number = 500,
+    maxWords: number = 700
+  ): Promise<CriticResult> {
     const words = countMainContentWords(post.content);
 
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback critic.');
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         scores: {
@@ -403,12 +415,12 @@ Return strictly raw JSON matching:
           readability: 90,
           overallScore: wordValid ? 90 : 75
         },
-        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be 200–300 words).`],
-        improvementSuggestions: wordValid ? [] : [words < 200 ? 'Expand post technical explanation to at least 200 words.' : 'Shorten post to stay under 300 words.']
+        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be ${minWords}–${maxWords} words).`],
+        improvementSuggestions: wordValid ? [] : [words < minWords ? `Expand post technical explanation to at least ${minWords} words.` : `Shorten post to stay under ${maxWords} words.`]
       };
     }
 
-    const prompt = getCriticPrompt(persona, topic, post);
+    const prompt = getCriticPrompt(persona, topic, post, minWords, maxWords);
     try {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -454,13 +466,13 @@ Return strictly raw JSON matching:
         suggestions.push(`Re-ground the entire post strictly around "${topic.title}". Every paragraph must directly analyze "${topic.title}".`);
       }
 
-      if (words < 200 || words > 300) {
+      if (words < minWords || words > maxWords) {
         overallScore = Math.min(overallScore, 75);
-        weaknesses.push(`Word count is ${words} words (must be strictly 200–300 words).`);
-        suggestions.push(words < 200 ? 'Expand technical explanation and real-world developer impact to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.');
+        weaknesses.push(`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`);
+        suggestions.push(words < minWords ? `Expand technical explanation and real-world developer impact to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`);
       }
 
-      const passed = !topicDrift && overallScore >= 85 && accuracy >= 90 && originality >= 80 && evidenceQuality >= 80 && (words >= 200 && words <= 300);
+      const passed = !topicDrift && overallScore >= 85 && accuracy >= 90 && originality >= 80 && evidenceQuality >= 80 && (words >= minWords && words <= maxWords);
 
       const scores: CriticScores = {
         accuracy,
@@ -482,7 +494,7 @@ Return strictly raw JSON matching:
       };
     } catch (error) {
       Logger.error('OpenAI critic evaluation failed.', error);
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         scores: { accuracy: 92, clarity: 90, technicalKnowledge: 90, originality: 88, usefulness: 90, evidenceQuality: 90, structure: 90, readability: 90, overallScore: wordValid ? 90 : 75 },
@@ -497,14 +509,17 @@ Return strictly raw JSON matching:
     topic: DiscoveredTopic,
     post: GeneratedPost,
     issues: string[],
-    suggestions: string[]
+    suggestions: string[],
+    minWords: number = 500,
+    targetWords: number = 600,
+    maxWords: number = 700
   ): Promise<GeneratedPost> {
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Cannot rewrite.');
       return post;
     }
 
-    const prompt = getRewritePrompt(persona, topic, post, issues, suggestions);
+    const prompt = getRewritePrompt(persona, topic, post, issues, suggestions, minWords, targetWords, maxWords);
     try {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',

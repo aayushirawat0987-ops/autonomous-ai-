@@ -201,7 +201,7 @@ const openaiService = new OpenAIService();
 
 export async function handleAgentPostGenerate(req: Request, res: Response) {
   try {
-    const { agentId, topic, postType, platform, tone, instructions } = req.body;
+    const { agentId, topic, postType, platform, tone, instructions, contentLength } = req.body;
     if (!agentId || !topic) {
       return res.status(400).json({ error: 'Missing required fields: agentId and topic' });
     }
@@ -212,7 +212,8 @@ export async function handleAgentPostGenerate(req: Request, res: Response) {
       postType,
       platform,
       tone,
-      instructions
+      instructions,
+      contentLength
     );
 
     return res.status(201).json({ post });
