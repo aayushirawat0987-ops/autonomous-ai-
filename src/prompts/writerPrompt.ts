@@ -23,19 +23,23 @@ export function getWriterPrompt(
 
   const isMisconception = contentAngle.toLowerCase().includes('misconception');
   let angleInstruction = `Assigned Content Angle: ${contentAngle}`;
-  let structureInstruction = `1. HOOK / WHAT IT IS (35–50 words): Clear, engaging technical opening directly explaining "${topic.title}". Avoid generic question hooks.
-2. WHAT HAPPENED / CONCRETE DEVELOPMENTS (50–70 words): Explain key developments, verifiable facts, architectural mechanics, or evidence.
-3. TECHNICAL EXPLANATION & MECHANISMS (80–110 words): Deep technical analysis of mechanisms, trade-offs, advantages, and limitations. Explain how it works in practice with high detail density.
-4. WHY IT MATTERS / BUSINESS IMPACT (50–70 words): Explain practical relevance for systems engineers, developers, or business decisions.
-5. KEY TAKEAWAY (30–40 words): Meaningful, actionable technical takeaway summarizing the core insight.`;
+  const minWords = plan?.minimumWords || 500;
+  const targetWords = plan?.targetWords || 600;
+  const maxWords = plan?.maximumWords || 700;
+
+  let structureInstruction = `1. HOOK / WHAT IT IS (80–100 words): Clear, engaging technical opening directly defining "${topic.title}" and its architectural role.
+2. CONCRETE DEVELOPMENTS & CONTEXT (100–130 words): Explain key developments, verifiable facts, architectural mechanics, or evidence.
+3. TECHNICAL EXPLANATION & MECHANISMS (200–250 words): Deep technical breakdown of internal architecture, protocols, runtime state, data flows, trade-offs, advantages, and limitations with high detail density.
+4. PRACTICAL APPLICATIONS & BUSINESS IMPACT (120–160 words): Real-world implementation patterns, system architectures, enterprise impact, and security considerations.
+5. KEY TAKEAWAYS (50–70 words): Actionable, executive-level technical takeaway summarizing core insights.`;
 
   if (isMisconception) {
     angleInstruction = `Assigned Content Angle: Common Misconception (Identify a genuine misconception about "${topic.title}", explain why it is wrong, provide verified factual evidence, and clarify the key takeaway).`;
-    structureInstruction = `1. HOOK / MISCONCEPTION (35–50 words): Clearly state the common misconception about "${topic.title}".
-2. WHAT IS ACTUALLY TRUE (50–70 words): Extract concrete facts, mechanisms, and evidence correcting the misconception.
-3. TECHNICAL INSIGHT & TRADE-OFFS (80–110 words): Deep technical explanation of why the misconception exists and how the underlying mechanism actually operates in practice.
-4. WHY IT MATTERS (50–70 words): Practical relevance for developers, systems architects, or technical teams.
-5. KEY TAKEAWAY (30–40 words): Clear, memorable takeaway correcting the misconception.`;
+    structureInstruction = `1. HOOK / MISCONCEPTION (80–100 words): Clearly state the common misconception about "${topic.title}".
+2. WHAT IS ACTUALLY TRUE (100–130 words): Extract concrete facts, mechanisms, and evidence correcting the misconception.
+3. TECHNICAL INSIGHT & TRADE-OFFS (200–250 words): Deep technical explanation of why the misconception exists and how the underlying mechanism actually operates in practice.
+4. PRACTICAL APPLICATIONS & IMPACT (120–160 words): Practical relevance for developers, systems architects, or technical teams.
+5. KEY TAKEAWAYS (50–70 words): Clear, memorable takeaway correcting the misconception.`;
   }
 
   let planBlock = '';
@@ -53,9 +57,6 @@ STRUCTURED CONTENT PLAN (MANDATORY EXECUTION TARGET):
 `;
   }
 
-  const minWords = plan?.minimumWords || 500;
-  const targetWords = plan?.targetWords || 600;
-  const maxWords = plan?.maximumWords || 700;
 
   return `${personaContext}
 
