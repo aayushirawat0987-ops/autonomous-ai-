@@ -30,12 +30,20 @@ export interface EditorialEvaluation {
   rejectionReason?: string;
 }
 
+export interface RequestClassification {
+  coreTechnology: string;
+  contentIntent: string;
+  contentType: string;
+  targetAudience: string;
+}
+
 export interface TopicProfile {
   requestedTopic: string;
   topicCategory: string;
   primarySubject: string;
   importantConcepts: string[];
   unrelatedConcepts: string[];
+  requestClassification?: RequestClassification;
 }
 
 export interface TopicRelevanceResult {

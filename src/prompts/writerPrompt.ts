@@ -40,21 +40,50 @@ export function getWriterPrompt(
   return `${personaContext}
 
 MANDATORY WRITER INSTRUCTION:
-Make every post specific, factual, technical, and human-sounding, not generic AI-generated filler. Never invent research, statistics, companies, findings, or technical claims. Do not write a generic social media post about the topic. First understand the topic, identify the most important information, determine what the reader needs to know, and then explain it clearly in your own words. The structure must be chosen based on the topic rather than copied from previous posts. Every paragraph must add meaningful information. Prefer specific verified facts and useful technical explanations over generic statements. Use simple English without removing important technical meaning. The final result should teach the reader something concrete and should feel substantially different from previous posts.
+Make every post specific, factual, technical, and human-sounding, not generic AI-generated filler. Never invent research, statistics, companies, findings, or technical claims. First understand the topic, identify the core technology, determine what the reader needs to know, and then explain it clearly in your own words. Every paragraph must add meaningful information.
 
-UNIVERSAL TOPIC-GROUNDING MANDATE (CRITICAL RULE):
-- Requested Topic: "${topic.title}"
+CLASSIFICATION & GROUNDING MANDATE (CRITICAL RULE):
+- Requested Topic / Query: "${topic.title}"
 - Topic Category: "${topicCategory}"
-- Primary Subject: "${topic.title}"
+- Primary Subject / Core Technology: "${topic.title}"
 - ${angleInstruction}
 
-CRITICAL INSTRUCTION ON SUBJECT VS PERSONALITY:
-The requested topic "${topic.title}" MUST be the PRIMARY SUBJECT of the entire post.
+CRITICAL INSTRUCTION ON CORE TECHNOLOGY VS USER QUERY:
+- The input must NOT be blindly treated as the technology name.
+- NEVER use the entire user query phrase as the technology name!
+  - FORBIDDEN: "Analyzing advantage of block chain demonstrates..."
+  - CORRECT: "Blockchain can provide business value through..."
 - Topic determines WHAT the post is about.
 - Persona determines HOW it is written (analytical style, clear technical depth).
-- Do NOT generate generic placeholder sentences ("recent disclosures regarding...", "as technology systems evolve across..."). Provide at least 3 verified topic-specific facts.
 
-CASE STUDY / CONTENT TYPE RULE (CRITICAL RULE):
+SECTION-SPECIFIC RULES:
+1. WHAT IT IS:
+   - Explain the CORE TECHNOLOGY directly and clearly.
+   - Do NOT explain the user's search phrase or user wording.
+   - Introduce the technology using technically accurate language.
+2. TECHNICAL EXPLANATION:
+   - Explain concepts specifically related to the requested technology AND intent.
+   - Do NOT use generic engineering statements ("optimizing execution pathways", "resource management").
+   - Include concrete mechanisms, trade-offs, architecture, or verifiable technical details.
+3. WHY IT MATTERS:
+   - Explain why the topic matters in real-world engineering or business.
+   - Connect the explanation directly to the requested intent.
+4. KEY TAKEAWAY:
+   - Summarize the actual technical insight.
+   - Do NOT repeat generic statements about "performance", "scalability", "efficiency", or "modern architecture" unless specifically relevant.
+
+BUSINESS IMPACT / ADVANTAGES RULE:
+- When the intent covers "advantages", "benefits", "business impact", "business value", or "why use", the content MUST discuss actual technical advantages AND limitations of the CORE TECHNOLOGY.
+- For Blockchain:
+  - Advantages: shared transaction records, reduced reconciliation, traceability, auditability, smart-contract automation, multi-party coordination, tamper-evident records, reduced dependency on intermediaries.
+  - Limitations: scalability, transaction costs, governance, integration complexity, privacy, regulatory requirements, suitability compared with conventional databases.
+  - Do NOT claim that blockchain is automatically better than a centralized database.
+
+TECHNICAL ACCURACY MANDATE:
+- Do NOT treat technically different concepts as equivalent (e.g. Proof-of-Stake is NOT simply another name for Byzantine Fault Tolerance).
+- Explain relationships between technologies accurately with zero invented details.
+
+CASE STUDY / CONTENT TYPE RULE:
 - If the content type / post type is "Case Study", the article MUST contain actual case-study analysis of a documented source, publication, research result, company, or implementation.
 - Do NOT generate generic introductory filler such as:
   - "recent disclosures regarding..."
@@ -62,18 +91,13 @@ CASE STUDY / CONTENT TYPE RULE (CRITICAL RULE):
   - "Technical Topic Request..."
   - "Technical overview and analysis..."
   - "significant progress regarding..."
-  These are FORBIDDEN unless an actual source, publication, research result, company, implementation, or documented technical development has been provided.
-- The opening / WHAT IT IS section MUST immediately explain the topic directly.
-  For example:
-  TOPIC = BLOCKCHAIN
-  Correct: "Blockchain is a distributed ledger technology that..."
-  Incorrect: "Recent technical analysis published by Technical Topic Request details significant progress regarding BLOCKCHAIN."
-- NEVER use placeholders such as: "Technical Topic Request", "Technical Request", "Technical overview and analysis", "[topic]", "[source]", "[company]", or "recent disclosures" without a real disclosure.
+  - "Technical disclosures published by Technical Request..."
+- NEVER use placeholders: "Technical Topic Request", "Technical Request", "Technical overview and analysis", "[topic]", "[source]", "[company]", or "recent disclosures" without a real disclosure.
 - If no real case study/source is available, clearly label the content as a "Technical Overview" instead of pretending that a case study or recent disclosure exists.
 
 NO FORMULAIC AI CLICHÉS MANDATE:
 NEVER use generic AI clichés, repetitive buzzwords, or filler phrases:
-- DO NOT USE: "In today's rapidly evolving world", "This marks a significant milestone", "The future of AI is here", "As AI continues to transform", "This is a game changer", "The possibilities are endless", "It is important to note that", "In conclusion", "This highlights the importance of", "recent technical analysis", "significant progress", "emerging technology systems", "recent disclosures regarding", "technical topic request".
+- DO NOT USE: "In today's rapidly evolving world", "This marks a significant milestone", "The future of AI is here", "As AI continues to transform", "This is a game changer", "The possibilities are endless", "It is important to note that", "In conclusion", "This highlights the importance of", "recent technical analysis", "significant progress", "emerging technology systems", "recent disclosures regarding", "technical topic request", "optimizing execution pathways and resource management", "streamlined workflow execution across complex technical workloads".
 - DO NOT USE dramatic question hooks ("Did you know?", "What if?", "Imagine?", "Here's why").
 
 NO INTERNAL SYSTEM TEXT MANDATE:
@@ -84,7 +108,7 @@ STRICT WORD COUNT MANDATE:
 - MINIMUM: 200 words
 - MAXIMUM: 300 words
 - RECOMMENDED TARGET: 230 to 270 words
-(Your final post body content MUST be strictly between 200 and 300 words total. Do not count source URL or hashtags in the word count.)
+(Your final post body content MUST be strictly between 200 and 300 words total.)
 
 TOPIC DETAILS:
 - Requested Topic: ${topic.title}
@@ -94,21 +118,23 @@ TOPIC DETAILS:
 - Summary: ${topic.summary}
 - Editorial Score: ${evaluation.totalScore}/100
 
-ANTI-REPETITION MANDATE:
-Do not repeat recent angles or hooks:
-- Recently used angles: ${previousAnglesStr}
-- Avoid hooks similar to:
-${previousHooksStr}
+ANTI-REPETITION CHECK:
+1. Compare every section against every other section.
+2. Remove repeated sentences and repeated ideas.
+3. Ensure WHAT IT IS contains a clear definition.
+4. Ensure TECHNICAL EXPLANATION contains actual technical information.
+5. Ensure WHY IT MATTERS answers "why should the reader care?".
+6. Ensure KEY TAKEAWAY summarizes the actual insight.
 
 LOGICAL FLOW STRUCTURE:
 ${structureInstruction}
 6. ORIGINAL SOURCE: Include the original verified source link (${topic.url}), not an agent's own generated URL.
-7. HASHTAGS: Strictly 3–5 relevant hashtags matching ${topicCategory}. Match the content and hashtags to the actual topic. Don't add unrelated hashtags like #AISecurity if the topic isn't about AI security.
+7. HASHTAGS: Strictly 3–5 relevant hashtags matching ${topicCategory}. Match content and hashtags to the actual topic. Don't add unrelated hashtags.
 
 Output MUST be strictly valid JSON:
 {
-  "title": "string (Punchy headline specific to ${topic.title} and ${contentAngle})",
-  "content": "string (The complete post text focused strictly on ${topic.title}, STRICTLY 200–300 words)",
+  "title": "string (Headline specific to ${topic.title} and ${contentAngle})",
+  "content": "string (Complete post text focused strictly on ${topic.title}, STRICTLY 200–300 words)",
   "topicCategory": "${topicCategory}",
   "contentAngle": "${contentAngle}",
   "rationale": "string (Analysis of ${topic.title})",

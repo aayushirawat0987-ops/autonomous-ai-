@@ -1,4 +1,4 @@
-import { TopicProfile } from '../models/types';
+import { TopicProfile, RequestClassification } from '../models/types';
 import { classifyTopicCategory } from '../services/openai';
 
 export interface ParsedTopicInput {
@@ -7,33 +7,66 @@ export interface ParsedTopicInput {
   format: string;
 }
 
-export function normalizeAndParseTopicInput(
-  rawTopic: string,
-  rawPostType?: string,
-  rawFormat?: string
-): ParsedTopicInput {
-  let cleanTopic = (rawTopic || '').trim();
+export function classifyUserRequest(rawInput: string): RequestClassification {
+  let clean = (rawInput || '').trim();
 
-  // Extract postType/format if appended with colon separators like "Blockchain: Security Analysis: Technical Explanation"
-  const colonParts = cleanTopic.split(/\s*:\s*/);
-  if (colonParts.length > 1) {
-    cleanTopic = colonParts[0].trim();
-    if (!rawPostType && colonParts[1]) {
-      rawPostType = colonParts[1].trim();
-    }
-    if (!rawFormat && colonParts[2]) {
-      rawFormat = colonParts[2].trim();
-    }
+  // Strip prefix labels
+  clean = clean
+    .replace(/^🚨\s*/, '')
+    .replace(/^(?:AI\s*Security\s*Insight|arXiv Paper|GitHub Repository):\s*/i, '')
+    .replace(/:\s*(?:Security Analysis|Technical Explanation|Common Misconception|Research Summary|Breaking Development)/gi, '')
+    .trim();
+
+  let coreTech = clean;
+  let intent = 'Technical Breakdown & Overview';
+  let contentType = 'Technical Article';
+  let audience = 'Engineering & Technology Professionals';
+
+  const lower = clean.toLowerCase();
+
+  // 1. Identify Intent & Content Type
+  if (/\b(?:advantages?|benefits?|business impact|business value|why use)\b/i.test(lower)) {
+    intent = 'Business Impact / Advantages';
+    contentType = 'Technical Article';
+    audience = 'Engineering / Business / Technology Professionals';
+    coreTech = clean
+      .replace(/^(?:advantages?|benefits?|business impact|business value|why use)\s+(?:of|for|in)?\s*/gi, '')
+      .replace(/\s+(?:advantages?|benefits?|business impact|business value)\b/gi, '')
+      .trim();
+  } else if (/\b(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\b/i.test(lower)) {
+    intent = 'Security / Defensive Recommendations';
+    contentType = 'Technical Article';
+    audience = 'Engineering / Security Professionals';
+    coreTech = clean
+      .replace(/\s*(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\s*/gi, '')
+      .trim();
+  } else if (/\bcase\s*study\b/i.test(lower)) {
+    intent = 'Case Study Analysis';
+    contentType = 'Case Study';
+    audience = 'Engineering & Research Professionals';
+    coreTech = clean
+      .replace(/\s*(?:case\s*study|case\s*studies)\s*/gi, '')
+      .replace(/^(?:case\s*study|case\s*studies)\s+(?:on|of|for)\s*/gi, '')
+      .trim();
+  } else if (/\bvulnerability\b/i.test(lower)) {
+    intent = 'Vulnerability Breakdown';
+    contentType = 'Vulnerability Alert';
+    audience = 'Security & Systems Engineers';
+    coreTech = clean.replace(/\s*vulnerability(?:\s*alert)?\s*/gi, '').trim();
+  } else if (/\bmisconception/i.test(lower)) {
+    intent = 'Common Misconceptions';
+    contentType = 'Technical Article';
+    audience = 'Developers & Systems Architects';
+    coreTech = clean.replace(/\s*(?:common\s*)?misconception(?:s)?\s*/gi, '').trim();
   }
 
-  // Remove any leftover UI labels attached to topic
-  cleanTopic = cleanTopic
-    .replace(/^🚨\s*/, '')
-    .replace(/^AI\s*Security\s*Insight:\s*/i, '')
-    .replace(/^arXiv Paper:\s*/i, '')
-    .replace(/^GitHub Repository:\s*/i, '')
-    .replace(/:\s*(?:Security Analysis|Technical Explanation|Common Misconception|Research Summary|Breaking Development)/gi, '')
+  // Fallback coreTech if regex stripped everything
+  if (!coreTech) coreTech = clean;
+
+  // 2. Normalize Core Technology name
+  coreTech = coreTech
     .replace(/\bblock\s+chain\b/gi, 'Blockchain')
+    .replace(/\bllms?\b/gi, 'Large Language Models (LLMs)')
     .replace(/\bsuper\s+computer\b/gi, 'Supercomputer')
     .replace(/\bcloud\s+computing\b/gi, 'Cloud Computing')
     .replace(/\bquantum\s+computing\b/gi, 'Quantum Computing')
@@ -41,30 +74,48 @@ export function normalizeAndParseTopicInput(
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Normalize case if all upper or all lower
-  if (cleanTopic === cleanTopic.toLowerCase() || cleanTopic === cleanTopic.toUpperCase()) {
-    cleanTopic = cleanTopic.replace(/\b\w/g, c => c.toUpperCase());
+  if (coreTech === coreTech.toLowerCase() || coreTech === coreTech.toUpperCase()) {
+    coreTech = coreTech.replace(/\b\w/g, c => c.toUpperCase());
   }
 
-  const postType = (rawPostType || 'Technical Breakdown').trim();
-  const format = (rawFormat || 'Technical Explanation').trim();
+  return {
+    coreTechnology: coreTech,
+    contentIntent: intent,
+    contentType,
+    targetAudience: audience,
+  };
+}
+
+export function normalizeAndParseTopicInput(
+  rawTopic: string,
+  rawPostType?: string,
+  rawFormat?: string
+): ParsedTopicInput {
+  const classification = classifyUserRequest(rawTopic);
+  const postType = (rawPostType || classification.contentType || 'Technical Breakdown').trim();
+  const format = (rawFormat || classification.contentIntent || 'Technical Explanation').trim();
 
   return {
-    normalizedTopic: cleanTopic,
+    normalizedTopic: classification.coreTechnology,
     postType,
     format,
   };
 }
 
 export function createTopicProfile(requestedTopic: string, summary: string = ''): TopicProfile {
-  const { normalizedTopic } = normalizeAndParseTopicInput(requestedTopic);
+  const classification = classifyUserRequest(requestedTopic);
+  const normalizedTopic = classification.coreTechnology;
   const category = classifyTopicCategory(normalizedTopic, summary);
 
   let primarySubject = normalizedTopic;
   let coreConcepts: string[] = [];
   let unrelatedTopics: string[] = [];
 
-  if (category === 'High-Performance Computing') {
+  if (category === 'Blockchain & Distributed Systems') {
+    primarySubject = 'Distributed ledger technology, consensus mechanisms, smart contracts, and cryptographic verification';
+    coreConcepts = ['Shared transaction records', 'Traceability & auditability', 'Smart contract automation', 'Tamper-evident records', 'Multi-party coordination', 'Reduced dependency on intermediaries'];
+    unrelatedTopics = ['LLM prompt injection', 'Credential theft'];
+  } else if (category === 'High-Performance Computing') {
     primarySubject = 'Large-scale high-performance computing systems and parallel processing architectures';
     coreConcepts = ['Parallel processing', 'HPC interconnects', 'CPUs & GPUs', 'FLOPS per watt', 'MPI latency', 'Scientific simulations'];
     unrelatedTopics = ['Prompt injection', 'LLM jailbreak', 'Vector database attack', 'Credential theft'];
@@ -96,6 +147,7 @@ export function createTopicProfile(requestedTopic: string, summary: string = '')
     primarySubject,
     importantConcepts: coreConcepts,
     unrelatedConcepts: unrelatedTopics,
+    requestClassification: classification,
   };
 }
 
@@ -125,7 +177,16 @@ const FORBIDDEN_GENERIC_TEMPLATES = [
   'technical overview and analysis',
   'technical overview and analysis of',
   'recent technical analysis published by',
+  'recent technical analysis published by technical topic request',
+  'technical disclosures published by technical request',
   'significant progress regarding',
+  'analyzing advantage of',
+  'analyzing advantages of',
+  'analyzing benefit of',
+  'analyzing benefits of',
+  'analyzing llm defensive recommendations',
+  'optimizing execution pathways and resource management',
+  'streamlined workflow execution across complex technical workloads',
   'as technology systems evolve across',
   'modern compiler optimizations',
   'continuous application maintainability',
@@ -159,6 +220,11 @@ export function detectGenericFiller(content: string): string[] {
       /^recent disclosures regarding/i.test(lower) ||
       /^technical overview and analysis/i.test(lower)) {
     issues.push(`Forbidden generic introductory filler detected at post opening. The article must immediately explain the topic directly.`);
+  }
+
+  // Check if raw user search phrase is incorrectly used as technology name (e.g., "Analyzing advantage of block chain...")
+  if (/analyzing\s+(?:advantage|advantages|benefits?|why use|defensive recommendations)/i.test(lower)) {
+    issues.push(`User search phrase was incorrectly used as technology name (e.g. "Analyzing advantage of..."). Core technology name must be used cleanly.`);
   }
 
   return issues;
