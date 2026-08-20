@@ -121,8 +121,11 @@ const FORBIDDEN_GENERIC_TEMPLATES = [
   'recent disclosures regarding',
   'recent empirical findings regarding',
   'technical topic request',
+  'technical request',
+  'technical overview and analysis',
   'technical overview and analysis of',
   'recent technical analysis published by',
+  'significant progress regarding',
   'as technology systems evolve across',
   'modern compiler optimizations',
   'continuous application maintainability',
@@ -134,7 +137,11 @@ const FORBIDDEN_GENERIC_TEMPLATES = [
   'this is a game changer',
   'the possibilities are endless',
   'it is important to note that',
-  'this highlights the importance of'
+  'this highlights the importance of',
+  '[topic]',
+  '[source]',
+  '[company]',
+  '[disclosure]'
 ];
 
 export function detectGenericFiller(content: string): string[] {
@@ -143,8 +150,15 @@ export function detectGenericFiller(content: string): string[] {
 
   for (const template of FORBIDDEN_GENERIC_TEMPLATES) {
     if (lower.includes(template)) {
-      issues.push(`Generic template phrase detected: "${template}". Content must be 100% topic-specific.`);
+      issues.push(`Generic template/placeholder phrase detected: "${template}". Content must be 100% topic-specific with zero filler.`);
     }
+  }
+
+  // Check for generic introductory filler patterns forbidden in Case Study / Technical posts
+  if (/^recent technical analysis published by technical topic request/i.test(lower) ||
+      /^recent disclosures regarding/i.test(lower) ||
+      /^technical overview and analysis/i.test(lower)) {
+    issues.push(`Forbidden generic introductory filler detected at post opening. The article must immediately explain the topic directly.`);
   }
 
   return issues;

@@ -54,9 +54,26 @@ The requested topic "${topic.title}" MUST be the PRIMARY SUBJECT of the entire p
 - Persona determines HOW it is written (analytical style, clear technical depth).
 - Do NOT generate generic placeholder sentences ("recent disclosures regarding...", "as technology systems evolve across..."). Provide at least 3 verified topic-specific facts.
 
+CASE STUDY / CONTENT TYPE RULE (CRITICAL RULE):
+- If the content type / post type is "Case Study", the article MUST contain actual case-study analysis of a documented source, publication, research result, company, or implementation.
+- Do NOT generate generic introductory filler such as:
+  - "recent disclosures regarding..."
+  - "Recent technical analysis published by..."
+  - "Technical Topic Request..."
+  - "Technical overview and analysis..."
+  - "significant progress regarding..."
+  These are FORBIDDEN unless an actual source, publication, research result, company, implementation, or documented technical development has been provided.
+- The opening / WHAT IT IS section MUST immediately explain the topic directly.
+  For example:
+  TOPIC = BLOCKCHAIN
+  Correct: "Blockchain is a distributed ledger technology that..."
+  Incorrect: "Recent technical analysis published by Technical Topic Request details significant progress regarding BLOCKCHAIN."
+- NEVER use placeholders such as: "Technical Topic Request", "Technical Request", "Technical overview and analysis", "[topic]", "[source]", "[company]", or "recent disclosures" without a real disclosure.
+- If no real case study/source is available, clearly label the content as a "Technical Overview" instead of pretending that a case study or recent disclosure exists.
+
 NO FORMULAIC AI CLICHÉS MANDATE:
 NEVER use generic AI clichés, repetitive buzzwords, or filler phrases:
-- DO NOT USE: "In today's rapidly evolving world", "This marks a significant milestone", "The future of AI is here", "As AI continues to transform", "This is a game changer", "The possibilities are endless", "It is important to note that", "In conclusion", "This highlights the importance of", "recent technical analysis", "significant progress", "emerging technology systems".
+- DO NOT USE: "In today's rapidly evolving world", "This marks a significant milestone", "The future of AI is here", "As AI continues to transform", "This is a game changer", "The possibilities are endless", "It is important to note that", "In conclusion", "This highlights the importance of", "recent technical analysis", "significant progress", "emerging technology systems", "recent disclosures regarding", "technical topic request".
 - DO NOT USE dramatic question hooks ("Did you know?", "What if?", "Imagine?", "Here's why").
 
 NO INTERNAL SYSTEM TEXT MANDATE:

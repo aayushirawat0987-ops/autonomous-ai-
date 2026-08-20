@@ -17,10 +17,11 @@ ${post.content}
 CRITICAL USEFULNESS & CONTENT QUALITY AUDIT:
 1. Does this post actually teach the reader something concrete about "${topic.title}"? (What does the reader know after reading this that they did not know before?)
 2. Is the technical information specific, factual, and human-sounding rather than generic AI-generated filler?
-3. Does it avoid formulaic AI clichés ("In today's rapidly evolving world", "This is a game changer", "The future is here", "Organizations must stay vigilant", "recent technical analysis", "significant progress", "emerging technology systems") and repetitive buzzwords?
+3. Does it avoid formulaic AI clichés ("In today's rapidly evolving world", "This is a game changer", "The future is here", "Organizations must stay vigilant", "recent technical analysis", "significant progress", "emerging technology systems", "recent disclosures regarding", "technical topic request") and repetitive buzzwords?
 4. Is the structure tailored to "${topic.title}" rather than a fixed copied template?
 5. Does the conclusion provide a topic-specific insight rather than a generic security warning?
 6. Are there any hallucination risks? Ensure no invented research, statistics, companies, findings, or technical claims. Verify source relevance.
+7. CASE STUDY & PLACEHOLDER RULE: If the post is a Case Study, does it contain actual case-study analysis of a real source/company/implementation? Ensure it DOES NOT use generic introductory filler ("recent disclosures regarding...", "Recent technical analysis published by...", "Technical Topic Request...", "Technical overview and analysis...", "significant progress regarding...") or placeholder text ('[topic]', '[source]', '[company]', 'Technical Topic Request'). The opening MUST explain the topic directly.
 
 STRICT 8-METRIC EVALUATION CATEGORIES (Score each 0 to 100):
 1. Accuracy (25% weight): Zero false claims, zero fabricated stats/CVEs/quotes. Every detail verified.

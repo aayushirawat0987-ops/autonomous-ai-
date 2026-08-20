@@ -22,8 +22,9 @@ export function countMainContentWords(text: string): number {
 export function cleanPostContent(content: string): string {
   if (!content) return '';
   return content
-    .replace(/^.*(?:User Manual Request|Technical Topic Request|Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt|technical overview and analysis of|recent technical analysis published by|recent disclosures regarding).*\n?/gmi, '')
-    .replace(/^Source:\s*(?:Technical Topic Request|Manual Request|User Manual Request).*\n?/gmi, '')
+    .replace(/^.*(?:User Manual Request|Technical Topic Request|Technical Request|Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt|technical overview and analysis of|technical overview and analysis|recent technical analysis published by|recent disclosures regarding|significant progress regarding).*\n?/gmi, '')
+    .replace(/^Source:\s*(?:Technical Topic Request|Technical Request|Manual Request|User Manual Request).*\n?/gmi, '')
+    .replace(/\[(?:topic|source|company|disclosure)\]/gi, '')
     .trim();
 }
 
