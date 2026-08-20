@@ -1,4 +1,4 @@
-import { DiscoveredTopic, EditorialEvaluation, Persona } from '../models/types';
+import { DiscoveredTopic, EditorialEvaluation, Persona, StructuredContentPlan } from '../models/types';
 import { getPersonaSystemPrompt } from './personaPrompt';
 import { AntiRepetitionContext } from '../agent/memory';
 
@@ -8,7 +8,8 @@ export function getWriterPrompt(
   evaluation: EditorialEvaluation,
   contentAngle: string = 'Technical Explanation',
   antiRepetition?: AntiRepetitionContext,
-  topicCategory: string = 'General Technology'
+  topicCategory: string = 'General Technology',
+  plan?: StructuredContentPlan
 ): string {
   const personaContext = getPersonaSystemPrompt(persona);
 
@@ -37,15 +38,30 @@ export function getWriterPrompt(
 5. KEY TAKEAWAY (30–40 words): Clear, memorable takeaway correcting the misconception.`;
   }
 
+  let planBlock = '';
+  if (plan) {
+    planBlock = `
+STRUCTURED CONTENT PLAN (MANDATORY EXECUTION TARGET):
+- Primary Subject: "${plan.primarySubject}"
+- Secondary Subject / Domain: "${plan.secondarySubject || 'None'}"
+- Relationship: "${plan.relationship}"
+- User Intent: "${plan.intent}"
+- Post Type: "${plan.postType}"
+- Target Platform: "${plan.platform}"
+- Tone & Style: "${plan.tone}"
+- Additional Instructions: "${plan.additionalInstructions || 'None'}"
+`;
+  }
+
   return `${personaContext}
 
 MANDATORY WRITER INSTRUCTION:
 Make every post specific, factual, technical, and human-sounding, not generic AI-generated filler. Never invent research, statistics, companies, findings, or technical claims. First understand the topic, identify the core technology, determine what the reader needs to know, and then explain it clearly in your own words. Every paragraph must add meaningful information.
-
+${planBlock}
 CLASSIFICATION & GROUNDING MANDATE (CRITICAL RULE):
 - Requested Topic / Query: "${topic.title}"
 - Topic Category: "${topicCategory}"
-- Primary Subject / Core Technology: "${topic.title}"
+- Primary Subject / Core Technology: "${plan?.primarySubject || topic.title}"
 - ${angleInstruction}
 
 CRITICAL INSTRUCTION ON CORE TECHNOLOGY VS USER QUERY:

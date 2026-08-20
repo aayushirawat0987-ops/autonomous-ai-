@@ -1,7 +1,7 @@
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona } from '../models/types';
 import { OpenAIService, countMainContentWords, classifyTopicCategory } from '../services/openai';
-import { createTopicProfile, validateStructureAndSanitize, normalizeAndParseTopicInput } from '../utils/sanitizer';
+import { createTopicProfile, validateStructureAndSanitize, normalizeAndParseTopicInput, createStructuredContentPlan } from '../utils/sanitizer';
 import { Logger } from '../utils/logger';
 import { MemoryEngine } from './memory';
 
@@ -339,22 +339,29 @@ export class WriterEngine {
     const agent = await prisma.agent.findUnique({ where: { id: agentId } });
     if (!agent) throw new Error(`Agent with ID '${agentId}' not found.`);
 
-    const parsedInput = normalizeAndParseTopicInput(topicTitle, postType, instructions);
-    const cleanTopicTitle = parsedInput.normalizedTopic;
-    const cleanPostType = parsedInput.postType;
+    // Pipeline Step 1 & 2: User Topic -> Intent / Relationship Extraction -> Structured Content Plan
+    const plan = createStructuredContentPlan(
+      topicTitle,
+      postType,
+      platform,
+      tone,
+      instructions
+    );
+
+    Logger.info(`[Pipeline] Structured Content Plan: SubjectX='${plan.primarySubject}', TargetY='${plan.secondarySubject}', Rel='${plan.relationship}', Intent='${plan.intent}', Type='${plan.postType}', Platform='${plan.platform}'`, agentId);
 
     const persona: Persona = {
       name: agent.name,
       domain: agent.domain,
       role: agent.role,
-      style: `${tone}, ${agent.style}`,
+      style: `${plan.tone}, ${agent.style}`,
     };
 
     const topic: DiscoveredTopic = {
-      title: cleanTopicTitle,
-      url: `https://autonomous.agent/topic-${Date.now()}`,
+      title: plan.primarySubject,
+      url: '', // Real source or empty
       source: 'Technical Reference',
-      summary: `Technical analysis of ${cleanTopicTitle}. ${instructions}`.trim(),
+      summary: `${plan.intent}. ${plan.additionalInstructions}`.trim(),
       publishedAt: new Date().toISOString(),
     };
 
@@ -367,44 +374,58 @@ export class WriterEngine {
     };
 
     const contentAngle = await this.memoryEngine.selectContentAngle(agentId, topicTitle);
-    const topicCategory = classifyTopicCategory(topicTitle, instructions);
+    const topicCategory = classifyTopicCategory(plan.primarySubject, instructions);
 
-    let postData = await this.openaiService.generatePost(persona, topic, evaluation, contentAngle);
+    // Pipeline Step 3: Structured Content Plan -> Topic-Specific Generation
+    let postData = await this.openaiService.generatePost(persona, topic, evaluation, contentAngle, undefined, plan);
 
-    // Topic Relevance & Structural Check Loop for Manual Post
+    // Pipeline Step 4 & 5: Quality Validation (Struct, Word count 250-300, Topic relevance check)
     let attempt = 0;
     let structCheck = validateStructureAndSanitize(postData.content, postData.title);
     let topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
+    let mainWordCount = countMainContentWords(structCheck.sanitizedContent);
 
-    while ((!structCheck.valid || !topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift) && attempt < 3) {
-      Logger.warn(`Manual post failed validation (StructValid: ${structCheck.valid}, TopicRelScore: ${topicRel.relevanceScore}). Rewriting...`, agentId);
+    while ((!structCheck.valid || !topicRel.approved || topicRel.relevanceScore < 85 || topicRel.topicDrift || mainWordCount < 250 || mainWordCount > 300) && attempt < 3) {
+      Logger.warn(`Manual post failed validation (StructValid: ${structCheck.valid}, TopicRelScore: ${topicRel.relevanceScore}, WordCount: ${mainWordCount}). Rewriting...`, agentId);
       const issues = [...structCheck.issues];
       if (!topicRel.approved || topicRel.topicDrift) {
-        issues.push(`Topic Drift: Post MUST be primarily about "${topicTitle}".`);
+        issues.push(`Topic Drift: Post MUST be primarily about "${plan.primarySubject}".`);
       }
+      if (mainWordCount < 250) {
+        issues.push(`Draft is too short (${mainWordCount} words). Expand technical explanation and mechanisms to reach strictly 250-300 words.`);
+      } else if (mainWordCount > 300) {
+        issues.push(`Draft is too long (${mainWordCount} words). Compress filler sentences to reach strictly 250-300 words.`);
+      }
+
       postData = await this.openaiService.generateRewrite(
         persona,
         topic,
         postData,
         issues,
-        [`Re-ground all paragraphs around "${topicTitle}". Remove internal request text and duplicate headings.`]
+        [`Re-ground all paragraphs around "${plan.primarySubject}". Maintain word count strictly between 250 and 300 words. Remove internal request text.`]
       );
       attempt++;
       structCheck = validateStructureAndSanitize(postData.content, postData.title);
       topicRel = await this.openaiService.checkTopicRelevance(persona, topic, postData);
+      mainWordCount = countMainContentWords(structCheck.sanitizedContent);
     }
 
     const cleanContent = structCheck.sanitizedContent;
-    const wordCount = countMainContentWords(cleanContent);
+    const wordCount = mainWordCount;
+
+    // Pipeline Step 6: Source Validation (Filter out fake URLs)
+    const validSources = Array.isArray(postData.sources)
+      ? postData.sources.filter(s => s && typeof s === 'string' && !s.includes('autonomous.agent') && !s.includes('Technical Topic Request'))
+      : [];
 
     const basePostPayload: any = {
       agentId,
-      title: structCheck.sanitizedTitle || cleanTopicTitle,
+      title: structCheck.sanitizedTitle || `${plan.primarySubject}: Technical Overview`,
       content: cleanContent,
       topicCategory,
       topicRelevanceScore: topicRel.relevanceScore,
       contentAngle,
-      postType: cleanPostType,
+      postType: plan.postType,
       wordCount,
       accuracyScore: 92,
       originalityScore: 90,
@@ -415,11 +436,11 @@ export class WriterEngine {
       factCheckStatus: 'VERIFIED',
       criticStatus: 'APPROVED',
       rewriteAttempts: attempt,
-      rationale: postData.rationale || `Manually requested post for ${cleanTopicTitle}`,
-      whySelected: postData.whySelected || `User requested ${cleanPostType} post for ${cleanTopicTitle}`,
+      rationale: postData.rationale || `Manually requested post for ${plan.primarySubject}`,
+      whySelected: postData.whySelected || `User requested ${plan.postType} post for ${plan.primarySubject}`,
       whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
-      sources: JSON.stringify(postData.sources || [topic.url]),
-      topicUrl: topic.url,
+      sources: JSON.stringify(validSources),
+      topicUrl: validSources.length > 0 ? validSources[0] : '',
       topicSource: 'Technical Request',
       publishedAt: new Date(),
       platform: platform || 'LinkedIn / X',
@@ -435,13 +456,13 @@ export class WriterEngine {
       createdPost = await prisma.post.create({
         data: {
           agentId,
-          title: structCheck.sanitizedTitle || cleanTopicTitle,
+          title: structCheck.sanitizedTitle || plan.primarySubject,
           content: cleanContent,
-          rationale: postData.rationale || `Manually requested post for ${cleanTopicTitle}`,
-          whySelected: postData.whySelected || `User requested ${cleanPostType} post for ${cleanTopicTitle}`,
+          rationale: postData.rationale || `Manually requested post for ${plan.primarySubject}`,
+          whySelected: postData.whySelected || `User requested ${plan.postType} post for ${plan.primarySubject}`,
           whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
-          sources: JSON.stringify(postData.sources || [topic.url]),
-          topicUrl: topic.url,
+          sources: JSON.stringify(validSources),
+          topicUrl: validSources.length > 0 ? validSources[0] : '',
           topicSource: 'Technical Request',
           publishedAt: new Date(),
         },
@@ -449,7 +470,7 @@ export class WriterEngine {
     }
 
     await this.memoryEngine.saveMemory(agentId, topic, postData.rationale);
-    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name} (${wordCount} words, Topic: ${cleanTopicTitle}, Category: ${topicCategory})`, agentId);
+    Logger.info(`MANUALLY CREATED & PUBLISHED POST #${createdPost.id} FOR AGENT ${agent.name} (${wordCount} words, Topic: ${plan.primarySubject}, Category: ${topicCategory})`, agentId);
 
     return createdPost;
   }

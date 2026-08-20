@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona, FactCheckResult, CriticResult, CriticScores, TopicRelevanceResult } from '../models/types';
+import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona, FactCheckResult, CriticResult, CriticScores, TopicRelevanceResult, StructuredContentPlan } from '../models/types';
 import { getEditorialEvaluationPrompt } from '../prompts/editorialPrompt';
 import { getWriterPrompt } from '../prompts/writerPrompt';
 import { getFactCheckerPrompt } from '../prompts/factCheckerPrompt';
@@ -168,7 +168,8 @@ export class OpenAIService {
     topic: DiscoveredTopic,
     evaluation: EditorialEvaluation,
     contentAngle: string = 'Technical Explanation',
-    antiRepetition?: AntiRepetitionContext
+    antiRepetition?: AntiRepetitionContext,
+    plan?: StructuredContentPlan
   ): Promise<GeneratedPost> {
     const topicCategory = classifyTopicCategory(topic.title, topic.summary);
 
@@ -177,7 +178,7 @@ export class OpenAIService {
       return this.fallbackGeneratePost(persona, topic, evaluation, contentAngle);
     }
 
-    const prompt = getWriterPrompt(persona, topic, evaluation, contentAngle, antiRepetition, topicCategory);
+    const prompt = getWriterPrompt(persona, topic, evaluation, contentAngle, antiRepetition, topicCategory, plan);
 
     try {
       const response = await this.client.chat.completions.create({
@@ -196,6 +197,13 @@ export class OpenAIService {
       const postContent = cleanPostContent(rawContent);
       const wordCount = countMainContentWords(postContent);
 
+      let cleanSources: string[] = Array.isArray(parsed.sources)
+        ? parsed.sources.filter((s: string) => s && typeof s === 'string' && !s.includes('autonomous.agent') && !s.includes('Technical Topic Request'))
+        : [];
+      if (topic.url && typeof topic.url === 'string' && !topic.url.includes('autonomous.agent') && !topic.url.includes('Technical Topic Request') && !cleanSources.includes(topic.url)) {
+        cleanSources.push(topic.url);
+      }
+
       return {
         title: parsed.title || topic.title,
         content: postContent,
@@ -206,7 +214,7 @@ export class OpenAIService {
         rationale: parsed.rationale || `Analysis generated for ${topic.title} in ${topicCategory} under '${contentAngle}' angle.`,
         whySelected: parsed.whySelected || `Selected due to technical relevance in ${topicCategory}.`,
         whyRelevantNow: parsed.whyRelevantNow || `Key ${topicCategory} developments and insights.`,
-        sources: Array.isArray(parsed.sources) ? parsed.sources : [topic.url],
+        sources: cleanSources,
       };
     } catch (error) {
       Logger.error('OpenAI post generation failed, falling back to heuristic writer.', error);

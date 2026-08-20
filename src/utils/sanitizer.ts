@@ -1,4 +1,4 @@
-import { TopicProfile, RequestClassification } from '../models/types';
+import { TopicProfile, RequestClassification, StructuredContentPlan } from '../models/types';
 import { classifyTopicCategory } from '../services/openai';
 
 export interface ParsedTopicInput {
@@ -112,6 +112,41 @@ export function classifyUserRequest(rawInput: string): RequestClassification {
     subjectX,
     targetY,
     isRelationshipQuery,
+  };
+}
+
+export function createStructuredContentPlan(
+  rawTopic: string,
+  postType: string = 'Educational',
+  platform: string = 'LinkedIn / X',
+  tone: string = 'Professional & Analytical',
+  instructions: string = ''
+): StructuredContentPlan {
+  const classification = classifyUserRequest(rawTopic);
+
+  let primarySubject = classification.coreTechnology;
+  let secondarySubject = classification.targetY || '';
+  let relationship = classification.isRelationshipQuery
+    ? `Uses / Applications of ${classification.subjectX} in ${classification.targetY}`
+    : classification.contentIntent;
+  let intent = classification.contentIntent;
+
+  if (classification.isRelationshipQuery && classification.subjectX && classification.targetY) {
+    primarySubject = classification.subjectX;
+    secondarySubject = classification.targetY;
+    relationship = `Uses / Applications of ${primarySubject} in ${secondarySubject}`;
+    intent = `Explain how ${primarySubject} is used in ${secondarySubject} development`;
+  }
+
+  return {
+    primarySubject,
+    secondarySubject,
+    relationship,
+    intent,
+    postType: postType || classification.contentType || 'Educational',
+    platform: platform || 'LinkedIn / X',
+    tone: tone || 'Professional & Analytical',
+    additionalInstructions: instructions || '',
   };
 }
 

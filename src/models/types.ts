@@ -40,6 +40,17 @@ export interface RequestClassification {
   isRelationshipQuery?: boolean;
 }
 
+export interface StructuredContentPlan {
+  primarySubject: string;
+  secondarySubject: string;
+  relationship: string;
+  intent: string;
+  postType: string;
+  platform: string;
+  tone: string;
+  additionalInstructions: string;
+}
+
 export interface TopicProfile {
   requestedTopic: string;
   topicCategory: string;
