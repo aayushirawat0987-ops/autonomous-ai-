@@ -3,7 +3,7 @@ import { schedulerEngine } from '../agent/scheduler';
 import { WriterEngine } from '../agent/writer';
 import { prisma } from '../database/prisma';
 import { DiscoveredTopic, EditorialEvaluation, Persona } from '../models/types';
-import { OpenAIService } from '../services/openai';
+import { OpenAIService, countMainContentWords } from '../services/openai';
 import { Logger } from '../utils/logger';
 
 export async function handleAgentList(req: Request, res: Response) {
@@ -337,18 +337,33 @@ export async function handlePostRegenerate(req: Request, res: Response) {
 export async function handlePostPublish(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    let updated;
-    try {
-      updated = await prisma.post.update({
-        where: { id },
-        data: {
-          status: 'Published',
-        } as any,
-      });
-    } catch (e) {
-      updated = await prisma.post.findUnique({ where: { id } });
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: 'Post not found' });
     }
-    return res.status(200).json({ post: updated });
+
+    const actualWordCount = countMainContentWords(existing.content);
+    const minWords = (existing as any).minWordCount || 500;
+    const maxWords = (existing as any).maxWordCount || 700;
+
+    if (actualWordCount < minWords || actualWordCount > maxWords) {
+      return res.status(400).json({
+        error: `Cannot publish post: Word count (${actualWordCount}) is outside allowed range (${minWords}–${maxWords} words). Regeneration required.`,
+        actualWordCount,
+        minWordCount: minWords,
+        maxWordCount: maxWords,
+        publishAllowed: false
+      });
+    }
+
+    const updated = await prisma.post.update({
+      where: { id },
+      data: {
+        status: 'Published',
+      } as any,
+    });
+
+    return res.status(200).json({ post: updated, publishAllowed: true });
   } catch (error) {
     Logger.error('Failed to publish post', error);
     return res.status(500).json({ error: 'Failed to publish post' });

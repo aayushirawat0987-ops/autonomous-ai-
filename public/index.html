@@ -2829,15 +2829,28 @@
       const agentRole = agentObj ? agentObj.role : 'AI Security Researcher';
       const platform = post.platform || 'LinkedIn / X';
       const status = post.status || 'Published';
-
       const wordCount = post.wordCount || (post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0);
 
-      let statusBadge = '<div class="badge success">✓ Published</div>';
-      if (status === 'Draft') statusBadge = '<div class="badge warning">✎ Draft</div>';
-      else if (status === 'Generated') statusBadge = '<div class="badge">🤖 Generated</div>';
+      const minW = post.minWordCount || 500;
+      const maxW = post.maxWordCount || 700;
+      const wordCountValid = wordCount >= minW && wordCount <= maxW;
+      const wordCountClass = wordCountValid ? 'text-success' : 'text-danger';
 
-      const wordCountValid = wordCount >= 200 && wordCount <= 300;
-      const wordCountClass = wordCountValid ? 'text-primary' : 'text-danger';
+      let statusBadge = '<div class="badge success">✓ Published</div>';
+      if (!wordCountValid || status === 'Needs Regeneration' || status === 'Validation Failed') {
+        statusBadge = '<div class="badge danger" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">⚠️ Needs Regeneration</div>';
+      } else if (status === 'Draft') {
+        statusBadge = '<div class="badge warning">✎ Draft</div>';
+      } else if (status === 'Generated') {
+        statusBadge = '<div class="badge">🤖 Generated</div>';
+      }
+
+      let sourceDisplay = '';
+      if (post.topicUrl && !post.topicUrl.includes('autonomous.agent')) {
+        sourceDisplay = `<div class="text-xs text-muted mt-2">Source: <a href="${escapeHtml(post.topicUrl)}" target="_blank" style="color: var(--primary); text-decoration: underline;">${escapeHtml(post.topicUrl)}</a></div>`;
+      } else {
+        sourceDisplay = `<div class="text-xs text-muted mt-2">Source: No verified external source</div>`;
+      }
 
       return `
       <article class="post-card fade-enter" id="post-card-${post.id}">
@@ -2854,8 +2867,8 @@
             <span class="text-xs font-bold text-main" style="background: rgba(147,51,234,0.1); color: #9333ea; padding: 0.25rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid rgba(147,51,234,0.2);">${escapeHtml(topicCategory)}</span>
             <span class="text-xs font-semibold text-secondary" style="background: var(--secondary-light); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(contentAngle)}</span>
             <span class="text-xs font-semibold" style="background: rgba(37,99,235,0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
-            <span class="text-xs font-bold font-mono ${wordCountClass}" style="background: var(--bg-surface-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);" title="Content Word Count (Must be 200–300 words)">
-              ${wordCount} words ${wordCountValid ? '✓' : '⚠️'}
+            <span class="text-xs font-bold font-mono ${wordCountClass}" style="background: var(--bg-surface-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);" title="Calculated Word Count (Allowed: ${minW}–${maxW} words)">
+              ${wordCount} / ${minW}–${maxW} words ${wordCountValid ? '✓' : '⚠️'}
             </span>
             <div class="score-circle" title="Overall Quality Score (Target >= 85)">${score}</div>
           </div>
@@ -2863,12 +2876,15 @@
 
         ${post.title ? `<h4 class="font-bold text-lg mb-2" style="color: var(--text-main); padding: 1.25rem 1.5rem 0 1.5rem;">${escapeHtml(post.title)}</h4>` : ''}
 
-        <div class="post-body" style="${post.title ? 'padding-top: 0.5rem;' : ''}">${escapeHtml(post.content)}</div>
+        <div class="post-body" style="${post.title ? 'padding-top: 0.5rem;' : ''}">
+          ${escapeHtml(post.content)}
+          ${sourceDisplay}
+        </div>
         
         <div class="post-footer flex justify-between items-center flex-wrap gap-3">
           <div class="badges" style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;">
             <div class="badge success">Topic Relevance: ${topicRelevanceScore}%</div>
-            <div class="badge success">✓ Fact Checked</div>
+            <div class="badge ${wordCountValid ? 'success' : 'danger'}">${wordCountValid ? '✓ Fact Checked' : '⚠️ Word Count Failed'}</div>
             <div class="badge success">Accuracy: ${accuracyScore}%</div>
             <div class="badge purple">Originality: ${originalityScore}%</div>
             <div class="badge primary">Tech Depth: ${technicalScore}%</div>

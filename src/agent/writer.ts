@@ -283,6 +283,10 @@ export class WriterEngine {
     const cleanContent = structCheckFinal.sanitizedContent;
     const wordCount = countMainContentWords(cleanContent);
 
+    const bounds = getWordCountBounds(contentAngle || topicCategory);
+    const wordCountPassed = wordCount >= bounds.minimumWords && wordCount <= bounds.maximumWords;
+    const finalStatus = wordCountPassed ? 'Published' : 'Needs Regeneration';
+
     // Save Post to Database
     const basePayload = {
       agentId,
@@ -293,24 +297,27 @@ export class WriterEngine {
       contentAngle: postData.contentAngle || contentAngle,
       postType: 'Technical Breakdown',
       wordCount,
+      minWordCount: bounds.minimumWords,
+      targetWordCount: bounds.targetWords,
+      maxWordCount: bounds.maximumWords,
       accuracyScore: finalAccuracyScore,
       originalityScore: finalOriginalityScore,
       technicalScore: finalTechnicalScore,
       clarityScore: finalClarityScore,
       evidenceScore: finalEvidenceScore,
       overallQuality: finalOverallQuality,
-      factCheckStatus: 'VERIFIED',
-      criticStatus: 'APPROVED',
+      factCheckStatus: wordCountPassed ? 'VERIFIED' : 'FAILED_WORD_COUNT',
+      criticStatus: wordCountPassed ? 'APPROVED' : 'NEEDS_REGENERATION',
       rewriteAttempts: attempt,
       rationale: postData.rationale,
       whySelected: postData.whySelected,
       whyRelevantNow: postData.whyRelevantNow,
       sources: JSON.stringify(postData.sources),
-      topicUrl: topic.url,
-      topicSource: topic.source,
+      topicUrl: topic.url && !topic.url.includes('autonomous.agent') ? topic.url : '',
+      topicSource: topic.url && !topic.url.includes('autonomous.agent') ? topic.source : 'No verified external source',
       publishedAt: new Date(),
       platform: 'LinkedIn / X',
-      status: 'Published',
+      status: finalStatus,
     };
 
     let createdPost;
@@ -436,10 +443,16 @@ export class WriterEngine {
     const cleanContent = structCheck.sanitizedContent;
     const wordCount = mainWordCount;
 
-    // Pipeline Step 6: Source Validation
+    // Pipeline Step 6 & 7: Source & Final Validation Rule (MUST NOT publish if word count fails)
     const validSources = Array.isArray(postData.sources)
       ? postData.sources.filter(s => s && typeof s === 'string' && !s.includes('autonomous.agent') && !s.includes('Technical Topic Request'))
       : [];
+
+    const wordCountPassed = wordCount >= minimumWords && wordCount <= maximumWords;
+    const placeholderCheckPassed = structCheck.valid;
+    const topicRelevancePassed = topicRel.approved && topicRel.relevanceScore >= 85 && !topicRel.topicDrift;
+    const publishAllowed = wordCountPassed && placeholderCheckPassed && topicRelevancePassed;
+    const finalStatus = publishAllowed ? 'Published' : 'Needs Regeneration';
 
     const basePostPayload: any = {
       agentId,
@@ -458,19 +471,19 @@ export class WriterEngine {
       technicalScore: 92,
       clarityScore: 90,
       evidenceScore: 90,
-      overallQuality: 91,
-      factCheckStatus: 'VERIFIED',
-      criticStatus: 'APPROVED',
+      overallQuality: publishAllowed ? 91 : 70,
+      factCheckStatus: wordCountPassed ? 'VERIFIED' : 'FAILED_WORD_COUNT',
+      criticStatus: publishAllowed ? 'APPROVED' : 'NEEDS_REGENERATION',
       rewriteAttempts: attempt,
       rationale: postData.rationale || `Manually requested post for ${plan.primarySubject}`,
       whySelected: postData.whySelected || `User requested ${plan.postType} post for ${plan.primarySubject}`,
       whyRelevantNow: postData.whyRelevantNow || `Key ${topicCategory} updates for ${platform}`,
       sources: JSON.stringify(validSources),
       topicUrl: validSources.length > 0 ? validSources[0] : '',
-      topicSource: 'Technical Request',
+      topicSource: validSources.length > 0 ? 'External Reference' : 'No verified external source',
       publishedAt: new Date(),
       platform: platform || 'LinkedIn / X',
-      status: 'Published',
+      status: finalStatus,
     };
 
     let createdPost;

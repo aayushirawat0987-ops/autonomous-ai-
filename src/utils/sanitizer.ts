@@ -89,8 +89,12 @@ export function classifyUserRequest(rawInput: string): RequestClassification {
   // Fallback coreTech if regex stripped everything
   if (!coreTech) coreTech = clean;
 
-  // 2. Normalize Core Technology name
+  // 2. Normalize Core Technology name & fix common typos
   coreTech = coreTech
+    .replace(/\bjaa+va\b/gi, 'Java')
+    .replace(/\bpythooo+n\b/gi, 'Python')
+    .replace(/\bblockchaa+in\b/gi, 'Blockchain')
+    .replace(/\bllmm+\b/gi, 'LLM')
     .replace(/\bblock\s+chain\b/gi, 'Blockchain')
     .replace(/\bllms?\b/gi, 'Large Language Models (LLMs)')
     .replace(/\bsuper\s+computer\b/gi, 'Supercomputer')
