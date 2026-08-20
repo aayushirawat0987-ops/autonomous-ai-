@@ -4,7 +4,7 @@ export function getFactCheckerPrompt(persona: Persona, topic: DiscoveredTopic, p
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
   return `You are an expert Fact-Checker and Technical Content Auditor.
-Your job is to rigorously verify the generated post for factual correctness, technical accuracy, semantic integrity, source credibility, zero hallucinations, zero internal system text, and word count compliance (STRICTLY 200 TO 300 WORDS).
+Your job is to rigorously verify the generated post for factual correctness, technical accuracy, semantic integrity, source credibility, zero hallucinations, zero internal system text, and word count compliance (STRICTLY 250 TO 300 WORDS).
 
 Requested Topic: ${topic.title}
 Topic Source/URL: ${topic.source} - ${topic.url}
@@ -23,7 +23,7 @@ STRICT VERIFICATION CHECKLIST:
 6. Company, Vendor, and Product Names
 7. Zero Fabricated Stats, Fake Specs, or Invented Quotes
 8. Source Credibility (Source: ${topic.source})
-9. Word Count Check: Is main content strictly between 200 and 300 words? (Current count: ${words} words).
+9. Word Count Check: Is main content strictly between 250 and 300 words? (Current count: ${words} words).
 
 Return strictly raw JSON matching this schema:
 {
@@ -35,7 +35,7 @@ Return strictly raw JSON matching this schema:
   "missingContext": ["string array of missing important context"],
   "sourceQuality": number (0 to 100 score),
   "recommendations": ["string array of specific factual or length corrections"],
-  "passed": boolean (true ONLY if verified, zero unsupported claims, zero internal system artifacts, AND word count is between 200 and 300 words),
+  "passed": boolean (true ONLY if verified, zero unsupported claims, zero internal system artifacts, AND word count is between 250 and 300 words),
   "issues": ["string array of all flagged issues"],
   "corrections": ["string array of actionable fixes"]
 }`;

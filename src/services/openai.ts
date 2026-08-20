@@ -7,6 +7,7 @@ import { getCriticPrompt } from '../prompts/criticPrompt';
 import { getRewritePrompt } from '../prompts/rewritePrompt';
 import { Logger } from '../utils/logger';
 import { AntiRepetitionContext } from '../agent/memory';
+import { classifyUserRequest } from '../utils/sanitizer';
 
 export function countMainContentWords(text: string): number {
   if (!text) return 0;
@@ -600,55 +601,39 @@ Return strictly raw JSON matching:
     evaluation: EditorialEvaluation,
     contentAngle: string = 'Technical Explanation'
   ): GeneratedPost {
-    const rawTitle = topic.title
-      .replace(/^🚨\s*AI\s*Security\s*Insight:\s*/i, '')
-      .replace(/^🚨\s*Critical\s*AI\s*Security\s*Alert:\s*/i, '')
-      .replace(/^arXiv Paper:\s*/i, '')
-      .replace(/^GitHub Repository:\s*/i, '')
-      .trim();
-
-    const topicCategory = classifyTopicCategory(rawTitle, topic.summary);
+    const { coreTechnology, contentIntent, contentType, targetAudience } = classifyUserRequest(topic.title);
+    const topicCategory = classifyTopicCategory(coreTechnology, topic.summary);
 
     let categoryExplanation = '';
     let categoryImpact = '';
     let categoryTakeaway = '';
 
-    if (/python/i.test(rawTitle)) {
-      categoryExplanation = `Python was created by Dutch programmer Guido van Rossum in the late 1980s as a successor to the ABC programming language, with its first public release appearing in February 1991. Van Rossum designed Python with a core philosophy emphasizing code readability, minimalist syntax, and indentation-based block structuring. A major milestone occurred with Python 2.0 in 2000 and Python 3.0 in 2008, which introduced backwards-incompatible cleanup of Unicode handling and core language syntax.`;
-      categoryImpact = `Understanding Python's evolution clarifies why its readable syntax and rich ecosystem of open-source libraries positioned it as the dominant language for modern data science, web backend engineering, and machine learning research.`;
-      categoryTakeaway = `Python's success stems from its foundational commitment to developer readability, clean syntax design, and community-driven evolution.`;
-    } else if (/blockchain/i.test(rawTitle)) {
-      categoryExplanation = `Blockchain technology operates as an append-only distributed ledger maintained across a peer-to-peer network of independent nodes. Transactions are grouped into cryptographic blocks, hashed, and linked sequentially using SHA-256 or similar cryptographic functions. Decentralized consensus mechanisms, such as Proof-of-Work or Proof-of-Stake, ensure that all participating nodes agree on the global state tree without requiring a central authority. Smart contracts execute self-enforcing code deterministically across distributed virtual machine nodes.`;
-      categoryImpact = `For software architects and financial systems engineers, blockchain delivers tamper-resistant audit trails, automated multi-party settlement, and secure decentralized data verification across untrusted organizational boundaries.`;
-      categoryTakeaway = `Decentralized blockchain networks replace central administrative trust with cryptographic hashing, distributed consensus algorithms, and deterministic smart contract execution.`;
-    } else if (/supercomput|hpc/i.test(rawTitle)) {
-      categoryExplanation = `High-Performance Computing (HPC) and supercomputers partition massive mathematical workloads across thousands of compute nodes linked by ultra-low-latency high-bandwidth interconnects like InfiniBand. Utilizing heterogeneous hardware clusters combining high-density CPUs and GPU accelerators, supercomputers execute millions of concurrent parallel processes via Message Passing Interface (MPI). Performance is benchmarked in FLOPS (Floating-Point Operations Per Second), reaching exascale thresholds.`;
-      categoryImpact = `Supercomputing breakthroughs enable scientific research teams to execute high-fidelity climate simulations, complex molecular dynamics, and astrophysics models that are computationally impossible on standard enterprise server infrastructure.`;
-      categoryTakeaway = `Exascale supercomputing performance relies on balanced interconnect memory bandwidth, high-density heterogeneous acceleration, and optimized parallel execution algorithms.`;
+    if (/blockchain/i.test(coreTechnology) || topicCategory === 'Blockchain & Distributed Systems') {
+      categoryExplanation = `Blockchain operates as a cryptographic append-only distributed ledger maintained across a peer-to-peer network of independent nodes. Transactions are structured into blocks, cryptographically hashed using SHA-256 or Keccak, and linked sequentially to construct an immutable chain. Distributed consensus protocols—such as Proof-of-Work or Proof-of-Stake—ensure that all network participants agree on global state state transitions without reliance on a centralized intermediary authority. Deterministic smart contracts execute code on distributed virtual machines, enabling automated verification. However, trade-offs include transaction latency, block storage growth, and energy or staking governance complexity.`;
+      categoryImpact = `For enterprise architects and financial engineers, blockchain delivers tamper-evident transaction logs, automated multi-party reconciliation, and verifiable data provenance. However, suitability must be benchmarked against conventional relational databases, which offer far higher transaction throughput and lower operation costs when multi-party decentralization is unnecessary.`;
+      categoryTakeaway = `Decentralized blockchain architectures trade single-node transaction throughput for tamper-evident data verification, cryptographic consensus, and automated smart-contract execution across untrusted network participants.`;
+    } else if (/python/i.test(coreTechnology)) {
+      categoryExplanation = `Python was created by Guido van Rossum in 1991 to emphasize code readability, clean syntax design, and explicit indentation-based block structuring. Over three decades of evolution, Python introduced dynamic typing, automatic garbage collection via reference counting and generational collectors, and a massive ecosystem of specialized packages. The release of Python 3 cleaned up core Unicode string handling and runtime internals.`;
+      categoryImpact = `Understanding Python's runtime design clarifies why its extensive C-extension API and readable syntax established it as the primary interface for data science, machine learning frameworks like PyTorch, and cloud web services.`;
+      categoryTakeaway = `Python balances high developer productivity and clear syntax with an extensive C-interface ecosystem supporting modern computing workloads.`;
+    } else if (/supercomput|hpc/i.test(coreTechnology) || topicCategory === 'High-Performance Computing') {
+      categoryExplanation = `High-Performance Computing (HPC) partitions complex computational workloads across thousands of tightly coupled compute nodes using low-latency interconnect fabrics like InfiniBand. Supercomputing clusters integrate multi-core CPUs with high-density GPU accelerators, executing millions of concurrent threads via Message Passing Interface (MPI) and CUDA. Workload efficiency is evaluated in FLOPS, reaching exascale processing capability.`;
+      categoryImpact = `HPC systems enable researchers to run climate modeling, molecular dynamics, and astrophysics simulations that exceed the memory bandwidth and computational capabilities of standard enterprise servers.`;
+      categoryTakeaway = `Exascale HPC architectures depend on optimized inter-node communication latency, memory bandwidth scaling, and heterogeneous acceleration.`;
     } else if (topicCategory === 'Quantum Computing') {
-      categoryExplanation = `The engineering underlying ${rawTitle} addresses core qubit fidelity and logical gate operations. Unlike classical binary bits representing zeros or ones, quantum processors leverage superposition and entanglement to evaluate complex multidimensional state spaces simultaneously. Implementing fault-tolerant quantum error correction and optimized pulse sequences mitigates decoherence and environmental noise across multi-qubit physical arrays.`;
-      categoryImpact = 'Advancements in quantum circuit stability accelerate practical breakthroughs in complex quantum chemistry, advanced materials discovery, combinatorial optimization algorithms, and modern cryptographic resilience.';
-      categoryTakeaway = 'Building scalable quantum computing systems requires continuous advancements in physical qubit coherence, low-noise gate control, and fault-tolerant quantum error mitigation.';
-    } else if (topicCategory === 'Robotics') {
-      categoryExplanation = `The engineering implementation of ${rawTitle} integrates real-time sensor fusion—combining LiDAR arrays, depth cameras, and inertial measurement units—with low-latency motor control loops. Spatial perception models transform raw sensor streams into dynamic environment maps, allowing onboard kinematics engines to compute precise actuator movements and collision-free trajectories in unpredictable physical spaces.`;
-      categoryImpact = 'In industrial automation, logistics facilities, and field robotics, reducing spatial perception latency directly improves operational safety, environmental awareness, and complex physical task execution speed.';
-      categoryTakeaway = 'Reliable robotic automation requires tight, low-latency integration between spatial perception algorithms, real-time sensor telemetry, and hardware motor control.';
-    } else if (topicCategory === 'Cloud Computing') {
-      categoryExplanation = `The cloud architecture supporting ${rawTitle} leverages containerized microservices and dynamic infrastructure provisioning engines. By isolating application components into lightweight containers and managing state through automated orchestrators like Kubernetes, cloud platforms ensure fault tolerance, declarative resource scaling, and zero-downtime rolling updates across global data center regions.`;
-      categoryImpact = 'For DevOps engineers and enterprise cloud architects, modern cloud design patterns significantly reduce infrastructure overhead, optimize resource usage, and improve continuous deployment velocity.';
-      categoryTakeaway = 'Building resilient cloud platforms requires modular service isolation, automated health monitoring, and declarative infrastructure orchestration.';
+      categoryExplanation = `Quantum computing hardware leverages physical qubits operating under principles of superposition and entanglement. Unlike classical binary bits representing zeros or ones, quantum processors evaluate complex multidimensional state spaces simultaneously. Implementing fault-tolerant quantum error correction and optimized pulse control sequences mitigates decoherence and environmental thermal noise across multi-qubit physical arrays.`;
+      categoryImpact = `Advancements in quantum coherence accelerate practical research in quantum chemistry, materials science, combinatorial optimization, and cryptographic resilience.`;
+      categoryTakeaway = `Scalable quantum systems require continuous progress in physical qubit coherence, low-noise gate control, and fault-tolerant quantum error mitigation.`;
     } else {
-      categoryExplanation = `Analyzing ${rawTitle} demonstrates key technical advancements in ${topicCategory.toLowerCase()} design. Engineering insights indicate that structured execution pathways and optimized resource allocation provide measurable performance enhancements and reliable system stability across complex technical workloads.`;
-      categoryImpact = `For technical teams working in ${topicCategory}, adopting these modern architectural patterns enhances operational efficiency, system reliability, and long-term infrastructure scalability.`;
-      categoryTakeaway = `Advancing technical capabilities in ${topicCategory} requires continuous performance benchmarking, evidence-based engineering practices, and structured system architecture.`;
+      categoryExplanation = `${coreTechnology} encompasses core architectural principles and practical implementation patterns within ${topicCategory.toLowerCase()}. Engineering implementations prioritize structural modularity, deterministic state management, and clear performance trade-offs. System designers evaluate component interactions, operational latency, and resource constraints under high concurrent workloads.`;
+      categoryImpact = `For technical teams working in ${topicCategory.toLowerCase()}, understanding ${coreTechnology} enables better system architecture decisions, improved operational reliability, and reduced maintenance complexity across enterprise production environments.`;
+      categoryTakeaway = `Effective deployment of ${coreTechnology} requires continuous performance benchmarking, clear architectural isolation, and rigorous engineering practices.`;
     }
 
-    const cleanSource = (topic.source && !/request|manual/i.test(topic.source)) ? topic.source : 'Technical Reference';
+    const content = `${coreTechnology} provides distinct architectural characteristics and practical engineering trade-offs for modern systems.
 
-    const content = `Understanding ${rawTitle} requires examining its core architecture and real-world technical implementation.
-
-OVERVIEW
-Technical analysis examines core mechanics and operational considerations regarding ${rawTitle}.
+WHAT IT IS
+${coreTechnology} is a foundational technology within ${topicCategory.toLowerCase()} that defines specific operational mechanisms and system structures.
 
 TECHNICAL EXPLANATION
 ${categoryExplanation}
@@ -667,7 +652,7 @@ Source: ${topic.url}
     const wordCount = countMainContentWords(cleanContentText);
 
     return {
-      title: `${rawTitle}: ${contentAngle}`,
+      title: `${coreTechnology}: ${contentAngle}`,
       content: cleanContentText,
       topicCategory,
       topicRelevanceScore: 95,
@@ -679,9 +664,9 @@ Source: ${topic.url}
       clarityScore: 90,
       evidenceScore: 90,
       overallQuality: 90,
-      rationale: `Technical analysis generated for ${rawTitle} in ${topicCategory} under '${contentAngle}' angle.`,
-      whySelected: `Selected due to high technical relevance in ${topicCategory}.`,
-      whyRelevantNow: `Presents key insights for ${topicCategory} implementations.`,
+      rationale: `Technical analysis generated for ${coreTechnology} in ${topicCategory} under '${contentAngle}' angle.`,
+      whySelected: `Selected due to technical relevance in ${topicCategory}.`,
+      whyRelevantNow: `Presents key technical insights for ${topicCategory} implementations.`,
       sources: [topic.url],
     };
   }

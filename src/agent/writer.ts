@@ -90,6 +90,43 @@ export class WriterEngine {
       postData.content = structCheck.sanitizedContent;
       postData.title = structCheck.sanitizedTitle;
 
+      // 0b. Word Count Compliance Check (Must be strictly 250 - 300 words)
+      const mainWordCount = countMainContentWords(postData.content);
+      if (mainWordCount < 250 || mainWordCount > 300) {
+        const wcIssue = mainWordCount < 250 
+          ? `Word count violation: Draft has ${mainWordCount} words, which is UNDER the 250-word minimum threshold.`
+          : `Word count violation: Draft has ${mainWordCount} words, which is OVER the 300-word maximum threshold.`;
+        Logger.warn(wcIssue, agentId);
+
+        await prisma.improvementAttempt.create({
+          data: {
+            agentId,
+            attemptNumber: attempt,
+            content: postData.content,
+            scores: JSON.stringify({ wordCount: mainWordCount }),
+            weaknesses: JSON.stringify([wcIssue]),
+            improvementSuggestions: JSON.stringify([mainWordCount < 250 ? 'Expand technical mechanisms, architectural trade-offs, and practical impact until total word count is strictly between 250 and 300 words.' : 'Trim redundant adjectives and filler while maintaining word count strictly between 250 and 300 words.']),
+            finalDecision: 'REJECTED_WORD_COUNT',
+          }
+        });
+
+        if (attempt >= MAX_ATTEMPTS) {
+          Logger.error(`Max attempts reached (${MAX_ATTEMPTS}). Word count check failed (${mainWordCount} words). Rejecting post.`, undefined, agentId);
+          break;
+        }
+
+        Logger.info(`Rewrite attempt ${attempt + 1} for Word Count fix (${mainWordCount} words -> Target: 250-300 words)`, agentId);
+        postData = await this.openaiService.generateRewrite(
+          persona,
+          topic,
+          postData,
+          [wcIssue],
+          [mainWordCount < 250 ? `DRAFT IS TOO SHORT (${mainWordCount} words). Expand the technical breakdown, business impact, and architecture sections with verified technical details until the post reaches between 250 and 300 words.` : `DRAFT IS TOO LONG (${mainWordCount} words). Shorten the post to reach between 250 and 300 words.`]
+        );
+        attempt++;
+        continue;
+      }
+
       // 1. Fact Checker Validation
       const factCheckResult = await this.openaiService.factCheckPost(persona, topic, postData);
 

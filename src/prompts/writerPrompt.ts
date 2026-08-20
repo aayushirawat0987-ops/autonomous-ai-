@@ -22,19 +22,19 @@ export function getWriterPrompt(
 
   const isMisconception = contentAngle.toLowerCase().includes('misconception');
   let angleInstruction = `Assigned Content Angle: ${contentAngle}`;
-  let structureInstruction = `1. HOOK (20–40 words): Specific opening about "${topic.title}". Avoid questions like "Did you know?" or "What if?".
-2. WHAT HAPPENED? (40–60 words): Extract concrete facts: what happened, what's new, and evidence/benchmarks.
-3. TECHNICAL INSIGHT (50–80 words): Explain how it works using simple, professional English. Prefer one genuine technical insight over several generic statements.
-4. WHY IT MATTERS (40–60 words): Practical technical impact on developers, systems, or architecture.
-5. TAKEAWAY (20–40 words): Meaningful concluding insight on ${topic.title}. Avoid generic conclusions like "stay vigilant".`;
+  let structureInstruction = `1. HOOK / WHAT IT IS (35–50 words): Clear, engaging technical opening directly explaining "${topic.title}". Avoid generic question hooks.
+2. WHAT HAPPENED / CONCRETE DEVELOPMENTS (50–70 words): Explain key developments, verifiable facts, architectural mechanics, or evidence.
+3. TECHNICAL EXPLANATION & MECHANISMS (80–110 words): Deep technical analysis of mechanisms, trade-offs, advantages, and limitations. Explain how it works in practice with high detail density.
+4. WHY IT MATTERS / BUSINESS IMPACT (50–70 words): Explain practical relevance for systems engineers, developers, or business decisions.
+5. KEY TAKEAWAY (30–40 words): Meaningful, actionable technical takeaway summarizing the core insight.`;
 
   if (isMisconception) {
     angleInstruction = `Assigned Content Angle: Common Misconception (Identify a genuine misconception about "${topic.title}", explain why it is wrong, provide verified factual evidence, and clarify the key takeaway).`;
-    structureInstruction = `1. HOOK / MISCONCEPTION (20–40 words): Clearly state the common misconception about "${topic.title}".
-2. WHAT HAPPENED? / WHAT IS ACTUALLY TRUE (40–60 words): Extract concrete facts and evidence/benchmarks correcting the misconception.
-3. TECHNICAL INSIGHT (50–80 words): Explain how it works and why the misconception exists. Prefer one genuine technical insight over several generic statements.
-4. WHY IT MATTERS (40–60 words): Practical relevance for developers or technical teams.
-5. TAKEAWAY (20–40 words): Clear, memorable takeaway correcting the misconception.`;
+    structureInstruction = `1. HOOK / MISCONCEPTION (35–50 words): Clearly state the common misconception about "${topic.title}".
+2. WHAT IS ACTUALLY TRUE (50–70 words): Extract concrete facts, mechanisms, and evidence correcting the misconception.
+3. TECHNICAL INSIGHT & TRADE-OFFS (80–110 words): Deep technical explanation of why the misconception exists and how the underlying mechanism actually operates in practice.
+4. WHY IT MATTERS (50–70 words): Practical relevance for developers, systems architects, or technical teams.
+5. KEY TAKEAWAY (30–40 words): Clear, memorable takeaway correcting the misconception.`;
   }
 
   return `${personaContext}
@@ -58,18 +58,18 @@ CRITICAL INSTRUCTION ON CORE TECHNOLOGY VS USER QUERY:
 
 SECTION-SPECIFIC RULES:
 1. WHAT IT IS:
-   - Explain the CORE TECHNOLOGY directly and clearly.
+   - Explain the CORE TECHNOLOGY directly and clearly (35-50 words).
    - Do NOT explain the user's search phrase or user wording.
    - Introduce the technology using technically accurate language.
 2. TECHNICAL EXPLANATION:
-   - Explain concepts specifically related to the requested technology AND intent.
+   - Explain concepts specifically related to the requested technology AND intent (80-110 words).
    - Do NOT use generic engineering statements ("optimizing execution pathways", "resource management").
    - Include concrete mechanisms, trade-offs, architecture, or verifiable technical details.
 3. WHY IT MATTERS:
-   - Explain why the topic matters in real-world engineering or business.
+   - Explain why the topic matters in real-world engineering or business (50-70 words).
    - Connect the explanation directly to the requested intent.
 4. KEY TAKEAWAY:
-   - Summarize the actual technical insight.
+   - Summarize the actual technical insight (30-40 words).
    - Do NOT repeat generic statements about "performance", "scalability", "efficiency", or "modern architecture" unless specifically relevant.
 
 BUSINESS IMPACT / ADVANTAGES RULE:
@@ -104,11 +104,11 @@ NO INTERNAL SYSTEM TEXT MANDATE:
 NEVER expose internal system text or generation metadata in your response or content body.
 - NEVER write: "User Manual Request", "Manual post generation request", "The user asked...", "According to the prompt...", or "As requested...".
 
-STRICT WORD COUNT MANDATE:
-- MINIMUM: 200 words
+STRICT WORD COUNT MANDATE (CRITICAL):
+- MINIMUM: 250 words (Content MUST NOT be under 250 words under any circumstances)
 - MAXIMUM: 300 words
-- RECOMMENDED TARGET: 230 to 270 words
-(Your final post body content MUST be strictly between 200 and 300 words total.)
+- RECOMMENDED TARGET: 260 to 290 words
+(Your final post body content MUST be strictly between 250 and 300 words total. If your draft is below 250 words, expand the TECHNICAL EXPLANATION and BUSINESS IMPACT sections with additional verified technical details until it reaches 250-300 words.)
 
 TOPIC DETAILS:
 - Requested Topic: ${topic.title}
@@ -134,7 +134,7 @@ ${structureInstruction}
 Output MUST be strictly valid JSON:
 {
   "title": "string (Headline specific to ${topic.title} and ${contentAngle})",
-  "content": "string (Complete post text focused strictly on ${topic.title}, STRICTLY 200–300 words)",
+  "content": "string (Complete post text focused strictly on ${topic.title}, STRICTLY BETWEEN 250 AND 300 WORDS)",
   "topicCategory": "${topicCategory}",
   "contentAngle": "${contentAngle}",
   "rationale": "string (Analysis of ${topic.title})",
