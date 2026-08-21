@@ -1,11 +1,17 @@
 import { DiscoveredTopic, GeneratedPost, Persona } from '../models/types';
 
-export function getCriticPrompt(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): string {
+export function getCriticPrompt(
+  persona: Persona,
+  topic: DiscoveredTopic,
+  post: GeneratedPost,
+  minWords: number = 500,
+  maxWords: number = 700
+): string {
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
   return `You are an expert Critic and Quality Evaluator for an autonomous technology publishing platform.
-Your job is to evaluate the quality of a generated post based on strict 7-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY 150 TO 300 WORDS).
-Before publishing, you must run an internal editorial-quality check. Reject the content if it is under 150 words when sufficient information exists, is too generic, lacks technical details, paraphrases the intro, makes unsupported claims, repeats the same idea, or lacks explanation of why it matters. Regenerate if quality is below 8/10 (overallScore < 80).
+Your job is to evaluate the quality of a generated post based on strict 7-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY ${minWords} TO ${maxWords} WORDS).
+Before publishing, you must run an internal editorial-quality check. Reject the content if it is under ${minWords} words when sufficient information exists, is too generic, lacks technical details, paraphrases the intro, makes unsupported claims, repeats the same idea, or lacks explanation of why it matters. Regenerate if quality is below 8/10 (overallScore < 80) or if word count is outside ${minWords}-${maxWords} words.
 
 Persona: ${persona.name} (${persona.domain})
 Requested Topic: ${topic.title}
@@ -17,10 +23,11 @@ ${post.content}
 CRITICAL USEFULNESS & CONTENT QUALITY AUDIT:
 1. Does this post actually teach the reader something concrete about "${topic.title}"? (What does the reader know after reading this that they did not know before?)
 2. Is the technical information specific, factual, and human-sounding rather than generic AI-generated filler?
-3. Does it avoid formulaic AI clichés ("In today's rapidly evolving world", "This is a game changer", "The future is here", "Organizations must stay vigilant", "recent technical analysis", "significant progress", "emerging technology systems") and repetitive buzzwords?
+3. Does it avoid formulaic AI clichés ("In today's rapidly evolving world", "This is a game changer", "The future is here", "Organizations must stay vigilant", "recent technical analysis", "significant progress", "emerging technology systems", "recent disclosures regarding", "technical topic request") and repetitive buzzwords?
 4. Is the structure tailored to "${topic.title}" rather than a fixed copied template?
 5. Does the conclusion provide a topic-specific insight rather than a generic security warning?
 6. Are there any hallucination risks? Ensure no invented research, statistics, companies, findings, or technical claims. Verify source relevance.
+7. CASE STUDY & PLACEHOLDER RULE: If the post is a Case Study, does it contain actual case-study analysis of a real source/company/implementation? Ensure it DOES NOT use generic introductory filler ("recent disclosures regarding...", "Recent technical analysis published by...", "Technical Topic Request...", "Technical overview and analysis...", "significant progress regarding...") or placeholder text ('[topic]', '[source]', '[company]', 'Technical Topic Request'). The opening MUST explain the topic directly.
 
 STRICT 7-METRIC EVALUATION CATEGORIES (Score each 0 to 100):
 1. Specificity (15% weight): Is the technical information specific rather than generic?
@@ -35,8 +42,8 @@ WORD COUNT & PASSING RULES:
 Current word count: ${words} words.
 - If topic drift occurred, cap overallScore at 65 maximum and flag topic drift.
 - If generic filler or AI clichés are present, cap overallScore at 75 maximum.
-- If word count is < 150 words or > 300 words, cap overallScore at 75 maximum and flag word count violation.
-- To PASS: overallScore >= 80, factualGrounding >= 90, novelty >= 80, sourceConfidence >= 80, zero topic drift, zero generic filler, and word count MUST be strictly 150–300 words.
+- If word count is < ${minWords} words or > ${maxWords} words, cap overallScore at 70 maximum and flag word count violation (PREVIOUS DRAFT WAS OUTSIDE WORD COUNT BOUNDS: MUST BE STRICTLY ${minWords}-${maxWords} WORDS).
+- To PASS: overallScore >= 80, factualGrounding >= 90, novelty >= 80, sourceConfidence >= 80, zero topic drift, zero generic filler, and word count MUST be strictly ${minWords}–${maxWords} words.
 
 Return strictly raw JSON matching this schema:
 {

@@ -8,22 +8,30 @@ datasource db {
 }
 
 model Agent {
-  id        String   @id @default(uuid())
-  name      String
-  domain    String
-  role      String   @default("AI Security Researcher")
-  style     String   @default("technical, concise, analytical, skeptical, evidence-based, educational")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(uuid())
+  name        String
+  domain      String
+  role        String    @default("AI Security Researcher")
+  style       String    @default("technical, concise, analytical, skeptical, evidence-based, educational")
+  status      String    @default("STOPPED")
+  isActive    Boolean   @default(false)
+  currentTask String?
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  posts    Post[]
-  memories    Memory[]
-  
-  logs        AgentLog[]
-  attempts    ImprovementAttempt[]
-  missions    Mission[]
-  trends      EmergingTrend[]
+  posts         Post[]
+  memories      Memory[]
+  logs          AgentLog[]
+  attempts      ImprovementAttempt[]
+  missions      Mission[]
+  trends        EmergingTrend[]
   opportunities Opportunity[]
+
+  @@index([isActive])
+  @@index([status])
 }
 
 model Post {
@@ -36,6 +44,9 @@ model Post {
   contentAngle        String   @default("Technical Explanation")
   postType            String   @default("Technical Breakdown")
   wordCount           Int      @default(0)
+  minWordCount        Int      @default(500)
+  targetWordCount     Int      @default(600)
+  maxWordCount        Int      @default(700)
   accuracyScore       Float    @default(92)
   originalityScore    Float    @default(88)
   technicalScore      Float    @default(90)

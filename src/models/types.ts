@@ -30,12 +30,38 @@ export interface EditorialEvaluation {
   rejectionReason?: string;
 }
 
+export interface RequestClassification {
+  coreTechnology: string;
+  contentIntent: string;
+  contentType: string;
+  targetAudience: string;
+  subjectX?: string;
+  targetY?: string;
+  isRelationshipQuery?: boolean;
+}
+
+export interface StructuredContentPlan {
+  primarySubject: string;
+  secondarySubject: string;
+  relationship: string;
+  intent: string;
+  postType: string;
+  platform: string;
+  tone: string;
+  additionalInstructions: string;
+  contentLengthOption?: string;
+  minimumWords: number;
+  targetWords: number;
+  maximumWords: number;
+}
+
 export interface TopicProfile {
   requestedTopic: string;
   topicCategory: string;
   primarySubject: string;
   importantConcepts: string[];
   unrelatedConcepts: string[];
+  requestClassification?: RequestClassification;
 }
 
 export interface TopicRelevanceResult {

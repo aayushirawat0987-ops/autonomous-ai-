@@ -2187,19 +2187,30 @@
               </select>
             </div>
           </div>
-          <div class="form-group mb-3">
-            <label class="form-label">Tone & Style</label>
-            <select id="genTone" class="form-input">
-              <option value="Professional & Analytical">Professional & Analytical</option>
-              <option value="Technical & Skeptical">Technical & Skeptical</option>
-              <option value="Punchy & Urgent">Punchy & Urgent</option>
-              <option value="Educational & Insightful">Educational & Insightful</option>
-            </select>
+          <div class="flex gap-3 mb-3">
+            <div class="form-group w-full">
+              <label class="form-label">Tone & Style</label>
+              <select id="genTone" class="form-input">
+                <option value="Professional & Analytical">Professional & Analytical</option>
+                <option value="Technical & Skeptical">Technical & Skeptical</option>
+                <option value="Punchy & Urgent">Punchy & Urgent</option>
+                <option value="Educational & Insightful">Educational & Insightful</option>
+              </select>
+            </div>
+            <div class="form-group w-full">
+              <label class="form-label">Content Length</label>
+              <select id="genContentLength" class="form-input">
+                <option value="Auto">Auto (By Post Type)</option>
+                <option value="Short">Short (500–600 words)</option>
+                <option value="Medium">Medium (600–700 words)</option>
+                <option value="Long">Long (700–900 words)</option>
+              </select>
+            </div>
           </div>
           <div class="form-group mb-3">
             <label class="form-label">Additional Instructions</label>
             <textarea id="genInstructions" class="form-input" rows="2"
-              placeholder="Specific security takeaways, CVE references, or remediation advice..."></textarea>
+              placeholder="Add specific requirements, examples, technical details, sources, audience considerations, or other instructions..."></textarea>
           </div>
 
           <div id="genSequenceDisplay" class="init-sequence hidden mb-3"></div>
@@ -2438,6 +2449,7 @@
         const postType = document.getElementById('genPostType').value;
         const platform = document.getElementById('genPlatform').value;
         const tone = document.getElementById('genTone').value;
+        const contentLength = document.getElementById('genContentLength').value;
         const instructions = document.getElementById('genInstructions').value.trim();
 
         btn.classList.add('hidden');
@@ -2467,6 +2479,7 @@
               postType,
               platform,
               tone,
+              contentLength,
               instructions
             })
           });
@@ -2584,6 +2597,17 @@
 
     async function loadAgents() {
       try {
+        // Fetch active agents count from DB source of truth
+        try {
+          const activeRes = await fetch(`${API_BASE}/api/agent/active`);
+          const activeData = await activeRes.json();
+          if (typeof activeData.count === 'number') {
+            document.getElementById('kpiAgents').innerText = activeData.count;
+          }
+        } catch (activeErr) {
+          console.error('Failed to fetch active count:', activeErr);
+        }
+
         const res = await fetch(`${API_BASE}/api/agent/list`);
         const data = await res.json();
 
@@ -2598,35 +2622,50 @@
 
         if (!activeAgentId) activeAgentId = data.agents[0].id;
 
-        document.getElementById('kpiAgents').innerText = data.agents.length;
-
         let totalPosts = 0;
 
         grid.innerHTML = data.agents.map(a => {
           const count = a._count?.posts || 0;
           totalPosts += count;
           const isSelected = a.id === activeAgentId;
+          const status = a.status || (a.isActive ? 'ACTIVE' : 'STOPPED');
+          const isStopped = status === 'STOPPED' || !a.isActive;
+          const statusColor = isStopped ? 'var(--danger)' : (status === 'ERROR' ? 'var(--warning)' : 'var(--success)');
+          const statusBg = isStopped ? 'var(--danger-light)' : (status === 'ERROR' ? 'var(--warning-light)' : 'var(--success-light)');
+          const currentTask = a.currentTask || (isStopped ? 'Agent Stopped' : 'Waiting for next scheduled cycle');
 
           return `
           <div class="agent-card ${isSelected ? 'active' : ''}" onclick="selectAgent('${a.id}')">
-            <div class="flex justify-between items-start mb-4">
+            <div class="flex justify-between items-start mb-3">
               <div class="flex items-center gap-3">
-                <div class="author-avatar" style="width:40px; height:40px; font-size:1.1rem;">${a.name.charAt(0)}</div>
+                <div class="author-avatar" style="width:40px; height:40px; font-size:1.1rem;">${escapeHtml(a.name.charAt(0))}</div>
                 <div>
                   <div class="font-bold text-base text-main">${escapeHtml(a.name.toUpperCase())}</div>
                   <div class="text-xs text-secondary font-bold tracking-wide">${escapeHtml(a.domain.toUpperCase())}</div>
                 </div>
               </div>
-              <div class="status-indicator" style="font-size:0.65rem; padding: 0.2rem 0.6rem;"><div class="dot pulse"></div> ONLINE</div>
+              <div class="status-indicator" style="font-size:0.65rem; padding: 0.2rem 0.6rem; background:${statusBg}; color:${statusColor}; border-color:${statusColor};">
+                <div class="dot ${isStopped ? '' : 'pulse'}" style="background:${statusColor};"></div> ${escapeHtml(status)}
+              </div>
             </div>
             
-            <div class="text-xs text-muted mb-4">
-              Writing Style: ${escapeHtml(a.style || 'Technical, Concise, Analytical')}
+            <div class="text-xs text-muted mb-2">
+              <strong>Task:</strong> ${escapeHtml(currentTask)}
+            </div>
+
+            <div class="text-xs text-faint mb-3">
+              Style: ${escapeHtml(a.style || 'Technical, Concise, Analytical')}
             </div>
             
             <div class="flex justify-between items-center text-xs pt-3" style="border-top: 1px solid var(--border-color);">
               <span class="font-bold text-main">${count} ${count === 1 ? 'Post' : 'Posts'}</span>
-              <button class="btn btn-primary text-xs" style="padding: 0.35rem 0.85rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">View Feed →</button>
+              <div class="flex gap-2">
+                ${isStopped 
+                  ? `<button class="btn btn-outline text-xs text-success" style="padding: 0.3rem 0.65rem;" onclick="event.stopPropagation(); resumeAgent('${a.id}')">Resume</button>` 
+                  : `<button class="btn btn-outline text-xs text-danger" style="padding: 0.3rem 0.65rem;" onclick="event.stopPropagation(); stopAgent('${a.id}')">Stop</button>`
+                }
+                <button class="btn btn-primary text-xs" style="padding: 0.3rem 0.75rem;" onclick="event.stopPropagation(); selectAgent('${a.id}')">Feed →</button>
+              </div>
             </div>
           </div>
         `}).join('');
@@ -2646,6 +2685,42 @@
           `;
         }
         setTimeout(loadAgents, 5000);
+      }
+    }
+
+    async function stopAgent(agentId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/agent/stop`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId })
+        });
+        if (res.ok) {
+          await loadAgents();
+          if (activeAgentId === agentId) {
+            await openAgentDetails(agentId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to stop agent', err);
+      }
+    }
+
+    async function resumeAgent(agentId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/agent/resume`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId })
+        });
+        if (res.ok) {
+          await loadAgents();
+          if (activeAgentId === agentId) {
+            await openAgentDetails(agentId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to resume agent', err);
       }
     }
 
@@ -2754,15 +2829,28 @@
       const agentRole = agentObj ? agentObj.role : 'AI Security Researcher';
       const platform = post.platform || 'LinkedIn / X';
       const status = post.status || 'Published';
-
       const wordCount = post.wordCount || (post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0);
 
-      let statusBadge = '<div class="badge success">✓ Published</div>';
-      if (status === 'Draft') statusBadge = '<div class="badge warning">✎ Draft</div>';
-      else if (status === 'Generated') statusBadge = '<div class="badge">🤖 Generated</div>';
+      const minW = post.minWordCount || 500;
+      const maxW = post.maxWordCount || 700;
+      const wordCountValid = wordCount >= minW && wordCount <= maxW;
+      const wordCountClass = wordCountValid ? 'text-success' : 'text-danger';
 
-      const wordCountValid = wordCount >= 200 && wordCount <= 300;
-      const wordCountClass = wordCountValid ? 'text-primary' : 'text-danger';
+      let statusBadge = '<div class="badge success">✓ Published</div>';
+      if (!wordCountValid || status === 'Needs Regeneration' || status === 'Validation Failed') {
+        statusBadge = '<div class="badge danger" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">⚠️ Needs Regeneration</div>';
+      } else if (status === 'Draft') {
+        statusBadge = '<div class="badge warning">✎ Draft</div>';
+      } else if (status === 'Generated') {
+        statusBadge = '<div class="badge">🤖 Generated</div>';
+      }
+
+      let sourceDisplay = '';
+      if (post.topicUrl && !post.topicUrl.includes('autonomous.agent')) {
+        sourceDisplay = `<div class="text-xs text-muted mt-2">Source: <a href="${escapeHtml(post.topicUrl)}" target="_blank" style="color: var(--primary); text-decoration: underline;">${escapeHtml(post.topicUrl)}</a></div>`;
+      } else {
+        sourceDisplay = `<div class="text-xs text-muted mt-2">Source: No verified external source</div>`;
+      }
 
       return `
       <article class="post-card fade-enter" id="post-card-${post.id}">
@@ -2779,8 +2867,8 @@
             <span class="text-xs font-bold text-main" style="background: rgba(147,51,234,0.1); color: #9333ea; padding: 0.25rem 0.6rem; border-radius: var(--radius-sm); border: 1px solid rgba(147,51,234,0.2);">${escapeHtml(topicCategory)}</span>
             <span class="text-xs font-semibold text-secondary" style="background: var(--secondary-light); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(contentAngle)}</span>
             <span class="text-xs font-semibold" style="background: rgba(37,99,235,0.08); color: var(--primary); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);">${escapeHtml(platform)}</span>
-            <span class="text-xs font-bold font-mono ${wordCountClass}" style="background: var(--bg-surface-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);" title="Content Word Count (Must be 200–300 words)">
-              ${wordCount} words ${wordCountValid ? '✓' : '⚠️'}
+            <span class="text-xs font-bold font-mono ${wordCountClass}" style="background: var(--bg-surface-light); padding: 0.25rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);" title="Calculated Word Count (Allowed: ${minW}–${maxW} words)">
+              ${wordCount} / ${minW}–${maxW} words ${wordCountValid ? '✓' : '⚠️'}
             </span>
             <div class="score-circle" title="Overall Quality Score (Target >= 85)">${score}</div>
           </div>
@@ -2788,12 +2876,15 @@
 
         ${post.title ? `<h4 class="font-bold text-lg mb-2" style="color: var(--text-main); padding: 1.25rem 1.5rem 0 1.5rem;">${escapeHtml(post.title)}</h4>` : ''}
 
-        <div class="post-body" style="${post.title ? 'padding-top: 0.5rem;' : ''}">${escapeHtml(post.content)}</div>
+        <div class="post-body" style="${post.title ? 'padding-top: 0.5rem;' : ''}">
+          ${escapeHtml(post.content)}
+          ${sourceDisplay}
+        </div>
         
         <div class="post-footer flex justify-between items-center flex-wrap gap-3">
           <div class="badges" style="display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;">
             <div class="badge success">Topic Relevance: ${topicRelevanceScore}%</div>
-            <div class="badge success">✓ Fact Checked</div>
+            <div class="badge ${wordCountValid ? 'success' : 'danger'}">${wordCountValid ? '✓ Fact Checked' : '⚠️ Word Count Failed'}</div>
             <div class="badge success">Accuracy: ${accuracyScore}%</div>
             <div class="badge purple">Originality: ${originalityScore}%</div>
             <div class="badge primary">Tech Depth: ${technicalScore}%</div>

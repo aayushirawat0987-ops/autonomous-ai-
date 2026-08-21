@@ -1,4 +1,4 @@
-import { TopicProfile } from '../models/types';
+import { TopicProfile, RequestClassification, StructuredContentPlan } from '../models/types';
 import { classifyTopicCategory } from '../services/openai';
 
 export interface ParsedTopicInput {
@@ -7,33 +7,96 @@ export interface ParsedTopicInput {
   format: string;
 }
 
-export function normalizeAndParseTopicInput(
-  rawTopic: string,
-  rawPostType?: string,
-  rawFormat?: string
-): ParsedTopicInput {
-  let cleanTopic = (rawTopic || '').trim();
+export function classifyUserRequest(rawInput: string): RequestClassification {
+  let clean = (rawInput || '').trim();
 
-  // Extract postType/format if appended with colon separators like "Blockchain: Security Analysis: Technical Explanation"
-  const colonParts = cleanTopic.split(/\s*:\s*/);
-  if (colonParts.length > 1) {
-    cleanTopic = colonParts[0].trim();
-    if (!rawPostType && colonParts[1]) {
-      rawPostType = colonParts[1].trim();
-    }
-    if (!rawFormat && colonParts[2]) {
-      rawFormat = colonParts[2].trim();
+  // Strip prefix labels
+  clean = clean
+    .replace(/^🚨\s*/, '')
+    .replace(/^(?:AI\s*Security\s*Insight|arXiv Paper|GitHub Repository):\s*/i, '')
+    .replace(/:\s*(?:Security Analysis|Technical Explanation|Common Misconception|Research Summary|Breaking Development)/gi, '')
+    .trim();
+
+  let coreTech = clean;
+  let intent = 'Technical Breakdown & Overview';
+  let contentType = 'Technical Article';
+  let audience = 'Engineering & Technology Professionals';
+
+  let subjectX: string | undefined;
+  let targetY: string | undefined;
+  let isRelationshipQuery = false;
+
+  const lower = clean.toLowerCase();
+
+  // 0. Check Relationship Pattern ("USE OF X IN Y", "ROLE OF X IN Y", "APPLICATIONS OF X IN Y", "HOW X IS USED IN Y", "X FOR Y DEVELOPMENT", "X IN Y")
+  const relMatch = clean.match(/^(?:use\s+of|role\s+of|applications?\s+of|how\s+)?(.+?)\s+(?:is\s+used\s+in|in|for)\s+(.+?)(?:\s+development)?$/i);
+  if (relMatch && !/\b(?:advantages?|benefits?|business impact|vulnerability|case study|misconception)\b/i.test(clean)) {
+    let rawX = relMatch[1].trim();
+    let rawY = relMatch[2].trim();
+
+    rawX = rawX.replace(/\bblock\s+chain\b/gi, 'Blockchain').replace(/\bllms?\b/gi, 'Large Language Models (LLMs)');
+    rawY = rawY.replace(/\bblock\s+chain\b/gi, 'Blockchain').replace(/\bllms?\b/gi, 'Large Language Models (LLMs)');
+
+    if (rawX && rawY && rawX.toLowerCase() !== rawY.toLowerCase()) {
+      subjectX = rawX.replace(/\b\w/g, c => c.toUpperCase());
+      targetY = rawY.replace(/\b\w/g, c => c.toUpperCase());
+      isRelationshipQuery = true;
+      coreTech = subjectX; // Core technology is X (e.g. Python)
+      intent = `Use and Integration of ${subjectX} in ${targetY} Development`;
+      contentType = 'Technical Article';
+      audience = 'Software Engineers & Application Architects';
     }
   }
 
-  // Remove any leftover UI labels attached to topic
-  cleanTopic = cleanTopic
-    .replace(/^🚨\s*/, '')
-    .replace(/^AI\s*Security\s*Insight:\s*/i, '')
-    .replace(/^arXiv Paper:\s*/i, '')
-    .replace(/^GitHub Repository:\s*/i, '')
-    .replace(/:\s*(?:Security Analysis|Technical Explanation|Common Misconception|Research Summary|Breaking Development)/gi, '')
+  // 1. Identify Intent & Content Type (if not already relationship query)
+  if (!isRelationshipQuery) {
+    if (/\b(?:advantages?|benefits?|business impact|business value|why use)\b/i.test(lower)) {
+      intent = 'Business Impact / Advantages';
+      contentType = 'Technical Article';
+      audience = 'Engineering / Business / Technology Professionals';
+      coreTech = clean
+        .replace(/^(?:advantages?|benefits?|business impact|business value|why use)\s+(?:of|for|in)?\s*/gi, '')
+        .replace(/\s+(?:advantages?|benefits?|business impact|business value)\b/gi, '')
+        .trim();
+    } else if (/\b(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\b/i.test(lower)) {
+      intent = 'Security / Defensive Recommendations';
+      contentType = 'Technical Article';
+      audience = 'Engineering / Security Professionals';
+      coreTech = clean
+        .replace(/\s*(?:defensive recommendations?|security recommendations?|mitigations?|defensive posture)\s*/gi, '')
+        .trim();
+    } else if (/\bcase\s*study\b/i.test(lower)) {
+      intent = 'Case Study Analysis';
+      contentType = 'Case Study';
+      audience = 'Engineering & Research Professionals';
+      coreTech = clean
+        .replace(/\s*(?:case\s*study|case\s*studies)\s*/gi, '')
+        .replace(/^(?:case\s*study|case\s*studies)\s+(?:on|of|for)\s*/gi, '')
+        .trim();
+    } else if (/\bvulnerability\b/i.test(lower)) {
+      intent = 'Vulnerability Breakdown';
+      contentType = 'Vulnerability Alert';
+      audience = 'Security & Systems Engineers';
+      coreTech = clean.replace(/\s*vulnerability(?:\s*alert)?\s*/gi, '').trim();
+    } else if (/\bmisconception/i.test(lower)) {
+      intent = 'Common Misconceptions';
+      contentType = 'Technical Article';
+      audience = 'Developers & Systems Architects';
+      coreTech = clean.replace(/\s*(?:common\s*)?misconception(?:s)?\s*/gi, '').trim();
+    }
+  }
+
+  // Fallback coreTech if regex stripped everything
+  if (!coreTech) coreTech = clean;
+
+  // 2. Normalize Core Technology name & fix common typos
+  coreTech = coreTech
+    .replace(/\bjaa+va\b/gi, 'Java')
+    .replace(/\bpythooo+n\b/gi, 'Python')
+    .replace(/\bblockchaa+in\b/gi, 'Blockchain')
+    .replace(/\bllmm+\b/gi, 'LLM')
     .replace(/\bblock\s+chain\b/gi, 'Blockchain')
+    .replace(/\bllms?\b/gi, 'Large Language Models (LLMs)')
     .replace(/\bsuper\s+computer\b/gi, 'Supercomputer')
     .replace(/\bcloud\s+computing\b/gi, 'Cloud Computing')
     .replace(/\bquantum\s+computing\b/gi, 'Quantum Computing')
@@ -41,30 +104,143 @@ export function normalizeAndParseTopicInput(
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Normalize case if all upper or all lower
-  if (cleanTopic === cleanTopic.toLowerCase() || cleanTopic === cleanTopic.toUpperCase()) {
-    cleanTopic = cleanTopic.replace(/\b\w/g, c => c.toUpperCase());
+  if (coreTech === coreTech.toLowerCase() || coreTech === coreTech.toUpperCase()) {
+    coreTech = coreTech.replace(/\b\w/g, c => c.toUpperCase());
   }
 
-  const postType = (rawPostType || 'Technical Breakdown').trim();
-  const format = (rawFormat || 'Technical Explanation').trim();
+  return {
+    coreTechnology: coreTech,
+    contentIntent: intent,
+    contentType,
+    targetAudience: audience,
+    subjectX,
+    targetY,
+    isRelationshipQuery,
+  };
+}
+
+export interface WordCountBounds {
+  minimumWords: number;
+  targetWords: number;
+  maximumWords: number;
+}
+
+export function getWordCountBounds(
+  postType: string = 'Educational',
+  contentLengthOption?: string
+): WordCountBounds {
+  if (contentLengthOption && contentLengthOption !== 'Auto') {
+    const opt = contentLengthOption.toLowerCase();
+    if (opt.includes('short') || opt.includes('500')) {
+      return { minimumWords: 500, targetWords: 550, maximumWords: 600 };
+    }
+    if (opt.includes('medium') || opt.includes('600')) {
+      return { minimumWords: 600, targetWords: 650, maximumWords: 700 };
+    }
+    if (opt.includes('long') || opt.includes('700')) {
+      return { minimumWords: 700, targetWords: 800, maximumWords: 900 };
+    }
+  }
+
+  const lower = (postType || '').toLowerCase();
+  if (lower.includes('case study') || lower.includes('deep-dive')) {
+    return { minimumWords: 700, targetWords: 800, maximumWords: 900 };
+  }
+  if (
+    lower.includes('technical explanation') ||
+    lower.includes('practical implementation') ||
+    lower.includes('defensive') ||
+    lower.includes('vulnerability')
+  ) {
+    return { minimumWords: 600, targetWords: 700, maximumWords: 800 };
+  }
+  if (
+    lower.includes('educational') ||
+    lower.includes('business impact') ||
+    lower.includes('advantages') ||
+    lower.includes('benefits') ||
+    lower.includes('breakthrough') ||
+    lower.includes('applications')
+  ) {
+    return { minimumWords: 500, targetWords: 600, maximumWords: 700 };
+  }
+
+  return { minimumWords: 500, targetWords: 600, maximumWords: 700 };
+}
+
+export function createStructuredContentPlan(
+  rawTopic: string,
+  postType: string = 'Educational',
+  platform: string = 'LinkedIn / X',
+  tone: string = 'Professional & Analytical',
+  instructions: string = '',
+  contentLengthOption?: string
+): StructuredContentPlan {
+  const classification = classifyUserRequest(rawTopic);
+
+  let primarySubject = classification.coreTechnology;
+  let secondarySubject = classification.targetY || '';
+  let relationship = classification.isRelationshipQuery
+    ? `Uses / Applications of ${classification.subjectX} in ${classification.targetY}`
+    : classification.contentIntent;
+  let intent = classification.contentIntent;
+
+  if (classification.isRelationshipQuery && classification.subjectX && classification.targetY) {
+    primarySubject = classification.subjectX;
+    secondarySubject = classification.targetY;
+    relationship = `Uses / Applications of ${primarySubject} in ${secondarySubject}`;
+    intent = `Explain how ${primarySubject} is used in ${secondarySubject} development`;
+  }
+
+  const resolvedPostType = postType || classification.contentType || 'Educational';
+  const bounds = getWordCountBounds(resolvedPostType, contentLengthOption);
 
   return {
-    normalizedTopic: cleanTopic,
+    primarySubject,
+    secondarySubject,
+    relationship,
+    intent,
+    postType: resolvedPostType,
+    platform: platform || 'LinkedIn / X',
+    tone: tone || 'Professional & Analytical',
+    additionalInstructions: instructions || '',
+    contentLengthOption,
+    minimumWords: bounds.minimumWords,
+    targetWords: bounds.targetWords,
+    maximumWords: bounds.maximumWords,
+  };
+}
+
+export function normalizeAndParseTopicInput(
+  rawTopic: string,
+  rawPostType?: string,
+  rawFormat?: string
+): ParsedTopicInput {
+  const classification = classifyUserRequest(rawTopic);
+  const postType = (rawPostType || classification.contentType || 'Technical Breakdown').trim();
+  const format = (rawFormat || classification.contentIntent || 'Technical Explanation').trim();
+
+  return {
+    normalizedTopic: classification.coreTechnology,
     postType,
     format,
   };
 }
 
 export function createTopicProfile(requestedTopic: string, summary: string = ''): TopicProfile {
-  const { normalizedTopic } = normalizeAndParseTopicInput(requestedTopic);
+  const classification = classifyUserRequest(requestedTopic);
+  const normalizedTopic = classification.coreTechnology;
   const category = classifyTopicCategory(normalizedTopic, summary);
 
   let primarySubject = normalizedTopic;
   let coreConcepts: string[] = [];
   let unrelatedTopics: string[] = [];
 
-  if (category === 'High-Performance Computing') {
+  if (category === 'Blockchain & Distributed Systems') {
+    primarySubject = 'Distributed ledger technology, consensus mechanisms, smart contracts, and cryptographic verification';
+    coreConcepts = ['Shared transaction records', 'Traceability & auditability', 'Smart contract automation', 'Tamper-evident records', 'Multi-party coordination', 'Reduced dependency on intermediaries'];
+    unrelatedTopics = ['LLM prompt injection', 'Credential theft'];
+  } else if (category === 'High-Performance Computing') {
     primarySubject = 'Large-scale high-performance computing systems and parallel processing architectures';
     coreConcepts = ['Parallel processing', 'HPC interconnects', 'CPUs & GPUs', 'FLOPS per watt', 'MPI latency', 'Scientific simulations'];
     unrelatedTopics = ['Prompt injection', 'LLM jailbreak', 'Vector database attack', 'Credential theft'];
@@ -96,6 +272,7 @@ export function createTopicProfile(requestedTopic: string, summary: string = '')
     primarySubject,
     importantConcepts: coreConcepts,
     unrelatedConcepts: unrelatedTopics,
+    requestClassification: classification,
   };
 }
 
@@ -121,8 +298,20 @@ const FORBIDDEN_GENERIC_TEMPLATES = [
   'recent disclosures regarding',
   'recent empirical findings regarding',
   'technical topic request',
+  'technical request',
+  'technical overview and analysis',
   'technical overview and analysis of',
   'recent technical analysis published by',
+  'recent technical analysis published by technical topic request',
+  'technical disclosures published by technical request',
+  'significant progress regarding',
+  'analyzing advantage of',
+  'analyzing advantages of',
+  'analyzing benefit of',
+  'analyzing benefits of',
+  'analyzing llm defensive recommendations',
+  'optimizing execution pathways and resource management',
+  'streamlined workflow execution across complex technical workloads',
   'as technology systems evolve across',
   'modern compiler optimizations',
   'continuous application maintainability',
@@ -134,7 +323,11 @@ const FORBIDDEN_GENERIC_TEMPLATES = [
   'this is a game changer',
   'the possibilities are endless',
   'it is important to note that',
-  'this highlights the importance of'
+  'this highlights the importance of',
+  '[topic]',
+  '[source]',
+  '[company]',
+  '[disclosure]'
 ];
 
 export function detectGenericFiller(content: string): string[] {
@@ -143,8 +336,25 @@ export function detectGenericFiller(content: string): string[] {
 
   for (const template of FORBIDDEN_GENERIC_TEMPLATES) {
     if (lower.includes(template)) {
-      issues.push(`Generic template phrase detected: "${template}". Content must be 100% topic-specific.`);
+      issues.push(`Generic template/placeholder phrase detected: "${template}". Content must be 100% topic-specific with zero filler.`);
     }
+  }
+
+  // Check for generic introductory filler patterns forbidden in Case Study / Technical posts
+  if (/^recent technical analysis published by technical topic request/i.test(lower) ||
+      /^recent disclosures regarding/i.test(lower) ||
+      /^technical overview and analysis/i.test(lower)) {
+    issues.push(`Forbidden generic introductory filler detected at post opening. The article must immediately explain the topic directly.`);
+  }
+
+  // Check if raw user search phrase is incorrectly used as technology name (e.g., "Analyzing advantage of block chain...")
+  if (/analyzing\s+(?:advantage|advantages|benefits?|why use|defensive recommendations)/i.test(lower)) {
+    issues.push(`User search phrase was incorrectly used as technology name (e.g. "Analyzing advantage of..."). Core technology name must be used cleanly.`);
+  }
+
+  // Check if raw relationship query phrase is incorrectly used as technology name (e.g. "Use of Python in Blockchain utilizes...")
+  if (/(?:use|role|applications?)\s+of\s+.+?\s+in\s+.+?\s+(?:utilizes|demonstrates|operates|provides)/i.test(lower)) {
+    issues.push(`Relationship query phrase was incorrectly used as technology name (e.g. "Use of X in Y utilizes..."). Explain X and Y separately.`);
   }
 
   return issues;

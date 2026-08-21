@@ -6,8 +6,11 @@ import { handleAgentInit } from './api/init';
 import { handleAgentFeed } from './api/feed';
 import { 
   handleAgentList, 
+  handleAgentActive,
   handleAgentStatus, 
   handleAgentTrigger, 
+  handleAgentStop,
+  handleAgentResume,
   handleAgentLogs,
   handleAgentPostGenerate,
   handlePostUpdate,
@@ -41,8 +44,11 @@ app.get('/api/agent/feed', handleAgentFeed);
 
 // Dashboard & Control Helper APIs
 app.get('/api/agent/list', handleAgentList);
+app.get('/api/agent/active', handleAgentActive);
 app.get('/api/agent/status', handleAgentStatus);
 app.post('/api/agent/trigger', handleAgentTrigger);
+app.post('/api/agent/stop', handleAgentStop);
+app.post('/api/agent/resume', handleAgentResume);
 app.get('/api/agent/logs', handleAgentLogs);
 app.get('/api/agent/mission/latest', handleAgentMission);
 app.get('/api/agent/trends', handleAgentTrends);

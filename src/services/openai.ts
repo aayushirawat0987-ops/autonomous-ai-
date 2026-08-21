@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona, FactCheckResult, CriticResult, CriticScores, TopicRelevanceResult } from '../models/types';
+import { DiscoveredTopic, EditorialEvaluation, GeneratedPost, Persona, FactCheckResult, CriticResult, CriticScores, TopicRelevanceResult, StructuredContentPlan } from '../models/types';
 import { getEditorialEvaluationPrompt } from '../prompts/editorialPrompt';
 import { getWriterPrompt } from '../prompts/writerPrompt';
 import { getFactCheckerPrompt } from '../prompts/factCheckerPrompt';
@@ -7,6 +7,7 @@ import { getCriticPrompt } from '../prompts/criticPrompt';
 import { getRewritePrompt } from '../prompts/rewritePrompt';
 import { Logger } from '../utils/logger';
 import { AntiRepetitionContext } from '../agent/memory';
+import { classifyUserRequest } from '../utils/sanitizer';
 
 export function countMainContentWords(text: string): number {
   if (!text) return 0;
@@ -22,8 +23,9 @@ export function countMainContentWords(text: string): number {
 export function cleanPostContent(content: string): string {
   if (!content) return '';
   return content
-    .replace(/^.*(?:User Manual Request|Technical Topic Request|Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt|technical overview and analysis of|recent technical analysis published by|recent disclosures regarding).*\n?/gmi, '')
-    .replace(/^Source:\s*(?:Technical Topic Request|Manual Request|User Manual Request).*\n?/gmi, '')
+    .replace(/^.*(?:User Manual Request|Technical Topic Request|Technical Request|Manual Request|Manual post generation request|The user asked|According to the prompt|As requested by prompt|technical overview and analysis of|technical overview and analysis|recent technical analysis published by|recent disclosures regarding|significant progress regarding).*\n?/gmi, '')
+    .replace(/^Source:\s*(?:Technical Topic Request|Technical Request|Manual Request|User Manual Request).*\n?/gmi, '')
+    .replace(/\[(?:topic|source|company|disclosure)\]/gi, '')
     .trim();
 }
 
@@ -166,7 +168,8 @@ export class OpenAIService {
     topic: DiscoveredTopic,
     evaluation: EditorialEvaluation,
     contentAngle: string = 'Technical Explanation',
-    antiRepetition?: AntiRepetitionContext
+    antiRepetition?: AntiRepetitionContext,
+    plan?: StructuredContentPlan
   ): Promise<GeneratedPost> {
     const topicCategory = classifyTopicCategory(topic.title, topic.summary);
 
@@ -175,7 +178,7 @@ export class OpenAIService {
       return this.fallbackGeneratePost(persona, topic, evaluation, contentAngle);
     }
 
-    const prompt = getWriterPrompt(persona, topic, evaluation, contentAngle, antiRepetition, topicCategory);
+    const prompt = getWriterPrompt(persona, topic, evaluation, contentAngle, antiRepetition, topicCategory, plan);
 
     try {
       const response = await this.client.chat.completions.create({
@@ -194,6 +197,13 @@ export class OpenAIService {
       const postContent = cleanPostContent(rawContent);
       const wordCount = countMainContentWords(postContent);
 
+      let cleanSources: string[] = Array.isArray(parsed.sources)
+        ? parsed.sources.filter((s: string) => s && typeof s === 'string' && !s.includes('autonomous.agent') && !s.includes('Technical Topic Request'))
+        : [];
+      if (topic.url && typeof topic.url === 'string' && !topic.url.includes('autonomous.agent') && !topic.url.includes('Technical Topic Request') && !cleanSources.includes(topic.url)) {
+        cleanSources.push(topic.url);
+      }
+
       return {
         title: parsed.title || topic.title,
         content: postContent,
@@ -204,7 +214,7 @@ export class OpenAIService {
         rationale: parsed.rationale || `Analysis generated for ${topic.title} in ${topicCategory} under '${contentAngle}' angle.`,
         whySelected: parsed.whySelected || `Selected due to technical relevance in ${topicCategory}.`,
         whyRelevantNow: parsed.whyRelevantNow || `Key ${topicCategory} developments and insights.`,
-        sources: Array.isArray(parsed.sources) ? parsed.sources : [topic.url],
+        sources: cleanSources,
       };
     } catch (error) {
       Logger.error('OpenAI post generation failed, falling back to heuristic writer.', error);
@@ -288,24 +298,30 @@ Return strictly raw JSON matching:
     }
   }
 
-  async factCheckPost(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): Promise<FactCheckResult> {
+  async factCheckPost(
+    persona: Persona,
+    topic: DiscoveredTopic,
+    post: GeneratedPost,
+    minWords: number = 500,
+    maxWords: number = 700
+  ): Promise<FactCheckResult> {
     const words = countMainContentWords(post.content);
 
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback fact-checker.');
-      const wordValid = words >= 150 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         verified: wordValid,
         confidence: 90,
         claimsChecked: ['Technical claims description', 'Topic facts', 'Source link'],
-        unsupportedClaims: wordValid ? [] : [`Word count is ${words} words (must be strictly 150–300 words).`],
+        unsupportedClaims: wordValid ? [] : [`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`],
         incorrectClaims: [],
         missingContext: [],
         sourceQuality: 90,
-        recommendations: wordValid ? [] : [words < 150 ? 'Expand technical explanation and real-world impact to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.'],
-        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly 150–300 words).`],
-        corrections: wordValid ? [] : [words < 150 ? 'Expand technical explanation to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.']
+        recommendations: wordValid ? [] : [words < minWords ? `Expand technical explanation and real-world impact to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`],
+        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`],
+        corrections: wordValid ? [] : [words < minWords ? `Expand technical explanation to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`]
       };
     }
 
@@ -334,13 +350,13 @@ Return strictly raw JSON matching:
 
       let verified = Boolean(parsed.verified ?? (unsupportedClaims.length === 0 && incorrectClaims.length === 0));
 
-      if (words < 150 || words > 300) {
+      if (words < minWords || words > maxWords) {
         verified = false;
-        issues.push(`Word count is ${words} words (must be strictly 150–300 words).`);
-        corrections.push(words < 150 ? 'Expand technical explanation and developer impact to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.');
+        issues.push(`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`);
+        corrections.push(words < minWords ? `Expand technical explanation and developer impact to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`);
       }
 
-      const passed = verified && unsupportedClaims.length === 0 && incorrectClaims.length === 0 && (words >= 150 && words <= 300);
+      const passed = verified && unsupportedClaims.length === 0 && incorrectClaims.length === 0 && (words >= minWords && words <= maxWords);
 
       return {
         passed,
@@ -357,7 +373,7 @@ Return strictly raw JSON matching:
       };
     } catch (error) {
       Logger.error('OpenAI fact check failed.', error);
-      const wordValid = words >= 150 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         verified: wordValid,
@@ -368,18 +384,24 @@ Return strictly raw JSON matching:
         missingContext: [],
         sourceQuality: 85,
         recommendations: [],
-        issues: wordValid ? [] : [`Word count is ${words} words (must be 150-300 words).`],
+        issues: wordValid ? [] : [`Word count is ${words} words (must be ${minWords}-${maxWords} words).`],
         corrections: []
       };
     }
   }
 
-  async evaluateCritic(persona: Persona, topic: DiscoveredTopic, post: GeneratedPost): Promise<CriticResult> {
+  async evaluateCritic(
+    persona: Persona,
+    topic: DiscoveredTopic,
+    post: GeneratedPost,
+    minWords: number = 500,
+    maxWords: number = 700
+  ): Promise<CriticResult> {
     const words = countMainContentWords(post.content);
 
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback critic.');
-      const wordValid = words >= 150 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         scores: {
@@ -393,12 +415,12 @@ Return strictly raw JSON matching:
           readability: 90,
           overallScore: wordValid ? 90 : 75
         },
-        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be 150–300 words).`],
-        improvementSuggestions: wordValid ? [] : [words < 150 ? 'Expand post technical explanation to at least 150 words.' : 'Shorten post to stay under 300 words.']
+        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be ${minWords}–${maxWords} words).`],
+        improvementSuggestions: wordValid ? [] : [words < minWords ? `Expand post technical explanation to at least ${minWords} words.` : `Shorten post to stay under ${maxWords} words.`]
       };
     }
 
-    const prompt = getCriticPrompt(persona, topic, post);
+    const prompt = getCriticPrompt(persona, topic, post, minWords, maxWords);
     try {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -442,13 +464,13 @@ Return strictly raw JSON matching:
         suggestions.push(`Re-ground the entire post strictly around "${topic.title}". Every paragraph must directly analyze "${topic.title}".`);
       }
 
-      if (words < 150 || words > 300) {
+      if (words < minWords || words > maxWords) {
         overallScore = Math.min(overallScore, 75);
-        weaknesses.push(`Word count is ${words} words (must be strictly 150–300 words).`);
-        suggestions.push(words < 150 ? 'Expand technical explanation and real-world developer impact to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.');
+        weaknesses.push(`Word count is ${words} words (must be strictly ${minWords}–${maxWords} words).`);
+        suggestions.push(words < minWords ? `Expand technical explanation and real-world developer impact to reach at least ${minWords} words.` : `Shorten text concisely to stay under ${maxWords} words.`);
       }
 
-      const passed = !topicDrift && overallScore >= 85 && factualGrounding >= 90 && novelty >= 80 && sourceConfidence >= 80 && (words >= 150 && words <= 300);
+      const passed = !topicDrift && overallScore >= 85 && factualGrounding >= 90 && novelty >= 80 && sourceConfidence >= 80 && (words >= minWords && words <= maxWords);
 
       const scores: CriticScores = {
         accuracy: factualGrounding,
@@ -470,7 +492,7 @@ Return strictly raw JSON matching:
       };
     } catch (error) {
       Logger.error('OpenAI critic evaluation failed.', error);
-      const wordValid = words >= 150 && words <= 300;
+      const wordValid = words >= minWords && words <= maxWords;
       return {
         passed: wordValid,
         scores: { accuracy: 92, clarity: 90, technicalKnowledge: 90, originality: 88, usefulness: 90, evidenceQuality: 90, structure: 90, readability: 90, overallScore: wordValid ? 90 : 75 },
@@ -485,14 +507,17 @@ Return strictly raw JSON matching:
     topic: DiscoveredTopic,
     post: GeneratedPost,
     issues: string[],
-    suggestions: string[]
+    suggestions: string[],
+    minWords: number = 500,
+    targetWords: number = 600,
+    maxWords: number = 700
   ): Promise<GeneratedPost> {
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Cannot rewrite.');
       return post;
     }
 
-    const prompt = getRewritePrompt(persona, topic, post, issues, suggestions);
+    const prompt = getRewritePrompt(persona, topic, post, issues, suggestions, minWords, targetWords, maxWords);
     try {
       const response = await this.client.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -597,66 +622,100 @@ Return strictly raw JSON matching:
     evaluation: EditorialEvaluation,
     contentAngle: string = 'Technical Explanation'
   ): GeneratedPost {
-    const rawTitle = topic.title
-      .replace(/^🚨\s*AI\s*Security\s*Insight:\s*/i, '')
-      .replace(/^🚨\s*Critical\s*AI\s*Security\s*Alert:\s*/i, '')
-      .replace(/^arXiv Paper:\s*/i, '')
-      .replace(/^GitHub Repository:\s*/i, '')
-      .trim();
+    const classification = classifyUserRequest(topic.title);
+    const { coreTechnology, contentIntent, contentType, targetAudience, subjectX, targetY, isRelationshipQuery } = classification;
+    const topicCategory = classifyTopicCategory(coreTechnology, topic.summary);
 
-    const topicCategory = classifyTopicCategory(rawTitle, topic.summary);
-
+    let categoryWhatItIs = '';
     let categoryExplanation = '';
+    let categoryApplications = '';
     let categoryImpact = '';
     let categoryTakeaway = '';
 
-    if (/python/i.test(rawTitle)) {
-      categoryExplanation = `Python was created by Dutch programmer Guido van Rossum in the late 1980s as a successor to the ABC programming language, with its first public release appearing in February 1991. Van Rossum designed Python with a core philosophy emphasizing code readability, minimalist syntax, and indentation-based block structuring. A major milestone occurred with Python 2.0 in 2000 and Python 3.0 in 2008, which introduced backwards-incompatible cleanup of Unicode handling and core language syntax.`;
-      categoryImpact = `Understanding Python's evolution clarifies why its readable syntax and rich ecosystem of open-source libraries positioned it as the dominant language for modern data science, web backend engineering, and machine learning research.`;
-      categoryTakeaway = `Python's success stems from its foundational commitment to developer readability, clean syntax design, and community-driven evolution.`;
-    } else if (/blockchain/i.test(rawTitle)) {
-      categoryExplanation = `Blockchain technology operates as an append-only distributed ledger maintained across a peer-to-peer network of independent nodes. Transactions are grouped into cryptographic blocks, hashed, and linked sequentially using SHA-256 or similar cryptographic functions. Decentralized consensus mechanisms, such as Proof-of-Work or Proof-of-Stake, ensure that all participating nodes agree on the global state tree without requiring a central authority. Smart contracts execute self-enforcing code deterministically across distributed virtual machine nodes.`;
-      categoryImpact = `For software architects and financial systems engineers, blockchain delivers tamper-resistant audit trails, automated multi-party settlement, and secure decentralized data verification across untrusted organizational boundaries.`;
-      categoryTakeaway = `Decentralized blockchain networks replace central administrative trust with cryptographic hashing, distributed consensus algorithms, and deterministic smart contract execution.`;
-    } else if (/supercomput|hpc/i.test(rawTitle)) {
-      categoryExplanation = `High-Performance Computing (HPC) and supercomputers partition massive mathematical workloads across thousands of compute nodes linked by ultra-low-latency high-bandwidth interconnects like InfiniBand. Utilizing heterogeneous hardware clusters combining high-density CPUs and GPU accelerators, supercomputers execute millions of concurrent parallel processes via Message Passing Interface (MPI). Performance is benchmarked in FLOPS (Floating-Point Operations Per Second), reaching exascale thresholds.`;
-      categoryImpact = `Supercomputing breakthroughs enable scientific research teams to execute high-fidelity climate simulations, complex molecular dynamics, and astrophysics models that are computationally impossible on standard enterprise server infrastructure.`;
-      categoryTakeaway = `Exascale supercomputing performance relies on balanced interconnect memory bandwidth, high-density heterogeneous acceleration, and optimized parallel execution algorithms.`;
-    } else if (topicCategory === 'Quantum Computing') {
-      categoryExplanation = `The engineering underlying ${rawTitle} addresses core qubit fidelity and logical gate operations. Unlike classical binary bits representing zeros or ones, quantum processors leverage superposition and entanglement to evaluate complex multidimensional state spaces simultaneously. Implementing fault-tolerant quantum error correction and optimized pulse sequences mitigates decoherence and environmental noise across multi-qubit physical arrays.`;
-      categoryImpact = 'Advancements in quantum circuit stability accelerate practical breakthroughs in complex quantum chemistry, advanced materials discovery, combinatorial optimization algorithms, and modern cryptographic resilience.';
-      categoryTakeaway = 'Building scalable quantum computing systems requires continuous advancements in physical qubit coherence, low-noise gate control, and fault-tolerant quantum error mitigation.';
-    } else if (topicCategory === 'Robotics') {
-      categoryExplanation = `The engineering implementation of ${rawTitle} integrates real-time sensor fusion—combining LiDAR arrays, depth cameras, and inertial measurement units—with low-latency motor control loops. Spatial perception models transform raw sensor streams into dynamic environment maps, allowing onboard kinematics engines to compute precise actuator movements and collision-free trajectories in unpredictable physical spaces.`;
-      categoryImpact = 'In industrial automation, logistics facilities, and field robotics, reducing spatial perception latency directly improves operational safety, environmental awareness, and complex physical task execution speed.';
-      categoryTakeaway = 'Reliable robotic automation requires tight, low-latency integration between spatial perception algorithms, real-time sensor telemetry, and hardware motor control.';
-    } else if (topicCategory === 'Cloud Computing') {
-      categoryExplanation = `The cloud architecture supporting ${rawTitle} leverages containerized microservices and dynamic infrastructure provisioning engines. By isolating application components into lightweight containers and managing state through automated orchestrators like Kubernetes, cloud platforms ensure fault tolerance, declarative resource scaling, and zero-downtime rolling updates across global data center regions.`;
-      categoryImpact = 'For DevOps engineers and enterprise cloud architects, modern cloud design patterns significantly reduce infrastructure overhead, optimize resource usage, and improve continuous deployment velocity.';
-      categoryTakeaway = 'Building resilient cloud platforms requires modular service isolation, automated health monitoring, and declarative infrastructure orchestration.';
+    if (isRelationshipQuery && subjectX && targetY) {
+      if (/python/i.test(subjectX) && /blockchain/i.test(targetY)) {
+        categoryWhatItIs = `In blockchain engineering, Python serves as an application-level interface, integration layer, and automation scripting environment rather than the low-level consensus protocol engine. While core blockchain network clients (such as Geth or Nethermind) are constructed using compiled systems programming languages like Go or Rust for raw execution throughput and memory control, Python provides high-productivity developer tooling for interacting with distributed ledger infrastructure via JSON-RPC.`;
+        categoryExplanation = `Developers utilize specialized Python libraries such as Web3.py to establish secure JSON-RPC connections with Ethereum or EVM-compatible blockchain nodes. Through Web3.py, engineers construct raw transaction payloads, encode Application Binary Interface (ABI) parameters, compute Keccak-256 function selectors, and sign cryptographic transactions offline using private key pairs before broadcasting them to the network mempool. Python testing frameworks like Brownie, Ape Worx, and pytest provide test harnesses for automated smart contract unit testing, local EVM state forking, gas consumption profiling, and deployment orchestration. Furthermore, Python data processing pipelines (leveraging Pandas, Polars, and SQLAlchemy) power off-chain indexing services, blockchain data analytics, and decentralized finance (DeFi) telemetry pipelines.`;
+        categoryApplications = `Practical implementation patterns for Python in blockchain development include:
+1. Automated Smart Contract Deployment: Creating repeatable deployment scripts that verify contract source code, initialize proxy architectures, and configure access control roles.
+2. Event Monitoring and Indexing: Listening to EVM log topics and WebSocket subscriptions to capture on-chain events, decode raw byte data, and populate relational databases for analytics.
+3. Automated Testing and State Simulation: Executing parameterized test suites against local ganache/anvil forks to simulate re-entrancy attacks, flash loan mechanics, and boundary conditions prior to mainnet deployment.
+4. Cryptographic Key Management: Implementing BIP-32/BIP-39/BIP-44 hierarchical deterministic (HD) wallet generation and secure key signing workflows in hardware security module (HSM) backend integrations.`;
+        categoryImpact = `Using Python for blockchain integration accelerates developer prototyping, automated node interaction, and smart contract quality assurance. However, architects must recognize the distinction between application-level scripting and consensus protocol execution: performance-critical node operations remain in compiled systems languages, while Python excels in off-chain tooling, analytics, and service middleware.`;
+        categoryTakeaway = `Python provides a high-productivity interface for Web3 RPC client interactions, smart contract deployment automation, and blockchain data analysis while relying on compiled node clients for underlying network consensus.`;
+      } else {
+        categoryWhatItIs = `${subjectX} serves as a specialized programming language and integration toolset applied within ${targetY} development environments. Technical integrations leverage ${subjectX} APIs, client libraries, and automated frameworks to interact with ${targetY} infrastructure, manage application state, and establish robust data pipelines.`;
+        categoryExplanation = `Engineering architectures utilizing ${subjectX} for ${targetY} focus on modular component boundaries, deterministic error handling, and high-throughput serialization. Developers implement client connections to communicate with ${targetY} backend services, manage asynchronous state transitions, and enforce type safety across integration surfaces. The ecosystem around ${subjectX} provides comprehensive testing harnesses, benchmarking suites, and telemetry exporters that ensure reliable execution under heavy enterprise production loads.`;
+        categoryApplications = `Key practical implementations of ${subjectX} in ${targetY} include:
+1. Infrastructure Automation: Scripting deployment configurations, provisioning distributed resources, and verifying runtime environment health.
+2. Data Processing Pipelines: Ingesting high-volume event streams, applying transformation rules, and feeding processed records into persistent storage.
+3. Automated Integration Testing: Simulating real-world failure modes, measuring network latency overhead, and validating component contracts.
+4. API Gateway Integration: Constructing secure service facades that mediate between external client requests and internal ${targetY} protocol endpoints.`;
+        categoryImpact = `Integrating ${subjectX} with ${targetY} enables engineering teams to build modular services and maintain high velocity without compromising underlying system reliability. Establishing clear architectural boundaries prevents operational bottlenecks and simplifies ongoing maintenance.`;
+        categoryTakeaway = `Applying ${subjectX} in ${targetY} balances developer velocity and integration flexibility with the performance and consistency requirements of core domain protocols.`;
+      }
+    } else if (/java/i.test(coreTechnology)) {
+      categoryWhatItIs = `Java security is a foundational enterprise engineering discipline that combines Java Virtual Machine (JVM) runtime memory safety guarantees, class loader isolation mechanisms, cryptographic provider frameworks, and modern dependency vulnerability mitigation practices. Designed from its inception for secure distributed computing, the Java platform provides built-in defenses against classic memory corruption vulnerabilities while requiring systematic controls against application-layer injection and deserialization risks.`;
+      categoryExplanation = `At the runtime layer, the JVM enforces type safety and memory protection through automated garbage collection and continuous array index bounds verification, eliminating low-level vulnerabilities such as heap buffer overflows, format string bugs, and use-after-free conditions common in unmanaged languages. The Java Security Architecture relies on the Java Cryptography Architecture (JCA) and Java Cryptography Extension (JCE), providing algorithm-independent provider interfaces for AES-GCM authenticated encryption, RSA/ECDSA digital signatures, and SHA-256/SHA-3 cryptographic hashing.
+
+In modern enterprise applications, Java security engineering focuses on mitigating Remote Code Execution (RCE) vectors, particularly unsafe object deserialization and expression language injection attacks. Unsafe deserialization occurs when ObjectInputStream processes untrusted serialized streams containing malicious gadget chains, enabling arbitrary command execution during object graph reconstruction. Defense mechanisms mandate implementing ObjectInputFilter whitelist policies, adopting JEP 290 filter patterns, upgrading legacy dependencies, and replacing native Java serialization with type-safe JSON or Protocol Buffers serialization. Furthermore, secure credential management leverages PKCS12 KeyStores, isolating private cryptographic keys and TLS certificates from application source repositories.`;
+      categoryApplications = `Core implementation best practices for Java security include:
+1. Secure Deserialization Controls: Configuring global and contextual ObjectInputFilter patterns to reject unauthorized gadget classes and limiting serialization exclusively to verified data transfer objects.
+2. Cryptographic Best Practices: Enforcing AES-256-GCM authenticated encryption modes, utilizing SecureRandom for cryptographic nonce generation, and storing master credentials within hardware security modules (HSM) or PKCS12 KeyStores.
+3. Dependency Scanning and SBOM Generation: Embedding OWASP Dependency-Check, Snyk, and CycloneDX plugins into Maven/Gradle CI/CD pipelines to continuously audit third-party JAR dependencies for known CVEs.
+4. Parameterized Data Access: Utilizing JPA/Hibernate Criteria APIs and parameterized PreparedStatements to prevent SQL injection across all database transaction interfaces.`;
+      categoryImpact = `For enterprise software architects and security engineers, maintaining robust Java security requires continuous static application security testing (SAST), Software Bill of Materials (SBOM) scanning using OWASP Dependency-Check, and secure API design across Spring Boot and Jakarta EE frameworks. Implementing strict input sanitization, context-aware encoding, and parameterized queries eliminates SQL injection, XSS, and command injection threats in high-throughput enterprise applications.`;
+      categoryTakeaway = `Java security combines JVM memory safety guarantees, modular cryptographic abstractions, strict deserialization controls, and automated dependency vulnerability analysis to safeguard enterprise backend platforms.`;
+    } else if (/blockchain/i.test(coreTechnology) || topicCategory === 'Blockchain & Distributed Systems') {
+      categoryWhatItIs = `Blockchain is an append-only distributed ledger technology maintained across a decentralized peer-to-peer network of independent nodes. By combining cryptographic hashing, asymmetric public-key cryptography, and distributed consensus protocols, blockchain enables mutually untrusted participants to agree on the verifiable state of transactions without relying on a centralized intermediary authority.`;
+      categoryExplanation = `Transactions on a blockchain are grouped into cryptographic blocks, hashed sequentially using algorithms such as SHA-256 or Keccak-256, and linked using parent block hashes to construct an immutable chain. Distributed consensus protocols—such as Proof-of-Work (PoW), Proof-of-Stake (PoS), and Byzantine Fault Tolerant (BFT) state machine replication—ensure that all network nodes converge on identical ledger state transitions despite latency or malicious actors. Smart contract execution environments, such as the Ethereum Virtual Machine (EVM), run deterministic bytecode on all validating nodes, enabling automated multi-party contract logic and programmatic state changes.`;
+      categoryApplications = `Practical enterprise and financial engineering implementations of blockchain include:
+1. Cross-Border Settlement and Payments: Enabling real-time atomic settlement between international financial institutions without multi-day clearing house delays.
+2. Supply Chain Provenance: Recording immutable cryptographic attestations at each stage of manufacturing, shipping, and distribution to prevent counterfeiting.
+3. Decentralized Identity and Verifiable Credentials: Giving users cryptographic ownership of digital identities and claims without centralized identity provider dependencies.
+4. Multi-Party Reconciliation: Automating dispute resolution and shared accounting logs across complex commercial consortia.`;
+      categoryImpact = `For enterprise architects and financial engineers, blockchain delivers tamper-evident transaction logs, automated multi-party reconciliation, and verifiable data provenance. However, suitability must be benchmarked against conventional relational databases, which offer far higher transaction throughput and lower operation costs when multi-party decentralization is unnecessary.`;
+      categoryTakeaway = `Decentralized blockchain architectures trade single-node transaction throughput for tamper-evident data verification, cryptographic consensus, and automated smart-contract execution across untrusted network participants.`;
+    } else if (/python/i.test(coreTechnology)) {
+      categoryWhatItIs = `Python is a high-level, dynamically typed, interpreted programming language created by Guido van Rossum in 1991. Emphasizing developer productivity, readable syntax, and explicit code structuring, Python has evolved over three decades into the primary programming language for artificial intelligence, data engineering, scientific computing, web development, and systems automation.`;
+      categoryExplanation = `Python's runtime execution architecture is powered by the CPython virtual machine, which compiles human-readable source code into bytecode (.pyc) before executing it on a stack-based interpreter. Memory management in CPython combines reference counting with a cyclic generational garbage collector, automatically reclaiming unreachable objects. While the Global Interpreter Lock (GIL) synchronizes thread execution within a single process, modern Python applications scale compute-intensive workloads through multiprocessing, asynchronous I/O (asyncio), and high-performance compiled C/C++/Rust extension bindings.`;
+      categoryApplications = `Key industry use cases and technical implementations of Python include:
+1. Machine Learning and AI: Building and training deep neural networks using PyTorch, TensorFlow, and Hugging Face Transformers.
+2. High-Throughput Data Pipelines: Processing and transforming multi-gigabyte datasets using Pandas, Polars, Apache Spark (PySpark), and Dask.
+3. Backend Web Services: Developing asynchronous microservice APIs using FastAPI, Starlette, Django, and SQLAlchemy.
+4. Automated DevOps and Infrastructure Tooling: Orchestrating cloud resources, container environments, and CI/CD pipelines through scripting and SDK integrations.`;
+      categoryImpact = `Python's extensive ecosystem of specialized libraries, clear syntax design, and seamless native C-extension interop provide unmatched development velocity across modern engineering organizations. Understanding runtime memory and concurrency patterns ensures Python services scale effectively in production environments.`;
+      categoryTakeaway = `Python balances high developer productivity and clear syntax with an extensive C-interface ecosystem supporting modern computing workloads.`;
     } else {
-      categoryExplanation = `Analyzing ${rawTitle} demonstrates key technical advancements in ${topicCategory.toLowerCase()} design. Engineering insights indicate that structured execution pathways and optimized resource allocation provide measurable performance enhancements and reliable system stability across complex technical workloads.`;
-      categoryImpact = `For technical teams working in ${topicCategory}, adopting these modern architectural patterns enhances operational efficiency, system reliability, and long-term infrastructure scalability.`;
-      categoryTakeaway = `Advancing technical capabilities in ${topicCategory} requires continuous performance benchmarking, evidence-based engineering practices, and structured system architecture.`;
+      categoryWhatItIs = `${coreTechnology} is a foundational technology within ${topicCategory.toLowerCase()} that defines specific operational mechanisms, architectural patterns, and engineering trade-offs for modern software and systems infrastructure.`;
+      categoryExplanation = `${coreTechnology} encompasses core architectural principles and practical implementation patterns within ${topicCategory.toLowerCase()}. Engineering implementations prioritize structural modularity, deterministic state management, and clear performance trade-offs. System designers evaluate component interactions, operational latency, and resource constraints under high concurrent workloads. High-reliability systems implement robust error recovery, continuous telemetry, and clean abstraction boundaries to ensure resilience across production deployments.`;
+      categoryApplications = `Practical implementations of ${coreTechnology} include:
+1. Enterprise Systems Architecture: Structuring resilient backend components and decoupled service communication channels.
+2. Performance Optimization: Benchmarking resource consumption, minimizing latency bottlenecks, and tuning execution parameters.
+3. Automated Quality Assurance: Establishing comprehensive unit, integration, and load testing pipelines to validate system contracts.
+4. Operational Monitoring: Emitting structured metrics, traces, and audit logs to enable real-time system observability.`;
+      categoryImpact = `For technical teams working in ${topicCategory.toLowerCase()}, understanding ${coreTechnology} enables better system architecture decisions, improved operational reliability, and reduced maintenance complexity across enterprise production environments.`;
+      categoryTakeaway = `Effective deployment of ${coreTechnology} requires continuous performance benchmarking, clear architectural isolation, and rigorous engineering practices.`;
     }
 
-    const cleanSource = (topic.source && !/request|manual/i.test(topic.source)) ? topic.source : 'Technical Reference';
+    const content = `${coreTechnology} provides distinct architectural characteristics and practical engineering trade-offs for modern systems.
 
-    const content = `Understanding ${rawTitle} requires examining its core architecture and real-world technical implementation.
-
-OVERVIEW
-Technical analysis examines core mechanics and operational considerations regarding ${rawTitle}.
+WHAT IT IS
+${categoryWhatItIs}
 
 TECHNICAL EXPLANATION
 ${categoryExplanation}
 
+PRACTICAL APPLICATIONS
+${categoryApplications}
+
 WHY IT MATTERS
 ${categoryImpact}
 
-KEY TAKEAWAY
+KEY TAKEAWAYS
 ${categoryTakeaway}
 
-Source: ${topic.url}
+Source: No verified external source
 
 #${topicCategory.replace(/[^a-zA-Z0-9]/g, '')} #Tech #Engineering #${persona?.domain?.replace(/\s+/g, '') || 'Tech'}`;
 
@@ -664,7 +723,7 @@ Source: ${topic.url}
     const wordCount = countMainContentWords(cleanContentText);
 
     return {
-      title: `${rawTitle}: ${contentAngle}`,
+      title: `${coreTechnology}: ${contentAngle}`,
       content: cleanContentText,
       topicCategory,
       topicRelevanceScore: 95,
@@ -676,9 +735,9 @@ Source: ${topic.url}
       clarityScore: 90,
       evidenceScore: 90,
       overallQuality: 90,
-      rationale: `Technical analysis generated for ${rawTitle} in ${topicCategory} under '${contentAngle}' angle.`,
-      whySelected: `Selected due to high technical relevance in ${topicCategory}.`,
-      whyRelevantNow: `Presents key insights for ${topicCategory} implementations.`,
+      rationale: `Technical analysis generated for ${coreTechnology} in ${topicCategory} under '${contentAngle}' angle.`,
+      whySelected: `Selected due to technical relevance in ${topicCategory}.`,
+      whyRelevantNow: `Presents key technical insights for ${topicCategory} implementations.`,
       sources: [topic.url],
     };
   }

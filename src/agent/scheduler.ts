@@ -26,6 +26,12 @@ export class SchedulerEngine {
   async startAgentScheduler(agentId: string): Promise<void> {
     Logger.info(`Initializing background scheduler for agent ${agentId}...`, agentId);
 
+    // Prevent duplicate scheduler jobs for the same agent
+    if (this.activeJobs.has(agentId)) {
+      Logger.warn(`Scheduler job already active for agent ${agentId}. Skipping duplicate scheduler creation.`, agentId);
+      return;
+    }
+
     // Run immediate discovery and publishing cycle on startup
     setImmediate(() => {
       this.runCycleForAgent(agentId).catch(err => {
@@ -34,16 +40,34 @@ export class SchedulerEngine {
     });
 
     // Schedule background cron recurring job
-    if (!this.activeJobs.has(agentId)) {
-      const task = cron.schedule(config.cronSchedule, async () => {
-        Logger.info(`Cron trigger fired for agent ${agentId}`, agentId);
-        await this.runCycleForAgent(agentId).catch(err => {
-          Logger.error(`Error in scheduled cron cycle for agent ${agentId}`, err, agentId);
-        });
+    const task = cron.schedule(config.cronSchedule, async () => {
+      Logger.info(`Cron trigger fired for agent ${agentId}`, agentId);
+      await this.runCycleForAgent(agentId).catch(err => {
+        Logger.error(`Error in scheduled cron cycle for agent ${agentId}`, err, agentId);
       });
+    });
 
-      this.activeJobs.set(agentId, task);
-      Logger.info(`Registered background cron job (${config.cronSchedule}) for agent ${agentId}`, agentId);
+    this.activeJobs.set(agentId, task);
+    Logger.info(`Registered background cron job (${config.cronSchedule}) for agent ${agentId}`, agentId);
+  }
+
+  stopAgentScheduler(agentId: string): void {
+    const task = this.activeJobs.get(agentId);
+    if (task) {
+      task.stop();
+      this.activeJobs.delete(agentId);
+      Logger.info(`Stopped background cron job for agent ${agentId}`, agentId);
+    }
+  }
+
+  private async updateCurrentTask(agentId: string, currentTask: string): Promise<void> {
+    try {
+      await prisma.agent.update({
+        where: { id: agentId },
+        data: { currentTask },
+      });
+    } catch (e) {
+      Logger.warn(`Failed to update currentTask for agent ${agentId}: ${e}`);
     }
   }
 
@@ -64,6 +88,18 @@ export class SchedulerEngine {
         return { publishedCount: 0 };
       }
 
+      // Record cycle start in database
+      await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+          status: 'ACTIVE',
+          isActive: true,
+          lastRunAt: new Date(),
+          currentTask: 'Researching emerging topics',
+          lastError: null,
+        },
+      });
+
       const persona: Persona = {
         name: agent.name,
         domain: agent.domain,
@@ -79,27 +115,54 @@ export class SchedulerEngine {
 
       // STEP 1: Discover Topics & Normalize
       Logger.info('MISSION STAGE: RESEARCH (Scanning AI Security sources)', agentId);
+      await this.updateCurrentTask(agentId, 'Researching emerging topics');
       const candidateTopics = await this.discoveryEngine.discoverAllTopics(agentId);
 
       if (candidateTopics.length === 0) {
         Logger.warn('No candidate topics discovered in current cycle.', agentId);
         await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "No topics found" } });
+        
+        const nextRunAt = new Date(Date.now() + 30 * 60 * 1000);
+        await prisma.agent.update({
+          where: { id: agentId },
+          data: {
+            status: 'ACTIVE',
+            isActive: true,
+            currentTask: 'Waiting for next scheduled cycle',
+            nextRunAt,
+          },
+        });
         return { publishedCount: 0 };
       }
       
       // STEP 2: Group Related Signals & Detect Emerging Trend
       Logger.info('MISSION STAGE: COLLECT SIGNALS & CONNECT SIGNALS', agentId);
+      await this.updateCurrentTask(agentId, 'Collecting technical signals');
       const emergingTrend = await this.threatEngine.detectEmergingTrend(agentId, candidateTopics);
       
       // OP OPPORTUNITY RADAR
       Logger.info('MISSION STAGE: ANALYZE OPPORTUNITY & PREDICT TREND', agentId);
+      await this.updateCurrentTask(agentId, 'Analyzing opportunities');
       const opportunity = await this.threatEngine.detectOpportunity(agentId, candidateTopics);
       
       if (!emergingTrend || !opportunity) {
         Logger.warn('Failed to detect any emerging trends or opportunities.', agentId);
         await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "No trends detected" } });
+        
+        const nextRunAt = new Date(Date.now() + 30 * 60 * 1000);
+        await prisma.agent.update({
+          where: { id: agentId },
+          data: {
+            status: 'ACTIVE',
+            isActive: true,
+            currentTask: 'Waiting for next scheduled cycle',
+            nextRunAt,
+          },
+        });
         return { publishedCount: 0 };
       }
+
+      await this.updateCurrentTask(agentId, 'Detecting emerging trends');
       
       // Save Trend
       await prisma.emergingTrend.create({
@@ -176,11 +239,23 @@ export class SchedulerEngine {
       if (opportunity.recommendation !== "CREATE CONTENT" && opportunity.recommendation !== "PREPARE DRAFT") {
          Logger.info(`Opportunity recommendation is ${opportunity.recommendation}. Skipping content creation.`, agentId);
          await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Opportunity Monitored" } });
+         
+         const nextRunAt = new Date(Date.now() + 30 * 60 * 1000);
+         await prisma.agent.update({
+           where: { id: agentId },
+           data: {
+             status: 'ACTIVE',
+             isActive: true,
+             currentTask: 'Waiting for next scheduled cycle',
+             nextRunAt,
+           },
+         });
          return { publishedCount: 0 };
       }
 
       // STEP 3: Memory Check & Security Evaluation
       Logger.info('MISSION STAGE: MEMORY CHECK & EVALUATE', agentId);
+      await this.updateCurrentTask(agentId, 'Checking agent memory');
       const signalTopics = opportunity.signals.map(s => s.topic);
       const evaluation = await this.editorialEngine.evaluateTopics(agentId, persona, signalTopics);
       const approvedEvaluations = evaluation.filter(e => e.passed);
@@ -189,10 +264,14 @@ export class SchedulerEngine {
       if (approvedEvaluations.length > 0) {
         const topCandidate = approvedEvaluations[0];
         Logger.info('MISSION STAGE: CREATE & SELF-CRITIQUE', agentId);
+        await this.updateCurrentTask(agentId, 'Generating content');
+        await this.updateCurrentTask(agentId, 'Self-critiquing content');
+        
         const post = await this.writerEngine.createAndPublishPost(agentId, persona, topCandidate.topic, topCandidate);
         if (post) {
           publishedCount++;
           Logger.info('MISSION STAGE: PUBLISH & REMEMBER', agentId);
+          await this.updateCurrentTask(agentId, 'Publishing content');
           await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Published: " + post.title } });
         } else {
           Logger.warn('Post was rejected after self-critique retries.', agentId);
@@ -203,9 +282,37 @@ export class SchedulerEngine {
         await prisma.mission.update({ where: { id: mission.id }, data: { status: "COMPLETED", result: "Filtered by Editorial" } });
       }
 
+      // Update cycle complete state
+      const nextRunAt = new Date(Date.now() + 30 * 60 * 1000);
+      await prisma.agent.update({
+        where: { id: agentId },
+        data: {
+          status: 'ACTIVE',
+          isActive: true,
+          currentTask: 'Waiting for next scheduled cycle',
+          nextRunAt,
+        },
+      });
+
       Logger.info(`=== COMPLETED AUTONOMOUS MISSION FOR AGENT ${agent.name} ===`, agentId);
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
       Logger.error(`Autonomous cycle failed for agent ${agentId}`, error, agentId);
+      
+      try {
+        await prisma.agent.update({
+          where: { id: agentId },
+          data: {
+            status: 'ERROR',
+            isActive: false,
+            currentTask: null,
+            lastError: errorMessage,
+          },
+        });
+        this.stopAgentScheduler(agentId);
+      } catch (dbErr) {
+        Logger.error(`Failed to persist error state for agent ${agentId}`, dbErr);
+      }
     } finally {
       this.runningAgents.delete(agentId);
     }
@@ -215,7 +322,14 @@ export class SchedulerEngine {
 
   async resumeAllActiveSchedulers(): Promise<void> {
     try {
-      const agents = await prisma.agent.findMany({ select: { id: true } });
+      const agents = await prisma.agent.findMany({
+        where: {
+          isActive: true,
+          status: "ACTIVE"
+        },
+        select: { id: true }
+      });
+      Logger.info(`Found ${agents.length} active agent(s) in database to resume schedulers.`);
       for (const a of agents) {
         await this.startAgentScheduler(a.id);
       }
