@@ -293,19 +293,19 @@ Return strictly raw JSON matching:
 
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback fact-checker.');
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= 150 && words <= 300;
       return {
         passed: wordValid,
         verified: wordValid,
         confidence: 90,
         claimsChecked: ['Technical claims description', 'Topic facts', 'Source link'],
-        unsupportedClaims: wordValid ? [] : [`Word count is ${words} words (must be strictly 200–300 words).`],
+        unsupportedClaims: wordValid ? [] : [`Word count is ${words} words (must be strictly 150–300 words).`],
         incorrectClaims: [],
         missingContext: [],
         sourceQuality: 90,
-        recommendations: wordValid ? [] : [words < 200 ? 'Expand technical explanation and real-world impact to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.'],
-        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly 200–300 words).`],
-        corrections: wordValid ? [] : [words < 200 ? 'Expand technical explanation to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.']
+        recommendations: wordValid ? [] : [words < 150 ? 'Expand technical explanation and real-world impact to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.'],
+        issues: wordValid ? [] : [`Word count is ${words} words (must be strictly 150–300 words).`],
+        corrections: wordValid ? [] : [words < 150 ? 'Expand technical explanation to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.']
       };
     }
 
@@ -334,13 +334,13 @@ Return strictly raw JSON matching:
 
       let verified = Boolean(parsed.verified ?? (unsupportedClaims.length === 0 && incorrectClaims.length === 0));
 
-      if (words < 200 || words > 300) {
+      if (words < 150 || words > 300) {
         verified = false;
-        issues.push(`Word count is ${words} words (must be strictly 200–300 words).`);
-        corrections.push(words < 200 ? 'Expand technical explanation and developer impact to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.');
+        issues.push(`Word count is ${words} words (must be strictly 150–300 words).`);
+        corrections.push(words < 150 ? 'Expand technical explanation and developer impact to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.');
       }
 
-      const passed = verified && unsupportedClaims.length === 0 && incorrectClaims.length === 0 && (words >= 200 && words <= 300);
+      const passed = verified && unsupportedClaims.length === 0 && incorrectClaims.length === 0 && (words >= 150 && words <= 300);
 
       return {
         passed,
@@ -357,7 +357,7 @@ Return strictly raw JSON matching:
       };
     } catch (error) {
       Logger.error('OpenAI fact check failed.', error);
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= 150 && words <= 300;
       return {
         passed: wordValid,
         verified: wordValid,
@@ -368,7 +368,7 @@ Return strictly raw JSON matching:
         missingContext: [],
         sourceQuality: 85,
         recommendations: [],
-        issues: wordValid ? [] : [`Word count is ${words} words (must be 200-300 words).`],
+        issues: wordValid ? [] : [`Word count is ${words} words (must be 150-300 words).`],
         corrections: []
       };
     }
@@ -379,7 +379,7 @@ Return strictly raw JSON matching:
 
     if (!this.client) {
       Logger.warn('OpenAI API key missing. Using fallback critic.');
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= 150 && words <= 300;
       return {
         passed: wordValid,
         scores: {
@@ -393,8 +393,8 @@ Return strictly raw JSON matching:
           readability: 90,
           overallScore: wordValid ? 90 : 75
         },
-        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be 200–300 words).`],
-        improvementSuggestions: wordValid ? [] : [words < 200 ? 'Expand post technical explanation to at least 200 words.' : 'Shorten post to stay under 300 words.']
+        weaknesses: wordValid ? [] : [`Word count is ${words} words (must be 150–300 words).`],
+        improvementSuggestions: wordValid ? [] : [words < 150 ? 'Expand post technical explanation to at least 150 words.' : 'Shorten post to stay under 300 words.']
       };
     }
 
@@ -414,25 +414,23 @@ Return strictly raw JSON matching:
       const parsed = JSON.parse(contentStr);
       const rawScores = parsed.scores || {};
 
-      const accuracy = Number(rawScores.accuracy ?? 90);
-      const clarity = Number(rawScores.clarity ?? 90);
-      const technicalKnowledge = Number(rawScores.technicalKnowledge ?? 88);
-      const originality = Number(rawScores.originality ?? 85);
-      const usefulness = Number(rawScores.usefulness ?? 88);
-      const evidenceQuality = Number(rawScores.evidenceQuality ?? 90);
-      const structure = Number(rawScores.structure ?? 88);
+      const specificity = Number(rawScores.specificity ?? 90);
+      const technicalDepth = Number(rawScores.technicalDepth ?? 88);
+      const factualGrounding = Number(rawScores.factualGrounding ?? 90);
+      const novelty = Number(rawScores.novelty ?? 85);
+      const practicalUsefulness = Number(rawScores.practicalUsefulness ?? 88);
       const readability = Number(rawScores.readability ?? 90);
+      const sourceConfidence = Number(rawScores.sourceConfidence ?? 90);
       const topicDrift = Boolean(parsed.topicDrift ?? false);
 
       let overallScore = Math.round(
-        (accuracy * 0.25) +
-        (clarity * 0.15) +
-        (technicalKnowledge * 0.15) +
-        (originality * 0.15) +
-        (usefulness * 0.10) +
-        (evidenceQuality * 0.10) +
-        (structure * 0.05) +
-        (readability * 0.05)
+        (specificity * 0.15) +
+        (technicalDepth * 0.15) +
+        (factualGrounding * 0.20) +
+        (novelty * 0.15) +
+        (practicalUsefulness * 0.15) +
+        (readability * 0.10) +
+        (sourceConfidence * 0.10)
       );
 
       const weaknesses: string[] = Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [];
@@ -444,23 +442,23 @@ Return strictly raw JSON matching:
         suggestions.push(`Re-ground the entire post strictly around "${topic.title}". Every paragraph must directly analyze "${topic.title}".`);
       }
 
-      if (words < 200 || words > 300) {
+      if (words < 150 || words > 300) {
         overallScore = Math.min(overallScore, 75);
-        weaknesses.push(`Word count is ${words} words (must be strictly 200–300 words).`);
-        suggestions.push(words < 200 ? 'Expand technical explanation and real-world developer impact to reach at least 200 words.' : 'Shorten text concisely to stay under 300 words.');
+        weaknesses.push(`Word count is ${words} words (must be strictly 150–300 words).`);
+        suggestions.push(words < 150 ? 'Expand technical explanation and real-world developer impact to reach at least 150 words.' : 'Shorten text concisely to stay under 300 words.');
       }
 
-      const passed = !topicDrift && overallScore >= 85 && accuracy >= 90 && originality >= 80 && evidenceQuality >= 80 && (words >= 200 && words <= 300);
+      const passed = !topicDrift && overallScore >= 85 && factualGrounding >= 90 && novelty >= 80 && sourceConfidence >= 80 && (words >= 150 && words <= 300);
 
       const scores: CriticScores = {
-        accuracy,
-        clarity,
-        technicalKnowledge,
-        originality,
-        usefulness,
-        evidenceQuality,
-        structure,
-        readability,
+        accuracy: factualGrounding,
+        clarity: specificity,
+        technicalKnowledge: technicalDepth,
+        originality: novelty,
+        usefulness: practicalUsefulness,
+        evidenceQuality: sourceConfidence,
+        structure: readability,
+        readability: readability,
         overallScore,
       };
 
@@ -472,7 +470,7 @@ Return strictly raw JSON matching:
       };
     } catch (error) {
       Logger.error('OpenAI critic evaluation failed.', error);
-      const wordValid = words >= 200 && words <= 300;
+      const wordValid = words >= 150 && words <= 300;
       return {
         passed: wordValid,
         scores: { accuracy: 92, clarity: 90, technicalKnowledge: 90, originality: 88, usefulness: 90, evidenceQuality: 90, structure: 90, readability: 90, overallScore: wordValid ? 90 : 75 },

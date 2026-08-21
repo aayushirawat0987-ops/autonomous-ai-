@@ -4,8 +4,8 @@ export function getCriticPrompt(persona: Persona, topic: DiscoveredTopic, post: 
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
 
   return `You are an expert Critic and Quality Evaluator for an autonomous technology publishing platform.
-Your job is to evaluate the quality of a generated post based on strict 8-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY 200 TO 300 WORDS).
-Before publishing, you must verify source relevance, factual accuracy, specificity, readability, and hallucination risk. Regenerate if quality is below 8/10 (overallScore < 80).
+Your job is to evaluate the quality of a generated post based on strict 7-metric criteria, Usefulness Test, zero generic filler, and word count compliance (STRICTLY 150 TO 300 WORDS).
+Before publishing, you must run an internal editorial-quality check. Reject the content if it is under 150 words when sufficient information exists, is too generic, lacks technical details, paraphrases the intro, makes unsupported claims, repeats the same idea, or lacks explanation of why it matters. Regenerate if quality is below 8/10 (overallScore < 80).
 
 Persona: ${persona.name} (${persona.domain})
 Requested Topic: ${topic.title}
@@ -22,35 +22,33 @@ CRITICAL USEFULNESS & CONTENT QUALITY AUDIT:
 5. Does the conclusion provide a topic-specific insight rather than a generic security warning?
 6. Are there any hallucination risks? Ensure no invented research, statistics, companies, findings, or technical claims. Verify source relevance.
 
-STRICT 8-METRIC EVALUATION CATEGORIES (Score each 0 to 100):
-1. Accuracy (25% weight): Zero false claims, zero fabricated stats/CVEs/quotes. Every detail verified.
-2. Clarity (15% weight): Simple, clear, professional English. Easy for a technical beginner to read.
-3. Technical Knowledge (15% weight): Concrete technical mechanism explanation of "${topic.title}". High knowledge density.
-4. Originality (15% weight): Unique hook, distinct perspective, non-repetitive phrasing, novel angle.
-5. Usefulness (10% weight): Teaches the reader something practical and actionable about "${topic.title}".
-6. Evidence Quality (10% weight): Supported by trustworthy sources and clear attribution.
-7. Structure (5% weight): Topic-tailored logical flow with high scannability.
-8. Readability (5% weight): Engaging sentence flow, concise paragraphs. Zero internal system text ("User Manual Request", etc.).
+STRICT 7-METRIC EVALUATION CATEGORIES (Score each 0 to 100):
+1. Specificity (15% weight): Is the technical information specific rather than generic?
+2. Technical Depth (15% weight): Does it explain the important technical details and how it works?
+3. Factual Grounding (20% weight): Are all claims supported by the source without fabrication?
+4. Novelty (15% weight): Does it explain what is genuinely new?
+5. Practical Usefulness (15% weight): Is there a clear explanation of why it matters and a practical takeaway?
+6. Readability (10% weight): Is it easy to read without AI buzzwords?
+7. Source Confidence (10% weight): Does the content confidently reflect the source material without guessing?
 
 WORD COUNT & PASSING RULES:
 Current word count: ${words} words.
 - If topic drift occurred, cap overallScore at 65 maximum and flag topic drift.
 - If generic filler or AI clichés are present, cap overallScore at 75 maximum.
-- If word count is < 200 words or > 300 words, cap overallScore at 75 maximum and flag word count violation.
-- To PASS: overallScore >= 80, accuracy >= 90, originality >= 80, evidenceQuality >= 80, zero topic drift, zero generic filler, and word count MUST be strictly 200–300 words.
+- If word count is < 150 words or > 300 words, cap overallScore at 75 maximum and flag word count violation.
+- To PASS: overallScore >= 80, factualGrounding >= 90, novelty >= 80, sourceConfidence >= 80, zero topic drift, zero generic filler, and word count MUST be strictly 150–300 words.
 
 Return strictly raw JSON matching this schema:
 {
   "passed": boolean,
   "scores": {
-    "accuracy": number (0-100),
-    "clarity": number (0-100),
-    "technicalKnowledge": number (0-100),
-    "originality": number (0-100),
-    "usefulness": number (0-100),
-    "evidenceQuality": number (0-100),
-    "structure": number (0-100),
+    "specificity": number (0-100),
+    "technicalDepth": number (0-100),
+    "factualGrounding": number (0-100),
+    "novelty": number (0-100),
+    "practicalUsefulness": number (0-100),
     "readability": number (0-100),
+    "sourceConfidence": number (0-100),
     "overallScore": number (weighted average 0-100)
   },
   "topicDrift": boolean,

@@ -8,17 +8,17 @@ export function getRewritePrompt(
   suggestions: string[]
 ): string {
   const words = post.content ? post.content.trim().split(/\s+/).filter(w => w.length > 0).length : 0;
-  const isTooShort = words < 200;
+  const isTooShort = words < 150;
   const isTooLong = words > 300;
 
-  let lengthGuidance = 'Maintain word count strictly between 200 and 300 words (Target: 230-270 words).';
+  let lengthGuidance = 'Maintain word count strictly between 150 and 300 words (Target: 180-300 words).';
   if (isTooShort) {
-    lengthGuidance = `PREVIOUS DRAFT WAS TOO SHORT (${words} words). You MUST expand the post to reach at least 200-270 words by adding:
+    lengthGuidance = `PREVIOUS DRAFT WAS TOO SHORT (${words} words). You MUST expand the post to reach at least 150-300 words by adding:
 - Detailed technical explanation of the underlying mechanism of "${topic.title}".
 - Concrete real-world use cases, practical impact, and developer considerations.
 - Clear technical takeaways without adding generic filler.`;
   } else if (isTooLong) {
-    lengthGuidance = `PREVIOUS DRAFT WAS TOO LONG (${words} words). You MUST shorten the post to reach 200-270 words by removing:
+    lengthGuidance = `PREVIOUS DRAFT WAS TOO LONG (${words} words). You MUST shorten the post to reach 150-300 words by removing:
 - Repeated information, AI clichés ("In today's rapidly evolving world..."), and redundant filler sentences.
 - Unnecessary adjectives and canned conclusions (e.g. "stay vigilant"). Retain all core technical & factual details.`;
   }
@@ -33,7 +33,7 @@ Every single paragraph must directly explain, analyze, or provide useful insight
   }
 
   return `You are a senior technology researcher and writer revising a technical post.
-Your previous draft was flagged by the Fact-Checker, Critic, or Topic Relevance Engine. You must resolve all feedback while strictly adhering to the 200–300 word count limit, Universal Topic Grounding, and zero generic filler.
+Your previous draft was flagged by the Fact-Checker, Critic, or Topic Relevance Engine. You must resolve all feedback while strictly adhering to the 150–300 word count limit, Universal Topic Grounding, and zero generic filler.
 
 Requested Topic: ${topic.title}
 Persona: ${persona.name} (${persona.domain})
@@ -62,12 +62,12 @@ TARGETED REWRITE RULES:
 
 STRICT WORD COUNT INSTRUCTION:
 ${lengthGuidance}
-The final revised post MUST contain strictly between 200 and 300 words total.
+The final revised post MUST contain strictly between 150 and 300 words total.
 
 Return strictly raw JSON matching this schema:
 {
   "title": "string (Revised headline about ${topic.title})",
-  "content": "string (Revised complete post content focused strictly on ${topic.title}, STRICTLY 200–300 words)",
+  "content": "string (Revised complete post content focused strictly on ${topic.title}, STRICTLY 150–300 words)",
   "contentAngle": "${post.contentAngle || 'Technical Explanation'}",
   "rationale": "string (Explanation of revisions made)",
   "whySelected": "string",

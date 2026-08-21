@@ -2609,3 +2609,104 @@ The final result should make the project feel like:
 "An autonomous AI Security intelligence system that watches the information landscape, detects emerging threats, connects evidence from multiple sources, tracks how threats evolve, and independently decides what deserves attention."
 
 This Threat Radar should become the visual centerpiece of the hackathon demo.
+
+15. Autonomous Trend Prediction & Opportunity Radar
+
+Enhance my existing **Autonomous AI Creator (Ada)** project by adding a new feature:
+
+# 🔥 Autonomous Trend Prediction & Opportunity Radar
+
+First inspect the existing codebase, architecture, agent workflow, database, APIs, scheduler, and **current UI/design system**. Reuse existing components and libraries. **Do not break or unnecessarily rewrite existing functionality.**
+
+### Core Feature
+
+Make Ada proactive instead of simply reacting to news.
+
+Ada should:
+
+**Discover → Cluster related topics → Analyze momentum → Predict trend potential → Calculate Opportunity Score → Decide whether to monitor/create content**
+
+For each topic calculate a **0–100 Opportunity Score** using available real signals such as:
+
+* recent growth/momentum
+* AI relevance
+* AI-security relevance
+* novelty
+* recency
+* source credibility
+* coverage saturation
+* historical activity
+
+Add trend states:
+
+**Declining / Stable / Growing / Rapidly Growing / Emerging**
+
+Add **Predicted Trend Potential** and an AI-generated explanation based only on the actual collected signals. Do not fabricate statistics or sources.
+
+### 🚨 Autonomous Opportunity Detection
+
+When a topic crosses a configurable threshold:
+
+> **EMERGING OPPORTUNITY**
+> Topic: AI Agent Security
+> Opportunity Score: 91/100
+> Momentum: 94
+> AI Security Relevance: 96
+> Coverage: Low
+> Trend Potential: 87
+> **Recommendation: CREATE CONTENT**
+
+Ada should automatically move topics through:
+
+**Discovered → Monitoring → Emerging → High Opportunity → Content Creation**
+
+Use the existing scheduler/agent system for periodic updates.
+
+### 📊 History
+
+Store trend snapshots over time so Ada can show:
+
+* Opportunity Score history
+* Momentum history
+* source/mention growth
+* trend direction
+
+Reuse the existing database and charting libraries.
+
+### 🎨 UI/UX — IMPORTANT
+
+Use the **existing UI/design language** and enhance it rather than creating a separate-looking page.
+
+Add a polished **Opportunity Radar** section to the existing dashboard with:
+
+* Top Emerging Opportunities
+* animated score cards
+* momentum/trend indicators
+* Opportunity Score
+* Trend Potential
+* AI-security relevance
+* coverage level
+* source count
+* "Why Ada chose this" expandable explanation
+* interactive trend-history chart
+* source transparency
+
+Also integrate this into the existing **Ada Brain/Agent Activity visualization** so the user can visually see:
+
+**Scanning → Detecting → Clustering → Analyzing → Predicting → Opportunity Detected**
+
+Make it feel like a **premium autonomous AI command center** with smooth animations, clear hierarchy, responsive design, and minimal visual clutter.
+
+### ⚠️ Rules
+
+* Use real project data; no fake production metrics.
+* Reuse existing components, APIs, database models, scheduler and libraries wherever possible.
+* Keep thresholds/configuration centralized.
+* Handle API/source failures gracefully.
+* Add tests for scoring and opportunity detection.
+* Run build/lint/tests after implementation.
+* Fix any errors introduced by the changes.
+
+Finally, give me a short summary of **files changed, architecture changes, UI changes, and tests performed**.
+
+The final experience should make Ada feel like a **proactive AI intelligence agent that predicts emerging opportunities**, not simply an AI news summarizer.

@@ -22,25 +22,24 @@ export function getWriterPrompt(
 
   const isMisconception = contentAngle.toLowerCase().includes('misconception');
   let angleInstruction = `Assigned Content Angle: ${contentAngle}`;
-  let structureInstruction = `1. HOOK (20–40 words): Specific opening about "${topic.title}". Avoid questions like "Did you know?" or "What if?".
-2. WHAT HAPPENED? (40–60 words): Extract concrete facts: what happened, what's new, and evidence/benchmarks.
-3. TECHNICAL INSIGHT (50–80 words): Explain how it works using simple, professional English. Prefer one genuine technical insight over several generic statements.
-4. WHY IT MATTERS (40–60 words): Practical technical impact on developers, systems, or architecture.
-5. TAKEAWAY (20–40 words): Meaningful concluding insight on ${topic.title}. Avoid generic conclusions like "stay vigilant".`;
+  let structureInstruction = `1. WHAT HAPPENED?: Clearly identify the actual announcement, discovery, release, research result, vulnerability, product change, or development.
+2. IMPORTANT TECHNICAL DETAILS: Include relevant models, technologies, architecture, algorithms, benchmarks, APIs, datasets, security mechanisms, performance numbers, versions, dates, or other concrete details available in the sources.
+3. WHAT IS GENUINELY NEW: Explain how this differs from previous approaches, versions, competitors, or existing capabilities when reliable information is available.
+4. WHY IT MATTERS: Explain the real technical, business, developer, research, security, or user impact.
+5. WHO IS AFFECTED: Identify relevant developers, researchers, companies, security teams, users, or industries.
+6. EVIDENCE: Provide concrete facts, numbers, benchmarks, source claims, dates, and direct technical findings. Never invent statistics or details.
+7. LIMITATIONS AND CAVEATS: Include limitations, uncertainty, trade-offs, cost, availability restrictions, security concerns, or unresolved issues. Do not turn every topic into positive hype.
+8. PRACTICAL TAKEAWAY: Explain what developers, engineers, researchers, or users should actually understand or do differently.
+9. WHAT TO WATCH NEXT: Include meaningful future implications only when they can reasonably be derived from the available evidence. Clearly distinguish analysis/speculation from confirmed facts.`;
 
   if (isMisconception) {
     angleInstruction = `Assigned Content Angle: Common Misconception (Identify a genuine misconception about "${topic.title}", explain why it is wrong, provide verified factual evidence, and clarify the key takeaway).`;
-    structureInstruction = `1. HOOK / MISCONCEPTION (20–40 words): Clearly state the common misconception about "${topic.title}".
-2. WHAT HAPPENED? / WHAT IS ACTUALLY TRUE (40–60 words): Extract concrete facts and evidence/benchmarks correcting the misconception.
-3. TECHNICAL INSIGHT (50–80 words): Explain how it works and why the misconception exists. Prefer one genuine technical insight over several generic statements.
-4. WHY IT MATTERS (40–60 words): Practical relevance for developers or technical teams.
-5. TAKEAWAY (20–40 words): Clear, memorable takeaway correcting the misconception.`;
   }
 
   return `${personaContext}
 
 MANDATORY WRITER INSTRUCTION:
-Make every post specific, factual, technical, and human-sounding, not generic AI-generated filler. Never invent research, statistics, companies, findings, or technical claims. Do not write a generic social media post about the topic. First understand the topic, identify the most important information, determine what the reader needs to know, and then explain it clearly in your own words. The structure must be chosen based on the topic rather than copied from previous posts. Every paragraph must add meaningful information. Prefer specific verified facts and useful technical explanations over generic statements. Use simple English without removing important technical meaning. The final result should teach the reader something concrete and should feel substantially different from previous posts.
+Make every post specific, factual, technical, and human-sounding, not generic AI-generated filler. Never invent research, statistics, companies, findings, or technical claims. Prioritize information density over word count. Avoid empty introductions and generic conclusions. Preserve important technical terminology from the source. Do not simply summarize the first paragraph of an article. The final result should feel like it was written by a technical AI news analyst/research editor.
 
 UNIVERSAL TOPIC-GROUNDING MANDATE (CRITICAL RULE):
 - Requested Topic: "${topic.title}"
@@ -63,11 +62,22 @@ NO INTERNAL SYSTEM TEXT MANDATE:
 NEVER expose internal system text or generation metadata in your response or content body.
 - NEVER write: "User Manual Request", "Manual post generation request", "The user asked...", "According to the prompt...", or "As requested...".
 
+SOURCE INTELLIGENCE MANDATE:
+Before generating the final content, analyze all available source material and identify:
+- The primary event
+- The strongest factual claims
+- Important technical details
+- Supporting evidence
+- Contradictions or uncertainty
+- Missing information
+- Why the development is relevant
+If multiple sources are available, compare them and prioritize information that is specific, recent, technically meaningful, and directly supported by reliable sources.
+
 STRICT WORD COUNT MANDATE:
-- MINIMUM: 200 words
+- MINIMUM: 150 words
 - MAXIMUM: 300 words
-- RECOMMENDED TARGET: 230 to 270 words
-(Your final post body content MUST be strictly between 200 and 300 words total. Do not count source URL or hashtags in the word count.)
+- RECOMMENDED TARGET: 180 to 300 words
+(Your final post body content MUST be strictly between 150 and 300 words total. Prioritize information density over word count. Do not satisfy the word count with filler, generic introductions, or vague statements. If insufficient information exists, produce a shorter factually accurate result rather than inventing details, but aim for 150-300 when enough source information is available.)
 
 TOPIC DETAILS:
 - Requested Topic: ${topic.title}
@@ -91,7 +101,7 @@ ${structureInstruction}
 Output MUST be strictly valid JSON:
 {
   "title": "string (Punchy headline specific to ${topic.title} and ${contentAngle})",
-  "content": "string (The complete post text focused strictly on ${topic.title}, STRICTLY 200–300 words)",
+  "content": "string (The complete post text focused strictly on ${topic.title}, 150–300 words)",
   "topicCategory": "${topicCategory}",
   "contentAngle": "${contentAngle}",
   "rationale": "string (Analysis of ${topic.title})",
